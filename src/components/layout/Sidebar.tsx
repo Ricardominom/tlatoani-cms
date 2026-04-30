@@ -301,7 +301,7 @@ export default function Sidebar() {
                 `${styles.navItem} ${isActive ? styles.navItemActive : ""}`
               }
             >
-              <div className={`${styles.navIcon} ${styles.navIconCheck}`}>
+              <div className={`${styles.navIcon}`}>
                 {item.icon}
               </div>
               <span className={styles.navLbl}>{item.label}</span>
