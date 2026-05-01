@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./Dashboard.module.css";
 import { AnimalIcon } from "../../components/ui/AnimalKit";
+import { MdGroups, MdCreditCard, MdCampaign, MdChat, MdLunchDining } from "react-icons/md";
 
 interface StatItem {
   num: number;
@@ -41,21 +42,7 @@ const STATS: StatItem[] = [
     delta: "85% de asistencia",
     tipo: "up",
     acento: "var(--verde)",
-    icono: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="var(--verde)"
-        strokeWidth="2.2"
-      >
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    ),
+    icono: <MdGroups size={20} color="var(--verde)" />,
     iconoBg: "var(--verde-light)"
   },
   {
@@ -64,19 +51,7 @@ const STATS: StatItem[] = [
     delta: "$38,400 pendiente",
     tipo: "down",
     acento: "var(--rojo)",
-    icono: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="var(--rojo)"
-        strokeWidth="2.2"
-      >
-        <rect x="1" y="4" width="22" height="16" rx="2" />
-        <line x1="1" y1="10" x2="23" y2="10" />
-      </svg>
-    ),
+    icono: <MdCreditCard size={20} color="var(--rojo)" />,
     iconoBg: "var(--rojo-light)",
     numColor: "var(--rojo)"
   },
@@ -86,22 +61,7 @@ const STATS: StatItem[] = [
     delta: "3 salones pendientes",
     tipo: "neutral",
     acento: "var(--amarillo)",
-    icono: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#B89600"
-        strokeWidth="2.2"
-      >
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-        <path
-          d="M13.73
-   21a2 2 0 0 1-3.46 0"
-        />
-      </svg>
-    ),
+    icono: <MdCampaign size={20} color="#B89600" />,
     iconoBg: "var(--amarillo-light)"
   },
   {
@@ -110,21 +70,7 @@ const STATS: StatItem[] = [
     delta: "de 2 maestros",
     tipo: "neutral",
     acento: "var(--turquesa)",
-    icono: (
-      <svg
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="var(--turquesa)"
-        strokeWidth="2.2"
-      >
-        <path
-          d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0
-  0 1 2 2z"
-        />
-      </svg>
-    ),
+    icono: <MdChat size={20} color="var(--turquesa)" />,
     iconoBg: "var(--turquesa-light)"
   }
 ];
@@ -229,19 +175,7 @@ const ACTIVIDAD: ActividadItem[] = [
 
 const ALERTAS: AlertaItem[] = [
   {
-    icono: (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="var(--rojo)"
-        strokeWidth="2.2"
-      >
-        <rect x="1" y="4" width="22" height="16" rx="2" />
-        <line x1="1" y1="10" x2="23" y2="10" />
-      </svg>
-    ),
+    icono: <MdCreditCard size={18} color="var(--rojo)" />,
     iconoBg: "var(--rojo-light)",
     titulo: "12 pagos vencidos",
     desc: "$38,400 pendiente de cobro",
@@ -250,18 +184,7 @@ const ALERTAS: AlertaItem[] = [
     badgeColor: "var(--rojo)"
   },
   {
-    icono: (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="#B89600"
-        strokeWidth="2.2"
-      >
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      </svg>
-    ),
+    icono: <MdCampaign size={18} color="#B89600" />,
     iconoBg: "var(--amarillo-light)",
     titulo: "23 avisos sin leer",
     desc: "Abejas, Halcones y Lobos",
@@ -270,21 +193,7 @@ const ALERTAS: AlertaItem[] = [
     badgeColor: "#B89600"
   },
   {
-    icono: (
-      <svg
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="var(--turquesa)"
-        strokeWidth="2.2"
-      >
-        <path
-          d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0
-  0 1 2 2z"
-        />
-      </svg>
-    ),
+    icono: <MdChat size={18} color="var(--turquesa)" />,
     iconoBg: "var(--turquesa-light)",
     titulo: "3 mensajes sin leer",
     desc: "Mtra. Sandra · Mtro. Roberto",
@@ -588,20 +497,7 @@ export default function Dashboard() {
           <div className={styles.cardBody}>
             <div className={styles.comidaHoy}>
               <div className={styles.comidaIcono}>
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#5A4800"
-                  strokeWidth="2.2"
-                >
-                  <path d="M18 8h1a4 4 0 0 1 0 8h-1" />
-                  <path
-                    d="M2 8h16v9a4 4 0 0
-  1-4 4H6a4 4 0 0 1-4-4V8z"
-                  />
-                </svg>
+                <MdLunchDining size={22} color="#5A4800" />
               </div>
               <div>
                 <div className={styles.comidaNombre}>Pasta boloñesa</div>
