@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   getStoredToken,
+  getStoredUser,
   login as loginService,
   logout as logoutService
 } from "../services/authService";
@@ -28,7 +29,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const savedToken = getStoredToken();
+    const savedUser = getStoredUser();
     setToken(savedToken);
+    setUser(savedUser);
     setIsLoading(false);
   }, []);
 
