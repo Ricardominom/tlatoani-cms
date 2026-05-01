@@ -30,7 +30,7 @@
 .logoColegio {
   font-size: 8px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.3);
+  color: #FFF;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
@@ -112,7 +112,7 @@
 .navLbl {
   font-size: 12px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.55);
+  color: #FFF;
   flex: 1;
 }
 .navLblActive {
