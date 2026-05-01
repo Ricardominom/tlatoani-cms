@@ -21,9 +21,9 @@ export default function App() {
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
             <Route path="/alumnos" element={<Alumnos />} />
             <Route path="/comunicados" element={<Comunicados />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>
       </AuthProvider>
