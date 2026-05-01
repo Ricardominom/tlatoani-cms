@@ -1,0 +1,762 @@
+/* ROOT */
+.root {
+  display: flex;
+  margin: -24px -28px -40px;
+  height: calc(100vh - 58px);
+  overflow: hidden;
+}
+
+/* ── PANEL LISTA ── */
+.panelLista {
+  width: 360px;
+  background: var(--gris-card);
+  border-right: 1px solid var(--gris-borde);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.listaHeader {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--gris-borde);
+  position: sticky;
+  top: 0;
+  background: var(--gris-card);
+  z-index: 3;
+}
+.lhTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.lhTitulo {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--texto);
+}
+
+.btnNuevo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 0 12px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: var(--amarillo);
+  color: #5a4800;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  box-shadow: 0 2px 0 var(--amarillo-s);
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--gris-bg);
+  border-radius: 10px;
+  padding: 8px 11px;
+  border: 1px solid var(--gris-borde);
+  margin-bottom: 8px;
+}
+.searchInput {
+  flex: 1;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-family: "Nunito", sans-serif;
+  color: var(--texto);
+  font-weight: 600;
+  outline: none;
+}
+.searchInput::placeholder {
+  color: var(--texto-3);
+}
+
+.filtTabs {
+  display: flex;
+  gap: 5px;
+}
+.ft {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+}
+.ftOn {
+  background: #1e1e1e;
+  color: var(--amarillo);
+}
+.ftOff {
+  background: var(--gris-bg);
+  color: var(--texto-2);
+  border: 1px solid var(--gris-borde);
+}
+.ftBor {
+  background: var(--amarillo-light);
+  color: #b89600;
+}
+
+.lista {
+  flex: 1;
+  overflow-y: auto;
+}
+.lista::-webkit-scrollbar {
+  width: 4px;
+}
+.lista::-webkit-scrollbar-thumb {
+  background: var(--gris-borde);
+  border-radius: 2px;
+}
+
+/* Aviso item */
+.avItem {
+  display: flex;
+  gap: 11px;
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.avItem:hover {
+  background: var(--gris-bg);
+}
+.avItemSel {
+  background: var(--amarillo-light);
+  border-left: 3px solid var(--amarillo);
+  padding-left: 13px;
+}
+.avIcono {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.avDatos {
+  flex: 1;
+  min-width: 0;
+}
+.avTituloTxt {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--texto);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.avPreview {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 5px;
+}
+.avMeta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.avTag {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+.avFecha {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-3);
+}
+.avRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+.avConf {
+  font-size: 10px;
+  font-weight: 900;
+}
+.avSt {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ── PANEL DETALLE ── */
+.panelDet {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--gris-bg);
+  overflow: hidden;
+}
+.detTopbar {
+  background: var(--gris-card);
+  border-bottom: 1px solid var(--gris-borde);
+  padding: 0 24px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.detTitulo {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.detSub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-2);
+  margin-top: 1px;
+}
+.detActions {
+  display: flex;
+  gap: 7px;
+}
+
+.btnS {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0 13px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid var(--gris-borde);
+  background: var(--gris-card);
+  color: var(--texto);
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  transition: background 0.12s;
+}
+.btnS:hover {
+  background: var(--gris-bg);
+}
+.btnSDanger {
+  color: var(--rojo);
+}
+
+.btnP {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 0 14px;
+  height: 32px;
+  border-radius: 9px;
+  border: none;
+  background: var(--amarillo);
+  color: #5a4800;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  box-shadow: 0 2px 0 var(--amarillo-s);
+}
+
+.detContent {
+  padding: 20px 22px 40px;
+  display: flex;
+  gap: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+.colAviso {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.colConf {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── PREVIEW CARD ── */
+.avisoPrev {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+}
+.apBanner {
+  padding: 18px 20px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.apTipoRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.apTipoBadge {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+.apUrgente {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--rojo-light);
+  color: var(--rojo);
+}
+.apTituloBig {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--texto);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.apDestino {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.apDestChip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+  background: var(--gris-bg);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--gris-borde);
+}
+.apBody {
+  padding: 18px 20px;
+}
+.apTexto {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto);
+  line-height: 1.7;
+}
+.apAdjunto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--gris-bg);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-top: 12px;
+  border: 1px solid var(--gris-borde);
+}
+.apAdjIcon {
+  width: 34px;
+  height: 34px;
+  background: var(--turquesa-light);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.apAdjNombre {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto);
+}
+.apAdjSize {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-3);
+}
+.apFooter {
+  padding: 14px 20px;
+  border-top: 1px solid var(--gris-borde);
+  background: var(--gris-bg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.apPubInfo {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+.apConfRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── EDITOR CARD ── */
+.editorCard {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 2px solid var(--amarillo);
+  overflow: hidden;
+  box-shadow: 0 4px 0 var(--amarillo-s);
+}
+.ecHeader {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+  background: var(--amarillo-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ecTitulo {
+  font-size: 13px;
+  font-weight: 900;
+  color: #5a4800;
+}
+.ecEstado {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9a7000;
+}
+.ecBody {
+  padding: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.field:last-child {
+  margin-bottom: 0;
+}
+.fieldLbl {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto);
+}
+.fieldInput {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1.5px solid var(--gris-borde);
+  background: var(--gris-bg);
+  font-size: 12px;
+  font-family: "Nunito", sans-serif;
+  color: var(--texto);
+  font-weight: 700;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.fieldInput:focus {
+  border-color: var(--amarillo);
+  background: var(--amarillo-light);
+}
+.fieldTextarea {
+  resize: none;
+  min-height: 100px;
+  line-height: 1.6;
+}
+
+.tipoPills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.tipoPill {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 6px 13px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  transition: all 0.12s;
+}
+.tpOff {
+  background: var(--gris-bg);
+  color: var(--texto-2);
+  border: 1px solid var(--gris-borde);
+}
+.tpOn {
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.destinoGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.destCheck {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 11px;
+  border-radius: 9px;
+  border: 1.5px solid var(--gris-borde);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.destCheckOn {
+  border-color: var(--amarillo);
+  background: var(--amarillo-light);
+}
+.destBox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.destBoxOn {
+  background: var(--amarillo);
+  border-color: var(--amarillo);
+}
+.destLbl {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.adjUpload {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--gris-bg);
+  border: 1.5px dashed var(--gris-borde);
+  border-radius: 9px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.adjTxt {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+
+.ecFooter {
+  padding: 14px 16px;
+  border-top: 1px solid var(--gris-borde);
+  display: flex;
+  gap: 8px;
+  background: var(--amarillo-light);
+}
+.btnBorrador {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1.5px solid var(--amarillo-s);
+  background: transparent;
+  color: #7a6200;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+}
+.btnPublicar {
+  flex: 2;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+  background: var(--amarillo);
+  color: #5a4800;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  box-shadow: 0 3px 0 var(--amarillo-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+/* ── CONFIRMACIONES ── */
+.confProg {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  padding: 16px;
+}
+.cpTitulo {
+  font-size: 12px;
+  font-weight: 900;
+  margin-bottom: 10px;
+  color: var(--texto);
+}
+.cpNums {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+.cpTotal {
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+}
+.cpDe {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+.cpBarraWrap {
+  height: 8px;
+  background: var(--gris-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.cpBarra {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(to right, var(--verde), var(--turquesa));
+}
+.cpStats {
+  display: flex;
+  gap: 8px;
+}
+.cpStat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.cpNum {
+  font-size: 14px;
+  font-weight: 900;
+}
+.cpLbl {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+.btnRecordar {
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px;
+  border-radius: 9px;
+  background: var(--rojo-light);
+  color: var(--rojo);
+  font-size: 11px;
+  font-weight: 900;
+  border: 1px solid #f5c8c8;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.confLista {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+}
+.clTabs {
+  display: flex;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.clTab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: "Nunito", sans-serif;
+  transition: background 0.12s;
+}
+.clTabOn {
+  background: var(--verde-light);
+  color: var(--verde-s);
+}
+.clTabOff {
+  color: var(--texto-3);
+}
+.clTabPend {
+  background: var(--rojo-light);
+  color: var(--rojo);
+}
+
+.clScroll {
+  max-height: 320px;
+  overflow-y: auto;
+}
+.clScroll::-webkit-scrollbar {
+  width: 3px;
+}
+.clScroll::-webkit-scrollbar-thumb {
+  background: var(--gris-borde);
+  border-radius: 2px;
+}
+
+.confRow {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.confRow:last-child {
+  border-bottom: none;
+}
+.confAv {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.confDatos {
+  flex: 1;
+}
+.confNombre {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.confHijo {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+.confHora {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+.confSt {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}

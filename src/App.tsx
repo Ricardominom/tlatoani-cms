@@ -4,6 +4,7 @@ import ProtectedRoute from "./components/layout/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
+import Alumnos from "./pages/Alumnos";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           >
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/alumnos" element={<Alumnos />} />
           </Route>
         </Routes>
       </AuthProvider>
