@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import styles from "./Topbar.module.css";
+import { MdNotificationsNone, MdAdd } from "react-icons/md";
 
 const TITULOS: Record<string, { titulo: string; sub: string }> = {
   "/dashboard": { titulo: "Dashboard", sub: "Resumen general de la escuela" },
@@ -16,6 +17,7 @@ const TITULOS: Record<string, { titulo: string; sub: string }> = {
   "/galeria": { titulo: "Galería", sub: "Fotos y eventos" },
   "/calendario": { titulo: "Calendario", sub: "Eventos escolares" },
   "/usuarios": { titulo: "Usuarios", sub: "Gestión de accesos y roles" }
+  
 };
 
 const HOY = new Date().toLocaleDateString("es-MX", {
@@ -39,32 +41,12 @@ export default function Topbar() {
 
       <div className={styles.right}>
         <div className={styles.btn} style={{ position: "relative" }}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#888"
-            strokeWidth="2"
-          >
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
+          <MdNotificationsNone size={20} color="#888" />
           <div className={styles.notifDot} />
         </div>
 
         <button className={styles.btnPrimario}>
-          <svg
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#5A4800"
-            strokeWidth="2.5"
-          >
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <MdAdd size={16} color="#5A4800" />
           Nuevo aviso
         </button>
       </div>
