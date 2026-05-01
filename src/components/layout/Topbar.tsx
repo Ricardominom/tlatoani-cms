@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 import styles from "./Topbar.module.css";
-import { MdNotificationsNone, MdAdd } from "react-icons/md";
+import { MdNotificationsNone, MdAdd, MdSearch } from "react-icons/md";
 
 const TITULOS: Record<string, { titulo: string; sub: string }> = {
   "/dashboard": { titulo: "Dashboard", sub: "Resumen general de la escuela" },
@@ -17,7 +17,6 @@ const TITULOS: Record<string, { titulo: string; sub: string }> = {
   "/galeria": { titulo: "Galería", sub: "Fotos y eventos" },
   "/calendario": { titulo: "Calendario", sub: "Eventos escolares" },
   "/usuarios": { titulo: "Usuarios", sub: "Gestión de accesos y roles" }
-  
 };
 
 const HOY = new Date().toLocaleDateString("es-MX", {
@@ -40,6 +39,10 @@ export default function Topbar() {
       </div>
 
       <div className={styles.right}>
+        <div className={styles.btn}>
+          <MdSearch size={20} color="#888" />
+        </div>
+
         <div className={styles.btn} style={{ position: "relative" }}>
           <MdNotificationsNone size={20} color="#888" />
           <div className={styles.notifDot} />
