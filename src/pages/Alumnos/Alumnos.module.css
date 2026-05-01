@@ -1,0 +1,584 @@
+.root {
+  display: flex;
+  margin: -24px -28px -40px;
+  height: calc(100vh - 58px);
+  overflow: hidden;
+}
+
+/* ── PANEL LISTA ── */
+.panelLista {
+  width: 360px;
+  background: var(--gris-card);
+  border-right: 1px solid var(--gris-borde);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.listaHeader {
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--gris-borde);
+  position: sticky;
+  top: 0;
+  background: var(--gris-card);
+  z-index: 3;
+}
+.listaTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.listaTitulo {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.listaCount {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto-3);
+  background: var(--gris-bg);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--gris-bg);
+  border-radius: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--gris-borde);
+  margin-bottom: 8px;
+}
+.searchInput {
+  flex: 1;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-family: "Nunito", sans-serif;
+  color: var(--texto);
+  font-weight: 600;
+  outline: none;
+}
+.searchInput::placeholder {
+  color: var(--texto-3);
+}
+
+.salonFilters {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.salonFilters::-webkit-scrollbar {
+  display: none;
+}
+.sf {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 5px 11px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  white-space: nowrap;
+}
+.sfOn {
+  background: #1e1e1e;
+  color: var(--amarillo);
+  border: none;
+}
+.sfOff {
+  background: var(--gris-bg);
+  color: var(--texto-2);
+  border: 1px solid var(--gris-borde);
+}
+
+.lista {
+  flex: 1;
+  overflow-y: auto;
+}
+.lista::-webkit-scrollbar {
+  width: 4px;
+}
+.lista::-webkit-scrollbar-thumb {
+  background: var(--gris-borde);
+  border-radius: 2px;
+}
+
+.alItem {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.alItem:hover {
+  background: var(--gris-bg);
+}
+.alSel {
+  background: var(--amarillo-light) !important;
+  border-left: 3px solid var(--amarillo);
+  padding-left: 13px;
+}
+
+.alAv {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.alDatos {
+  flex: 1;
+  min-width: 0;
+}
+.alNombre {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.alMeta {
+  display: flex;
+  gap: 5px;
+  margin-top: 3px;
+  align-items: center;
+}
+.alTag {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 8px;
+}
+.alEdad {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+.alRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.alSt {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ── PANEL EXPEDIENTE ── */
+.panelExp {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--gris-bg);
+  overflow: hidden;
+}
+.expTopbar {
+  background: var(--gris-card);
+  border-bottom: 1px solid var(--gris-borde);
+  padding: 0 24px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.expTitulo {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.expSub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-2);
+  margin-top: 1px;
+}
+.expActions {
+  display: flex;
+  gap: 7px;
+}
+.btnS {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0 13px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid var(--gris-borde);
+  background: var(--gris-card);
+  color: var(--texto);
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+}
+.btnS:hover {
+  background: var(--gris-bg);
+}
+.btnP {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 0 14px;
+  height: 32px;
+  border-radius: 9px;
+  border: none;
+  background: var(--amarillo);
+  color: #5a4800;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  box-shadow: 0 2px 0 var(--amarillo-s);
+}
+
+.expContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 22px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* HERO */
+.alumnoHero {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  padding: 18px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.heroDatos {
+  flex: 1;
+}
+.heroNombre {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--texto);
+  margin-bottom: 5px;
+}
+.heroChips {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.hc {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+  background: var(--gris-bg);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--gris-borde);
+}
+.heroRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.inscritaBadge {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: var(--verde-light);
+  color: var(--verde-s);
+  border: 1px solid #b8dfa0;
+}
+.statChip {
+  flex: 1;
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.scNum {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.scLbl {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+
+/* GRIDS Y CARDS */
+.g2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.dc {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+}
+.dch {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.dct {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.dcl {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--turquesa);
+  cursor: pointer;
+}
+.dcb {
+  padding: 12px 16px;
+}
+
+/* DATOS PERSONALES */
+.datoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.datoRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.datoLbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+.datoVal {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+/* ASISTENCIA */
+.asistGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+.dia {
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 900;
+}
+.dVac {
+  background: var(--gris-bg);
+  color: var(--texto-3);
+  font-size: 8px;
+}
+.dPres {
+  background: var(--verde-light);
+  color: var(--verde-s);
+}
+.dAus {
+  background: var(--rojo-light);
+  color: var(--rojo);
+}
+.dTard {
+  background: var(--amarillo-light);
+  color: #b89600;
+}
+.dHoy {
+  background: #1e1e1e;
+  color: var(--amarillo);
+}
+
+/* ÁREAS MONTESSORI */
+.areaRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.areaRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.areaDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.areaNombre {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto);
+  flex: 1;
+}
+.areaBarraW {
+  width: 80px;
+  height: 5px;
+  background: var(--gris-bg);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.areaBarra {
+  height: 100%;
+  border-radius: 3px;
+}
+.areaCount {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--texto);
+  min-width: 22px;
+  text-align: right;
+}
+.areaNivel {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* PERSONAS AUTORIZADAS */
+.autRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.autRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.autAv {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.autDatos {
+  flex: 1;
+}
+.autNombre {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.autRel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+.autTel {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+  margin-top: 1px;
+}
+.autBadge {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 3px 9px;
+  border-radius: 10px;
+}
+.btnAdd {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px;
+  border-radius: 9px;
+  border: 1.5px dashed var(--gris-borde);
+  background: none;
+  color: var(--texto-3);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+  margin-top: 10px;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+}
+.btnAdd:hover {
+  border-color: var(--turquesa);
+  color: var(--turquesa);
+}
+
+/* BITÁCORAS */
+.bitItem {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.bitItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.bitTop {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 5px;
+}
+.bitArea {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+.bitFecha {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-3);
+  margin-left: auto;
+}
+.bitTexto {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+  line-height: 1.5;
+}
+.bitNivel {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 10px;
+  display: inline-block;
+  margin-top: 4px;
+}
