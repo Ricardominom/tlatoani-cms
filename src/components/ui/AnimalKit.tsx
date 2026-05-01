@@ -1,3 +1,5 @@
+import React from "react";
+
 export const Abeja = ({ size = 48 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 48 48" fill="none">
       <ellipse cx="11" cy="18" rx="9" ry="5" fill="#C8EEFF" stroke="#A8D8F0" strokeWidth="1.2" transform="rotate(-30 11 18)" opacity="0.9"/>
@@ -263,7 +265,7 @@ export const Abeja = ({ size = 48 }: { size?: number }) => (
     dark: string;
     light: string;
     text: string;
-    Icon: ({ size }: { size?: number }) => JSX.Element;
+    Icon: ({ size }: { size?: number }) => React.ReactElement;
   };
 
   export const GRUPOS: GrupoConfig[] = [
@@ -297,8 +299,7 @@ export const Abeja = ({ size = 48 }: { size?: number }) => (
     return <g.Icon size={size} />;
   };
 
-  export const AnimalAvatar = ({ group, size = 'md', style = {} }: { group: string; size?: 'lg' | 'md' | 'sm'; style?: React.CSSProperties })
-  => {
+  export const AnimalAvatar = ({ group, size = 'md', style = {} }: { group: string; size?: 'lg' | 'md' | 'sm'; style?: React.CSSProperties }) => {
     const g = grupoByName[group];
     if (!g) return null;
     const sizes = {
