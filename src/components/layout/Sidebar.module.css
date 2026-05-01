@@ -172,3 +172,12 @@
 .navItemActive .navIcon {
   background: var(--amarillo);
 }
+.navItemActive .navLbl {
+  color: var(--amarillo);
+}
+.navIcon svg {
+  color: rgba(255, 255, 255, 0.5);
+}
+.navItemActive .navIcon svg {
+  color: #5a4800;
+}
