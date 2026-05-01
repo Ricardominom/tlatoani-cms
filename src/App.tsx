@@ -5,6 +5,7 @@ import { AuthProvider } from "./context/AuthContext";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Alumnos from "./pages/Alumnos";
+import Comunicados from "./pages/Comunicados";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
             <Route path="/alumnos" element={<Alumnos />} />
+            <Route path="/comunicados" element={<Comunicados />} />
           </Route>
         </Routes>
       </AuthProvider>
