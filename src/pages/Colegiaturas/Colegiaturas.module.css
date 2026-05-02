@@ -1,0 +1,584 @@
+/* CONTENT */
+.content {
+  padding: 22px 28px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── FIN GRID ── */
+.finGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.finCard {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.15s;
+}
+.finCard:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.finAccent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+
+.finIcono {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.finNum {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.finLbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+.finSub {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+  margin-top: 3px;
+}
+
+/* ── CICLO ── */
+.cicloCard {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  padding: 18px 20px;
+}
+
+.cicloHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.cicloTitulo {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.cicloSub {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+  margin-top: 2px;
+}
+.cicloPct {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--verde);
+}
+
+.cicloBarraWrap {
+  height: 10px;
+  background: var(--gris-bg);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.cicloBarra {
+  height: 100%;
+  border-radius: 5px;
+  background: linear-gradient(to right, var(--verde), var(--turquesa));
+  width: 81%;
+}
+
+.cicloMeses {
+  display: flex;
+  gap: 4px;
+}
+
+.mesPill {
+  flex: 1;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 900;
+}
+.mpOk {
+  background: var(--verde-light);
+  color: var(--verde-s);
+}
+.mpPend {
+  background: var(--amarillo-light);
+  color: var(--amarillo-s);
+}
+.mpFut {
+  background: var(--gris-bg);
+  color: var(--texto-3);
+  border: 1px dashed var(--gris-borde);
+}
+
+/* ── MAIN GRID ── */
+.mainGrid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ── TABLA CARD ── */
+.tablaCard {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+}
+
+.tablaHeader {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.tablaTitulo {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--texto);
+  margin-right: auto;
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--gris-bg);
+  border-radius: 9px;
+  padding: 7px 11px;
+  border: 1px solid var(--gris-borde);
+}
+
+.searchInput {
+  background: none;
+  border: none;
+  font-size: 11px;
+  font-family: inherit;
+  color: var(--texto);
+  font-weight: 600;
+  outline: none;
+  width: 140px;
+}
+.searchInput::placeholder {
+  color: var(--texto-3);
+}
+
+.filTabs {
+  display: flex;
+  gap: 4px;
+}
+
+.filTab {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.ftOn {
+  background: #1e1e1e;
+  color: var(--amarillo);
+}
+.ftOff {
+  background: var(--gris-bg);
+  color: var(--texto-2);
+  border: 1px solid var(--gris-borde);
+}
+.ftRed {
+  background: var(--rojo-light);
+  color: var(--rojo);
+}
+.ftYel {
+  background: var(--amarillo-light);
+  color: var(--amarillo-s);
+}
+.ftGrn {
+  background: var(--verde-light);
+  color: var(--verde-s);
+}
+
+/* ── TABLA ── */
+.tablaWrap {
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tabla thead {
+  background: var(--gris-bg);
+}
+
+.tabla th {
+  padding: 9px 16px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--texto-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--gris-borde);
+  white-space: nowrap;
+}
+
+.tabla td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+  vertical-align: middle;
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: none;
+}
+.tabla tbody tr:hover td {
+  background: var(--gris-bg);
+  cursor: pointer;
+}
+.trSelected td {
+  background: var(--amarillo-light) !important;
+}
+
+.famCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.famAv {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.famNombre {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.famHijos {
+  display: flex;
+  gap: 3px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.chipXs {
+  font-size: 8px;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.salonesCell {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.montoCobrado {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--verde);
+}
+.montoPendiente {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--rojo);
+}
+.montoProximo {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--amarillo-s);
+}
+
+.vencTxt {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+.vencTxtRed {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rojo);
+}
+.vencTxtGreen {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--verde);
+}
+
+.stBadge {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 4px 10px;
+  border-radius: 20px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.accionesCell {
+  display: flex;
+  gap: 5px;
+}
+.actBtn {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.12s;
+}
+.actBtn:hover {
+  opacity: 0.8;
+}
+
+/* ── PANEL PAGO ── */
+.panelPago {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panelHeader {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+  background: var(--amarillo-light);
+}
+.panelTitulo {
+  font-size: 13px;
+  font-weight: 900;
+  color: #5a4800;
+}
+.panelSub {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9a7000;
+  margin-top: 2px;
+}
+.panelBody {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── FAM SEL CARD ── */
+.famSelCard {
+  background: var(--gris-bg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--gris-borde);
+}
+.famSelNombre {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--texto);
+  margin-bottom: 6px;
+}
+.famSelHijos {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.famSelStats {
+  display: flex;
+  gap: 8px;
+}
+.famSelStat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.famSelNum {
+  font-size: 14px;
+  font-weight: 900;
+}
+.famSelLbl {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+
+/* ── FIELDS ── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.fieldLbl {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.fieldInput {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1.5px solid var(--gris-borde);
+  background: var(--gris-bg);
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--texto);
+  font-weight: 700;
+  outline: none;
+  transition: border-color 0.12s;
+}
+.fieldInput:focus {
+  border-color: var(--amarillo);
+  background: var(--amarillo-light);
+}
+.fieldSelect {
+  appearance: none;
+  cursor: pointer;
+}
+
+/* ── MESES ── */
+.mesesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.mesCheck {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--gris-borde);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.12s;
+}
+.mesCheckOn {
+  background: var(--amarillo-light);
+  border-color: var(--amarillo);
+}
+.mesCheckBox {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.mesCheckBoxOn {
+  background: var(--amarillo);
+  border-color: var(--amarillo);
+}
+.mesCheckLbl {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+/* ── TOTAL ── */
+.totalRow {
+  background: var(--gris-bg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.totalLbl {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--texto-2);
+}
+.totalNum {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--texto);
+}
+
+/* ── BOTONES ── */
+.btnRegistrar {
+  width: 100%;
+  padding: 13px;
+  border-radius: 11px;
+  background: var(--amarillo);
+  color: #5a4800;
+  font-size: 14px;
+  font-weight: 900;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 3px 0 var(--amarillo-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
+}
+.btnRegistrar:hover {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 var(--amarillo-s);
+}
+
+.btnRecordar {
+  width: 100%;
+  padding: 10px;
+  border-radius: 11px;
+  background: var(--rojo-light);
+  color: var(--rojo);
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid #f5c8c8;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
