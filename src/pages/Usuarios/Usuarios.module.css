@@ -1,0 +1,666 @@
+/* ── ROOT ── */
+.root {
+  margin: -24px -28px -40px;
+  height: calc(100vh - 58px);
+  overflow: hidden;
+  display: flex;
+}
+
+/* ══════════════════════════════════════════
+     PANEL IZQUIERDO
+  ══════════════════════════════════════════ */
+.panelLista {
+  width: 380px;
+  min-width: 380px;
+  border-right: 1px solid var(--gris-borde);
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.listaHeader {
+  padding: 20px 20px 0;
+  border-bottom: 1px solid var(--gris-borde);
+  background: #fff;
+}
+
+.listaTop {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.listaTitulo {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.listaCount {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-3);
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  border-radius: 20px;
+  padding: 1px 8px;
+}
+
+.searchWrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  border-radius: 8px;
+  padding: 7px 10px;
+  margin-bottom: 12px;
+}
+
+.searchInput {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 12px;
+  color: var(--texto);
+  width: 100%;
+}
+
+.searchInput::placeholder {
+  color: var(--texto-3);
+}
+
+.rolTabs {
+  display: flex;
+  gap: 2px;
+  padding-bottom: 12px;
+}
+
+.rt {
+  padding: 5px 11px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.rtOn {
+  background: var(--amarillo-light);
+  color: #7a6200;
+  border-color: var(--amarillo);
+}
+
+.rtOff {
+  background: transparent;
+  color: var(--texto-2);
+  border-color: transparent;
+}
+
+.rtOff:hover {
+  background: var(--gris-bg);
+}
+
+/* LISTA */
+.lista {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.grupoLabel {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--texto-3);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 20px 4px;
+}
+
+.userItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+}
+
+.userItem:hover {
+  background: var(--gris-bg);
+}
+
+.uiSel {
+  background: var(--amarillo-light) !important;
+}
+
+.avWrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.uiAv {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  border: 1.5px solid;
+  flex-shrink: 0;
+}
+
+.onlineDot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--verde);
+  border: 2px solid #fff;
+}
+
+.uiDatos {
+  flex: 1;
+  min-width: 0;
+}
+
+.uiNombre {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.uiMeta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.uiRol {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+.uiEmail {
+  font-size: 10px;
+  color: var(--texto-3);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 120px;
+}
+
+.uiBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+     PANEL DERECHO
+  ══════════════════════════════════════════ */
+.panelDet {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--gris-bg);
+}
+
+.detTopbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--gris-borde);
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.detTitulo {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.detSub {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-3);
+  margin-top: 1px;
+}
+
+.detActions {
+  display: flex;
+  gap: 6px;
+}
+
+.btnS {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--gris-borde);
+  background: #fff;
+  color: var(--texto-2);
+  transition: background 0.12s;
+}
+
+.btnS:hover {
+  background: var(--gris-bg);
+}
+
+.btnP {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid var(--amarillo);
+  background: var(--amarillo-light);
+  color: #7a6200;
+  transition: background 0.12s;
+}
+
+.btnPeligro {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--rojo-light);
+  background: var(--rojo-light);
+  color: var(--rojo);
+  transition: opacity 0.12s;
+}
+
+/* SCROLL AREA */
+.detScroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── HERO ── */
+.userHero {
+  background: #fff;
+  border: 1px solid var(--gris-borde);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.heroAvWrap {
+  position: relative;
+}
+
+.heroAv {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 800;
+  border: 2px solid;
+}
+
+.heroOnlineDot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--verde);
+  border: 2.5px solid #fff;
+}
+
+.heroDatos {
+  flex: 1;
+}
+
+.heroNombre {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.heroChips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.hc {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  border-radius: 20px;
+  padding: 2px 9px;
+}
+
+.heroStats {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.hStat {
+  text-align: center;
+}
+
+.hStatNum {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.hStatLbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+  margin-top: 1px;
+}
+
+.heroRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.inactivoBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+  background: var(--rojo-light);
+  color: var(--rojo);
+}
+
+/* ── GRID 2 COLS ── */
+.g2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* ── CARD BASE ── */
+.card {
+  background: #fff;
+  border: 1px solid var(--gris-borde);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.cardH {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--gris-borde);
+}
+
+.cardT {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.cardSub {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
+
+.cardLnk {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--turquesa-s);
+  cursor: pointer;
+}
+
+.cardB {
+  padding: 14px 18px;
+}
+
+/* ── DATOS PERSONALES ── */
+.datoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--gris-borde);
+  gap: 12px;
+}
+
+.datoRow:last-child {
+  border-bottom: none;
+}
+
+.datoLbl {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-3);
+  flex-shrink: 0;
+}
+
+.datoVal {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto);
+  text-align: right;
+}
+
+/* ── CREDENCIALES ── */
+.credCard {
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+}
+
+.credRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+}
+
+.credLbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.credVal {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto);
+  font-family: monospace;
+}
+
+.credBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.btnReset {
+  width: 100%;
+  padding: 7px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--turquesa);
+  background: var(--turquesa-light);
+  color: var(--turquesa-s);
+  margin-top: 4px;
+}
+
+/* ── PERMISOS GRID ── */
+.permisosGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.permisoRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--gris-borde);
+  border-radius: 8px;
+  background: var(--gris-bg);
+}
+
+.permIcn {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.permNombre {
+  flex: 1;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.permDesc {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--texto-3);
+  margin-top: 1px;
+}
+
+/* ── TOGGLE ── */
+.toggle {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 9px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.togOn {
+  background: var(--verde);
+}
+.togMid {
+  background: var(--amarillo);
+}
+.togOff {
+  background: #d8d5ce;
+}
+
+.tThumb {
+  position: absolute;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  transition: left 0.2s;
+}
+
+.onPos {
+  left: 18px;
+}
+.midPos {
+  left: 10px;
+}
+.offPos {
+  left: 2px;
+}
+
+/* ── ACTIVIDAD ── */
+.actItem {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gris-borde);
+}
+
+.actItem:last-child {
+  border-bottom: none;
+}
+
+.actDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.actTxt {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-2);
+  line-height: 1.4;
+}
+
+.actBold {
+  font-weight: 800;
+  color: var(--texto);
+  margin-right: 3px;
+}
+
+.actHora {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
