@@ -6,6 +6,17 @@
   import type { Alumno } from "./types";
   import { ALUMNOS, SALONES_FILTER, ASISTENCIA, AREAS, AUTORIZADOS, BITACORAS } from "./alumnos.mock";
 
+  const STATUS_STYLE = {                                                                                                                      
+    Presente: { bg: "var(--verde-light)",    color: "var(--verde-s)"  },
+    Retardo:  { bg: "var(--amarillo-light)", color: "#B89600"         },
+    Ausente:  { bg: "var(--rojo-light)",     color: "var(--rojo)"     },
+  };
+
+  const ASIST_CLASS: Record<string, string> = {
+    vac: styles.dVac, pres: styles.dPres,
+    aus: styles.dAus, tard: styles.dTard, hoy: styles.dHoy,
+  };
+
   export default function Alumnos() {
     const [selectedId, setSelectedId] = useState(1);
     const [filtroSalon, setFiltroSalon] = useState<string | null>(null);
