@@ -1,0 +1,583 @@
+/* CONTENT */
+.content {
+  padding: 22px 28px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── SELECTOR BAR ── */
+.selectorBar {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.selLabel {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto-2);
+}
+
+.salonPills {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+}
+
+.sp {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 7px 14px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.12s;
+}
+.spOff {
+  background: var(--gris-bg);
+  color: var(--texto-2);
+  border: 1px solid var(--gris-borde);
+}
+
+.dividerV {
+  width: 1px;
+  height: 30px;
+  background: var(--gris-borde);
+  flex-shrink: 0;
+}
+
+.mesNav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mesBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.mesLbl {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--texto);
+}
+
+.pubStatus {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pubBadge {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 5px 14px;
+  border-radius: 20px;
+}
+.pubOk {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+
+/* ── STATS ROW ── */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.sc {
+  background: var(--gris-card);
+  border-radius: 12px;
+  border: 1px solid var(--gris-borde);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.scNum {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+.scLbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+.scSub {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+
+/* ── EDITOR LAYOUT ── */
+.editorLayout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 16px;
+  align-items: start;
+}
+
+/* ── EDITOR CARD (tabla) ── */
+.editorCard {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+}
+
+.editorHeader {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.editorTitulo {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.editorSub {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
+
+.legend {
+  display: flex;
+  gap: 12px;
+}
+.legItem {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+.legDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ── TABLA TURNOS ── */
+.turnos {
+  width: 100%;
+  border-collapse: collapse;
+}
+.turnos thead {
+  background: var(--gris-bg);
+}
+.turnos th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--texto-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.turnos td {
+  padding: 0;
+  border-bottom: 1px solid var(--gris-borde);
+  vertical-align: middle;
+}
+.turnos tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.rowPasado td {
+  opacity: 0.5;
+}
+.rowHoy td {
+  background: var(--amarillo-light);
+}
+.rowVacio td {
+  background: var(--rojo-light);
+}
+
+.turnoRow {
+  display: flex;
+  align-items: center;
+  min-height: 52px;
+}
+
+.tFecha {
+  width: 80px;
+  padding: 10px 12px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--gris-borde);
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.tFechaHoy {
+  background: var(--amarillo-light);
+}
+.tFechaVacio {
+  background: var(--rojo-light);
+}
+.tDiaNum {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--texto);
+  line-height: 1;
+}
+.tDiaNumHoy {
+  color: var(--amarillo-s);
+}
+.tDiaNumVacio {
+  color: var(--rojo);
+}
+.tDiaLbl {
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--texto-2);
+}
+.tDiaLblHoy {
+  color: var(--amarillo-s);
+}
+.tDiaLblVacio {
+  color: var(--rojo);
+}
+.tDiaLblPasado {
+  color: var(--texto-3);
+}
+
+.tAlumno {
+  flex: 1;
+  padding: 10px 14px;
+  border-right: 1px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.tAlumno:hover {
+  background: var(--gris-bg);
+}
+.tAlumnoVacio {
+  flex: 1;
+  padding: 10px 14px;
+  border-right: 1px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--rojo);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.tAv {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.tNombre {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.tFamilia {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.tPlatillo {
+  flex: 1.4;
+  padding: 10px 14px;
+  border-right: 1px solid var(--gris-borde);
+}
+.tPlatilloNombre {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--texto);
+}
+.tPlatilloInput {
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 12px;
+  font-family: inherit;
+  color: var(--texto);
+  font-weight: 800;
+  outline: none;
+  cursor: pointer;
+}
+.tPlatilloInput::placeholder {
+  color: var(--texto-3);
+  font-weight: 600;
+}
+
+.tStatus {
+  width: 110px;
+  padding: 10px 12px;
+  border-right: 1px solid var(--gris-borde);
+  flex-shrink: 0;
+}
+.tAcciones {
+  width: 110px;
+  padding: 10px 12px;
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.stBadge {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.taBtn {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.12s;
+  white-space: nowrap;
+}
+.taBtn:hover {
+  opacity: 0.8;
+}
+
+/* ── PANEL DERECHO ── */
+.rightStack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── PROGRESO ── */
+.progCard {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  padding: 14px 18px;
+}
+.progHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.progTitulo {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.progSub {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
+.progPct {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--turquesa);
+}
+
+.progBarraWrap {
+  height: 8px;
+  background: var(--gris-bg);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.progBarra {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(to right, var(--amarillo), var(--turquesa));
+  width: 70%;
+}
+
+.progChips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pChip {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 11px;
+  border-radius: 20px;
+}
+
+/* ── PANEL ASIGNAR ── */
+.panelCard {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+}
+.panelHeader {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.panelTitulo {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.panelSub {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
+.panelBody {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aluChip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid var(--gris-borde);
+  cursor: grab;
+  transition:
+    box-shadow 0.12s,
+    border-color 0.12s;
+  background: var(--gris-card);
+}
+.aluChip:hover {
+  border-color: var(--amarillo);
+  box-shadow: 0 2px 8px rgba(245, 200, 0, 0.2);
+}
+.aluChipAsignado {
+  background: var(--verde-light);
+  border-color: var(--verde);
+  opacity: 0.6;
+}
+
+.acAv {
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+.acNombre {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.acTurno {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+.acBadge {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+/* ── RECETA ── */
+.recetaCard {
+  background: var(--gris-bg);
+  border-radius: 10px;
+  border: 1px solid var(--gris-borde);
+  padding: 12px 14px;
+}
+.recTitulo {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--texto);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.recLnk {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--turquesa);
+  cursor: pointer;
+}
+.recIng {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+  line-height: 1.8;
+}
+.recNota {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--turquesa-s);
+  background: var(--turquesa-light);
+  border-radius: 7px;
+  padding: 6px 9px;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+.btnNotificar {
+  width: 100%;
+  padding: 9px;
+  border-radius: 9px;
+  border: none;
+  background: var(--turquesa);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 2px 0 var(--turquesa-s);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 4px;
+}
