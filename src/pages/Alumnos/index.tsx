@@ -3,7 +3,6 @@
   import { MdDownload, MdEdit, MdAdd, MdSearch } from "react-icons/md";
   import { AnimalAvatar, AnimalPillLight, AnimalIcon, getGrupo } from "../../components/ui/AnimalKit";
   import styles from "./Alumnos.module.css";
-  import type { Alumno } from "./types";
   import { ALUMNOS, SALONES_FILTER, ASISTENCIA, AREAS, AUTORIZADOS, BITACORAS } from "./alumnos.mock";
 
   const STATUS_STYLE = {                                                                                                                      

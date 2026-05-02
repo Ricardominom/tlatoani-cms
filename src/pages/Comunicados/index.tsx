@@ -16,7 +16,7 @@ import {
   MdEditNote
 } from "react-icons/md";
 import styles from "./Comunicados.module.css";
-import type { Tipo, Filtro, Comunicado, ConfRow } from "./types";
+import type { Tipo, Filtro } from "./types";
 import { COMUNICADOS, CONFIRMACIONES } from "./comunicados.mock";
 
 const TIPO_STYLE: Record<
