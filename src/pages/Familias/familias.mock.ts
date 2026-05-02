@@ -32,8 +32,7 @@ export const FAMILIAS: Familia[] = [
                 color: "var(--amarillo)", bold: "Turno de comida", texto: " de Sofía confirmado · pasta boloñesa", fecha: "Lun 21 oct · 8am"
             },
             {
-                color: "var(--texto-3)", bold: "Diego", texto: " inscrito en Halcones · Taller 1", fecha: "Ago 2024 ·
-  inscripción"},
+                color: "var(--texto-3)", bold: "Diego", texto: " inscrito en Halcones · Taller 1", fecha: "Ago 2024 ·inscripción"},
       ],
         mesesPagados: 8, mesesPendientes: 2, totalPagado: "$25,600", avisosConfirmados: 14, bitacorasRecibidas: 28,
         notif: { avisos: true, colegiatura: true, comida: true, galeria: false },
