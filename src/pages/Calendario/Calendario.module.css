@@ -1,0 +1,580 @@
+/* CONTENT — flex horizontal (diferente a otros módulos) */
+.content {
+  padding: 22px 28px 40px;
+  display: flex;
+  gap: 18px;
+  flex: 1;
+  align-items: start;
+}
+
+/* ── PANEL IZQUIERDO ── */
+.panelLeft {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── MINI CALENDARIO ── */
+.miniCal {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+}
+
+.mcHeader {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mcMes {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.mcNav {
+  display: flex;
+  gap: 6px;
+}
+.mcBtn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.mcBody {
+  padding: 12px 14px;
+}
+
+.diasSemana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+.ds {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 900;
+  color: var(--texto-3);
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+
+.diasGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dia {
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+}
+.dia:hover {
+  background: var(--gris-bg);
+}
+.diaOtroMes {
+  color: var(--texto-3);
+}
+.diaFinSemana {
+  color: var(--texto-3);
+}
+.diaHoy {
+  background: #1e1e1e;
+  color: var(--amarillo);
+}
+.diaHoy:hover {
+  background: #1e1e1e;
+}
+.diaSel {
+  background: var(--amarillo-light);
+  color: #7a6200;
+  border: 1.5px solid var(--amarillo);
+}
+
+.diaDot::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.dotFestival::after {
+  background: var(--rosa);
+}
+.dotSuspension::after {
+  background: var(--rojo);
+}
+.dotJunta::after {
+  background: var(--turquesa);
+}
+.dotPuente::after {
+  background: #f57c00;
+}
+
+/* Leyenda */
+.leyenda {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--gris-borde);
+}
+.leyItem {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+.leyDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── DETALLE DÍA ── */
+.evDetalle {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+}
+.evdHeader {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+}
+.evdTitulo {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.evdSub {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
+.evdBody {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.evCard {
+  border-radius: 10px;
+  padding: 11px 13px;
+  border: 1px solid;
+  cursor: pointer;
+  transition: box-shadow 0.12s;
+}
+.evCard:hover {
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+.evcTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.evcDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.evcNombre {
+  font-size: 12px;
+  font-weight: 900;
+}
+.evcTipo {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-left: auto;
+}
+.evcMeta {
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btnAddEv {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 9px;
+  border-radius: 9px;
+  border: 1.5px dashed var(--gris-borde);
+  background: none;
+  color: var(--texto-3);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+}
+.btnAddEv:hover {
+  border-color: var(--amarillo);
+  color: var(--amarillo-s);
+}
+
+/* ── PANEL DERECHO ── */
+.panelRight {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vistaTabs {
+  display: flex;
+  gap: 6px;
+}
+.vtBtn {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 7px 16px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.vtOn {
+  background: #1e1e1e;
+  color: var(--amarillo);
+}
+.vtOff {
+  background: var(--gris-card);
+  color: var(--texto-2);
+  border: 1px solid var(--gris-borde);
+}
+
+.mesNav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cgBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.cgMesLbl {
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.cgHoy {
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  cursor: pointer;
+  color: var(--texto-2);
+  font-family: inherit;
+}
+
+/* ── CALENDARIO GRANDE ── */
+.calGrande {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+}
+
+.cgDiasSemana {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--gris-bg);
+  border-bottom: 1px solid var(--gris-borde);
+}
+.cgds {
+  text-align: center;
+  padding: 9px;
+  font-size: 10px;
+  font-weight: 900;
+  color: var(--texto-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.cgdsGris {
+  color: var(--texto-3);
+}
+
+.cgGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.cgDia {
+  min-height: 90px;
+  border-right: 1px solid var(--gris-borde);
+  border-bottom: 1px solid var(--gris-borde);
+  padding: 7px 8px;
+  cursor: pointer;
+  transition: background 0.1s;
+  position: relative;
+}
+.cgDia:hover {
+  background: var(--gris-bg);
+}
+.cgDia:nth-child(7n) {
+  border-right: none;
+}
+.cgDiaOtroMes {
+  background: rgba(0, 0, 0, 0.01);
+}
+.cgDiaFinSemana {
+  background: rgba(0, 0, 0, 0.015);
+}
+.cgDiaHoy {
+  background: var(--amarillo-light);
+}
+.cgDiaSel {
+  background: var(--amarillo-light);
+  border: 1.5px solid var(--amarillo);
+}
+
+.cgNum {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 900;
+  margin-bottom: 4px;
+  color: var(--texto);
+}
+.cgNumOtroMes {
+  color: var(--texto-3);
+}
+.cgNumFinSemana {
+  color: var(--texto-3);
+}
+.cgNumHoy {
+  background: #1e1e1e;
+  color: var(--amarillo);
+}
+
+.evPill {
+  font-size: 9px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 5px;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  display: block;
+}
+
+/* ── LISTA PRÓXIMOS EVENTOS ── */
+.cicloCard {
+  background: var(--gris-card);
+  border-radius: 14px;
+  border: 1px solid var(--gris-borde);
+  overflow: hidden;
+}
+.ccHeader {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--gris-borde);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ccTitulo {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.ccSub {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
+
+.btnP {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 0 14px;
+  height: 30px;
+  border-radius: 9px;
+  border: none;
+  background: var(--amarillo);
+  color: #5a4800;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 2px 0 var(--amarillo-s);
+}
+
+.mesSeccion {
+  border-bottom: 1px solid var(--gris-borde);
+}
+.mesSeccion:last-child {
+  border-bottom: none;
+}
+.mesTituloRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px 8px;
+  background: var(--gris-bg);
+  border-bottom: 1px solid var(--gris-borde);
+}
+.mesTitulo {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.mesCount {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--texto-3);
+  background: var(--gris-card);
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--gris-borde);
+}
+
+.evListaItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--gris-borde);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.evListaItem:last-child {
+  border-bottom: none;
+}
+.evListaItem:hover {
+  background: var(--gris-bg);
+}
+
+.evFechaBox {
+  width: 42px;
+  height: 46px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.evDiaN {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1;
+}
+.evMesN {
+  font-size: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.evInfo {
+  flex: 1;
+  min-width: 0;
+}
+.evNombreL {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--texto);
+}
+.evMetaL {
+  display: flex;
+  gap: 8px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+.evChip {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 2px 9px;
+  border-radius: 10px;
+}
+
+.evRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+}
+.evEditBtn {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--gris-borde);
+  background: var(--gris-card);
+  color: var(--texto-2);
+  cursor: pointer;
+  font-family: inherit;
+}
+.evEstadoOk {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--verde);
+}
+.evEstadoDraft {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--amarillo-s);
+}
