@@ -7,7 +7,7 @@ export async function login(email: string, password: string) {
     const response = await api.post("/v1/auth/login", { email, password });
     const { user, token } = response.data.data;
     localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(user)); // nuevo
+    localStorage.setItem(USER_KEY, JSON.stringify(user)); 
     return { user, token };
 }
 
