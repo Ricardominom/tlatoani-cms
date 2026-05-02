@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Alumnos from "./pages/Alumnos";
 import Comunicados from "./pages/Comunicados";
 import Familias from "./pages/Familias";
+import Grupos from "./pages/Grupos";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           >
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/familias" element={<Familias />} />
+            <Route path="/grupos" element={<Grupos />} />
             <Route path="/alumnos" element={<Alumnos />} />
             <Route path="/comunicados" element={<Comunicados />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
