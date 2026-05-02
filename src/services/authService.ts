@@ -11,12 +11,11 @@ export async function login(email: string, password: string) {
     return { user, token };
 }
 
-export async function logout(token: string) {
+export async function logout() {
     try {
         await api.post(
             "/v1/auth/logout",
             {},
-            { headers: { Authorization: `Bearer ${token}` } }
         );
     } catch { }
     localStorage.removeItem(TOKEN_KEY);
