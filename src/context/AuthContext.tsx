@@ -42,7 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function logout() {
-    if (token) await logoutService(token);
+    await logoutService();
     setToken(null);
     setUser(null);
   }
