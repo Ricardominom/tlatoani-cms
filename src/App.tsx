@@ -10,6 +10,7 @@ import Familias from "./pages/Familias";
 import Grupos from "./pages/Grupos";
 import Colegiaturas from "./pages/Colegiaturas";
 import Comida from "./pages/Comida";
+import Galeria from "./pages/Galeria";
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
             <Route path="/comunicados" element={<Comunicados />} />
             <Route path="/colegiaturas" element={<Colegiaturas />} />
             <Route path="/comida" element={<Comida />} />
+            <Route path="/galeria" element={<Galeria />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>
