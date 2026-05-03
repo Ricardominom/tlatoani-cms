@@ -1,5 +1,4 @@
 import { NavLink } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import styles from "./Sidebar.module.css";
 import { MdGridView, MdGroups, MdPerson, MdHomeWork, MdCreditCard, MdCampaign, MdChat, MdLunchDining, MdPhotoLibrary, MdCalendarMonth, MdManageAccounts } from "react-icons/md";
 
@@ -43,7 +42,6 @@ const NAV = [
   ];
 
 export default function Sidebar() {
-  const { user, logout } = useAuth();
 
   return (
     <aside className={styles.sidebar}>
@@ -119,18 +117,6 @@ export default function Sidebar() {
           ))}
         </div>
       ))}
-
-      <div className={styles.bottom}>
-        <div className={styles.userChip} onClick={logout}>
-          <div className={styles.userAv}>
-            {user?.name?.charAt(0).toUpperCase() ?? "U"}
-          </div>
-          <div>
-            <div className={styles.userName}>{user?.name ?? "Usuario"}</div>
-            <div className={styles.userRol}>Administrador</div>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 }
