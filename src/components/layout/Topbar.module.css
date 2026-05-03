@@ -86,3 +86,96 @@
   transform: translateY(1px);
   box-shadow: 0 2px 0 var(--amarillo-s);
 }
+
+/* ── AVATAR DROPDOWN ── */
+.avatarWrap {
+  position: relative;
+}
+
+.avatarBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--amarillo-light);
+  border: 2px solid var(--amarillo);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: #7a6200;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.avatarBtn:hover {
+  box-shadow: 0 0 0 3px var(--amarillo-light);
+}
+
+.dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--gris-borde);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+.ddHeader {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gris-borde);
+}
+
+.ddNombre {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.ddRol {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
+
+.ddItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-2);
+  cursor: pointer;
+  transition: background 0.1s;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+}
+
+.ddItem:hover {
+  background: var(--gris-bg);
+  color: var(--texto);
+}
+
+.ddDivider {
+  height: 1px;
+  background: var(--gris-borde);
+  margin: 2px 0;
+}
+
+.ddLogout {
+  color: var(--rojo);
+}
+
+.ddLogout:hover {
+  background: var(--rojo-light);
+  color: var(--rojo);
+}

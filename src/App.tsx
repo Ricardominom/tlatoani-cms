@@ -12,6 +12,7 @@ import Colegiaturas from "./pages/Colegiaturas";
 import Comida from "./pages/Comida";
 import Galeria from "./pages/Galeria";
 import Calendario from "./pages/Calendario";
+import Usuarios from "./pages/Usuarios";
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/comida" element={<Comida />} />
             <Route path="/galeria" element={<Galeria />} />
             <Route path="/calendario" element={<Calendario />} />
+            <Route path="/usuarios" element={<Usuarios />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Route>
         </Routes>
