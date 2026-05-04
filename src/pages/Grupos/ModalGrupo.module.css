@@ -246,3 +246,49 @@
 .offPos {
   left: 2px;
 }
+
+/* ── SELECTOR DE ANIMAL ── */
+.animalGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.animalOpt {
+  border-radius: 10px;
+  border: 2px solid var(--gris-borde);
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    transform 0.12s;
+  background: #fff;
+}
+
+.animalOpt:hover {
+  border-color: var(--amarillo);
+  transform: translateY(-1px);
+}
+
+.animalOptSel {
+  border-color: var(--amarillo) !important;
+  box-shadow: 0 0 0 3px var(--amarillo-light);
+}
+
+.animalBanner {
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.animalNombre {
+  display: block;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--texto);
+  padding: 5px 4px;
+  border-top: 1px solid var(--gris-borde);
+  background: #fff;
+}
