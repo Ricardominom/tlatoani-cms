@@ -1,4 +1,69 @@
 
+// TIPOS DE LA API
+
+export interface ApiLevel {
+    id: string;
+    name: string;
+    description: string | null;
+    order: number;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface ApiGroup {
+    id: number;
+    uuid: string;
+    level_id: number;
+    teacher_id: number | null;
+    name: string;
+    color: string;
+    icon_path: string | null;
+    entry_time: string | null;
+    dismissal_time: string | null;
+    monthly_fee: string;
+    capacity: number;
+    active: boolean;
+    created_at: string;
+    updated_at: string;
+    level?: ApiLevel;
+}
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    links: {
+        first: string;
+        last: string;
+        prev: string | null;
+        next: string | null;
+    };
+    meta: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    };
+}
+
+// TIPOS DE FORMULARIOS (modales)
+export interface NivelForm {
+    name: string;
+    description: string;
+    order: number;
+}
+
+export interface GrupoForm {
+    level_id: string;
+    name: string;
+    color: string;
+    entry_time: string;
+    dismissal_time: string;
+    monthly_fee: string;
+    capacity: number;
+    active: boolean;
+}
+
+// TIPOS DE UI (componente interno)
+
 export type StatusAsist = "Presente" | "Ausente" | "Retardo";
 export type FiltroAsist = "todos" | "presentes" | "ausentes";
 
@@ -11,49 +76,4 @@ export interface AlumnoGrupo {
     status: StatusAsist;
     ultimaBitacora: string;
     bitacoraAlerta?: boolean;
-}
-
-export interface Guia {
-    inicial: string;
-    nombre: string;
-    rol: string;
-    desde: string;
-    email: string;
-    avBg: string;
-    avColor: string;
-    avBorder: string;
-}
-
-export interface StatGrupo {
-    num: string;
-    lbl: string;
-    color: string;
-}
-
-export interface ConfigGrupo {
-    nivel: string;
-    horario: string;
-    capacidad: string;
-    cuota: string;
-}
-
-export interface ActividadGrupo {
-    color: string;
-    bold?: string;
-    texto: string;
-    hora: string;
-}
-
-export interface Grupo {
-    id: number;
-    nombre: string;
-    nivel: string;
-    guia: Guia;
-    totalAlumnos: number;
-    presentes: number;
-    ausentes: number;
-    alumnos: AlumnoGrupo[];
-    stats: StatGrupo[];
-    config: ConfigGrupo;
-    actividad: ActividadGrupo[];
 }

@@ -24,8 +24,7 @@ export default function Login() {
       await login(email, password);
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
-      const msg = err?.response?.data?.message;
-      setError(msg ?? "Correo o contraseña incorrectos.");
+      setError(err instanceof Error ? err.message : "Ocurrió un error inesperado");
     } finally {
       setLoading(false);
     }
