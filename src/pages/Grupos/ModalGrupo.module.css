@@ -12,8 +12,19 @@
   background: #fff;
   border-radius: 16px;
   width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+}
+
+.form {                                                                                                                                     
+    display: flex;
+    flex-direction: column;                                                                                                                   
+    flex: 1;                                                                                                                                  
+    min-height: 0;                                                                                                                            
+    overflow: hidden;                                                                                                                         
 }
 
 .header {
@@ -49,6 +60,9 @@
 
 .body {
   padding: 20px 22px;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .campo {

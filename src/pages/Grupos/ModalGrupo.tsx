@@ -94,7 +94,7 @@ export default function ModalGrupo({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.body}>
             {error && <div className={styles.error}>{error}</div>}
 
