@@ -5,6 +5,7 @@ import styles from "./Grupos.module.css";
 import type { ApiGroup, ApiLevel, FiltroAsist } from "./types";
 import { getGrupos, getNiveles } from "../../services/gruposService";
 import ModalNivel from "./ModalNivel";
+import ModalGrupo from "./ModalGrupo";
 
 function formatHorario(entry: string | null, dismissal: string | null) {
   if (!entry && !dismissal) return "—";
@@ -30,6 +31,8 @@ export default function Grupos() {
   const [filtroAsist, setFiltroAsist] = useState<FiltroAsist>("todos");
   const [modalNivelOpen, setModalNivelOpen] = useState(false);
   const [nivelEditando, setNivelEditando] = useState<ApiLevel | null>(null);
+  const [modalGrupoOpen, setModalGrupoOpen] = useState(false);
+  const [grupoEditando, setGrupoEditando] = useState<ApiGroup | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -101,7 +104,13 @@ export default function Grupos() {
           >
             <MdSettings size={13} /> Gestionar niveles
           </button>
-          <button className={styles.btnP}>
+          <button
+            className={styles.btnP}
+            onClick={() => {
+              setGrupoEditando(null);
+              setModalGrupoOpen(true);
+            }}
+          >
             <MdAdd size={13} /> Nuevo grupo
           </button>
         </div>
@@ -235,7 +244,13 @@ export default function Grupos() {
               {grupoSel.level?.name ?? "Sin nivel"}
             </span>
             <div className={styles.headerBtns} style={{ marginLeft: "auto" }}>
-              <button className={styles.btnH}>
+              <button
+                className={styles.btnH}
+                onClick={() => {
+                  setGrupoEditando(grupoSel);
+                  setModalGrupoOpen(true);
+                }}
+              >
                 <MdEdit size={12} /> Editar
               </button>
               <button className={styles.btnDanger}>
@@ -367,6 +382,16 @@ export default function Grupos() {
         onClose={() => setModalNivelOpen(false)}
         onSuccess={() => {
           setModalNivelOpen(false);
+          recargar();
+        }}
+      />
+      <ModalGrupo
+        open={modalGrupoOpen}
+        grupo={grupoEditando}
+        niveles={niveles}
+        onClose={() => setModalGrupoOpen(false)}
+        onSuccess={() => {
+          setModalGrupoOpen(false);
           recargar();
         }}
       />
