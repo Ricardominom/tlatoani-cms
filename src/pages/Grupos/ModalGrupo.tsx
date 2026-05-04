@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { MdClose } from "react-icons/md";
 import styles from "./ModalGrupo.module.css";
+import { GRUPOS } from "../../components/ui/AnimalKit";
 import type { ApiGroup, ApiLevel, GrupoForm } from "./types";
 import { crearGrupo, actualizarGrupo } from "../../services/gruposService";
 
@@ -15,7 +16,7 @@ interface Props {
 const FORM_VACIO: GrupoForm = {
   level_id: "",
   name: "",
-  color: "#4DB6AC",
+  color: "#F5C800",
   entry_time: "08:00",
   dismissal_time: "13:00",
   monthly_fee: "3000",
@@ -54,6 +55,13 @@ export default function ModalGrupo({
 
   if (!open) return null;
 
+  const set = <K extends keyof GrupoForm>(key: K, val: GrupoForm[K]) =>
+    setForm((f) => ({ ...f, [key]: val }));
+
+  function seleccionarAnimal(nombre: string, color: string) {
+    setForm((f) => ({ ...f, name: nombre, color }));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -73,9 +81,6 @@ export default function ModalGrupo({
       setLoading(false);
     }
   }
-
-  const set = <K extends keyof GrupoForm>(key: K, val: GrupoForm[K]) =>
-    setForm((f) => ({ ...f, [key]: val }));
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -111,16 +116,26 @@ export default function ModalGrupo({
               </select>
             </div>
 
-            {/* NOMBRE */}
+            {/* SELECTOR DE ANIMAL */}
             <div className={styles.campo}>
-              <span className={styles.label}>Nombre del grupo *</span>
-              <input
-                className={styles.input}
-                placeholder="ej. Abejas"
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
-                required
-              />
+              <span className={styles.label}>Animal del grupo *</span>
+              <div className={styles.animalGrid}>
+                {GRUPOS.map((g) => (
+                  <div
+                    key={g.name}
+                    className={`${styles.animalOpt} ${form.name === g.name ? styles.animalOptSel : ""}`}
+                    onClick={() => seleccionarAnimal(g.name, g.color)}
+                  >
+                    <div
+                      className={styles.animalBanner}
+                      style={{ background: g.light }}
+                    >
+                      <g.Icon size={36} />
+                    </div>
+                    <span className={styles.animalNombre}>{g.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* HORARIO */}
@@ -173,7 +188,7 @@ export default function ModalGrupo({
               </div>
             </div>
 
-            {/* COLOR */}
+            {/* COLOR — se autosetea al elegir animal, editable manualmente */}
             <div className={styles.campo}>
               <span className={styles.label}>Color del grupo</span>
               <div className={styles.colorWrap}>
@@ -187,7 +202,7 @@ export default function ModalGrupo({
                   className={styles.colorHex}
                   value={form.color}
                   onChange={(e) => set("color", e.target.value)}
-                  placeholder="#4DB6AC"
+                  placeholder="#F5C800"
                   maxLength={7}
                 />
               </div>
@@ -218,7 +233,7 @@ export default function ModalGrupo({
             <button
               type="submit"
               className={styles.btnSubmit}
-              disabled={loading || !form.name.trim() || !form.level_id}
+              disabled={loading || !form.name || !form.level_id}
             >
               {loading
                 ? "Guardando…"
