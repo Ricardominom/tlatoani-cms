@@ -4,6 +4,7 @@ import { AnimalIcon, getGrupo } from "../../components/ui/AnimalKit";
 import styles from "./Grupos.module.css";
 import type { ApiGroup, ApiLevel, FiltroAsist } from "./types";
 import { getGrupos, getNiveles } from "../../services/gruposService";
+import ModalNivel from "./ModalNivel";
 
 function formatHorario(entry: string | null, dismissal: string | null) {
   if (!entry && !dismissal) return "—";
@@ -27,6 +28,8 @@ export default function Grupos() {
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [filtroAsist, setFiltroAsist] = useState<FiltroAsist>("todos");
+  const [modalNivelOpen, setModalNivelOpen] = useState(false);
+  const [nivelEditando, setNivelEditando] = useState<ApiLevel | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -65,6 +68,20 @@ export default function Grupos() {
     );
   }
 
+  function recargar() {
+    setCargando(true);
+    Promise.all([
+      getGrupos({ active: true, per_page: 50 }),
+      getNiveles({ order_by: "order", order_direction: "asc", per_page: 100 })
+    ])
+      .then(([gruposRes, nivelesRes]) => {
+        setGrupos(gruposRes.data);
+        setNiveles(nivelesRes.data);
+      })
+      .catch((err) => setErrorMsg(err.message))
+      .finally(() => setCargando(false));
+  }
+
   return (
     <div className={styles.content}>
       {/* ── HEADER ── */}
@@ -75,7 +92,13 @@ export default function Grupos() {
           {grupos.length} grupos · {niveles.length} niveles
         </span>
         <div className={styles.headerBtns}>
-          <button className={styles.btnH}>
+          <button
+            className={styles.btnH}
+            onClick={() => {
+              setNivelEditando(null);
+              setModalNivelOpen(true);
+            }}
+          >
             <MdSettings size={13} /> Gestionar niveles
           </button>
           <button className={styles.btnP}>
@@ -338,6 +361,15 @@ export default function Grupos() {
           </div>
         </>
       )}
+      <ModalNivel
+        open={modalNivelOpen}
+        nivel={nivelEditando}
+        onClose={() => setModalNivelOpen(false)}
+        onSuccess={() => {
+          setModalNivelOpen(false);
+          recargar();
+        }}
+      />
     </div>
   );
 }
