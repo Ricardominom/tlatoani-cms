@@ -516,3 +516,110 @@
   border-radius: 5px;
   cursor: pointer;
 }
+/* ── HEADER DE PÁGINA ── */
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.btnH {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0 12px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--gris-borde);
+  background: var(--gris-card);
+  color: var(--texto);
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+}
+
+.btnH:hover {
+  background: var(--gris-bg);
+}
+
+.btnDanger {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 0 12px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--rojo-light);
+  background: var(--rojo-light);
+  color: var(--rojo);
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+}
+
+/* ── SECCIÓN POR NIVEL ── */
+.nivelSeccion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nivelHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nivelTitulo {
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--texto-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.nivelDesc {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--texto-3);
+}
+
+.nivelCount {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--texto-3);
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  border-radius: 20px;
+  padding: 1px 8px;
+  margin-left: auto;
+}
+
+/* ── EMPTY / LOADING ── */
+.stateBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+
+.emptyAlumnos {
+  text-align: center;
+  padding: 28px 16px;
+  color: var(--texto-3);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--gris-bg);
+  border-radius: 10px;
+  border: 1px dashed var(--gris-borde);
+}
