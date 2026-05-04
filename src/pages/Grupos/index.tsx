@@ -84,6 +84,40 @@ export default function Grupos() {
         </div>
       </div>
 
+      {grupos.length === 0 && niveles.length === 0 && (
+        <div className={styles.emptyAlumnos} style={{ padding: "48px 24px" }}>
+          <div style={{ fontSize: 28, marginBottom: 8 }}>🏫</div>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 800,
+              color: "var(--texto-2)",
+              marginBottom: 4
+            }}
+          >
+            No hay grupos registrados
+          </div>
+          <div style={{ fontSize: 11, fontWeight: 600 }}>
+            Comienza creando un nivel y luego asigna grupos a él
+          </div>
+        </div>
+      )}
+
+      {grupos.length === 0 && niveles.length > 0 && (
+        <div className={styles.emptyAlumnos} style={{ padding: "48px 24px" }}>
+          <div
+            style={{
+              fontSize: 13,
+              fontWeight: 800,
+              color: "var(--texto-2)",
+              marginBottom: 4
+            }}
+          >
+            Niveles creados — ahora agrega grupos
+          </div>
+        </div>
+      )}
+
       {/* ── GRUPOS POR NIVEL ── */}
       {gruposPorNivel.map(({ nivel, grupos: grs }) => (
         <div key={nivel.id} className={styles.nivelSeccion}>
