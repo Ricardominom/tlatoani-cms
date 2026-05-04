@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { MdComputer, MdPhoneIphone } from "react-icons/md";
 import { useAuth } from "../../context/AuthContext";
 import styles from "./MiCuenta.module.css";
 
