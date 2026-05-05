@@ -14,7 +14,7 @@ interface Props {
 }
 
 const FORM_VACIO: GrupoForm = {
-  level_id: "",
+  level_uuid: "",
   name: "",
   color: "#F5C800",
   entry_time: "08:00",
@@ -38,17 +38,18 @@ export default function ModalGrupo({
   useEffect(() => {
     if (grupo) {
       setForm({
-        level_id: grupo.level?.id ?? "",
-        name: grupo.name,
-        color: grupo.color,
-        entry_time: grupo.entry_time?.slice(0, 5) ?? "08:00",
-        dismissal_time: grupo.dismissal_time?.slice(0, 5) ?? "13:00",
-        monthly_fee: grupo.monthly_fee,
-        capacity: grupo.capacity,
-        active: grupo.active
-      });
+      level_uuid: grupo.level?.id ?? "",
+      name: grupo.name,
+      color: grupo.color,
+      icon_path: grupo.icon_path ?? "",
+      entry_time: grupo.entry_time?.slice(0, 5) ?? "08:00",
+      dismissal_time: grupo.dismissal_time?.slice(0, 5) ?? "13:00",
+      monthly_fee: grupo.monthly_fee,
+      capacity: grupo.capacity,
+      active: grupo.active
+    });
     } else {
-      setForm({ ...FORM_VACIO, level_id: niveles[0]?.id ?? "" });
+      setForm({ ...FORM_VACIO, level_uuid: niveles[0]?.id ?? "" });
     }
     setError(null);
   }, [grupo, open, niveles]);
@@ -59,7 +60,7 @@ export default function ModalGrupo({
     setForm((f) => ({ ...f, [key]: val }));
 
   function seleccionarAnimal(nombre: string, color: string) {
-    setForm((f) => ({ ...f, name: nombre, color }));
+    setForm((f) => ({ ...f, color, icon_path: nombre }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -103,8 +104,8 @@ export default function ModalGrupo({
               <span className={styles.label}>Nivel *</span>
               <select
                 className={styles.input}
-                value={form.level_id}
-                onChange={(e) => set("level_id", e.target.value)}
+                value={form.level_uuid}
+                onChange={(e) => set("level_uuid", e.target.value)}
                 required
               >
                 <option value="">Selecciona un nivel…</option>
@@ -137,6 +138,19 @@ export default function ModalGrupo({
                 ))}
               </div>
             </div>
+
+  {/* NOMBRE DEL GRUPO */}
+  <div className={styles.campo}>
+    <span className={styles.label}>Nombre del grupo *</span>
+    <input
+      className={styles.input}
+      type="text"
+      placeholder="ej. Maternal A, Grupo Azul…"
+      value={form.name}
+      onChange={(e) => set("name", e.target.value)}
+      required
+    />
+  </div>
 
             {/* HORARIO */}
             <div className={styles.g2}>
@@ -233,7 +247,7 @@ export default function ModalGrupo({
             <button
               type="submit"
               className={styles.btnSubmit}
-              disabled={loading || !form.name || !form.level_id}
+              disabled={loading || !form.name || !form.level_uuid}
             >
               {loading
                 ? "Guardando…"

@@ -42,7 +42,7 @@ export default function Grupos() {
       .then(([gruposRes, nivelesRes]) => {
         setGrupos(gruposRes.data);
         setNiveles(nivelesRes.data);
-        if (gruposRes.data.length > 0) setSelectedUuid(gruposRes.data[0].uuid);
+        if (gruposRes.data.length > 0) setSelectedUuid(gruposRes.data[0].id);
       })
       .catch((err) => setErrorMsg(err.message))
       .finally(() => setCargando(false));
@@ -56,7 +56,7 @@ export default function Grupos() {
     }))
     .filter((n) => n.grupos.length > 0);
 
-  const grupoSel = grupos.find((g) => g.uuid === selectedUuid) ?? null;
+  const grupoSel = grupos.find((g) => g.id === selectedUuid) ?? null;
   const gc = grupoSel ? getGrupo(grupoSel.name) : null;
 
   if (cargando) {
@@ -166,17 +166,17 @@ export default function Grupos() {
               const g = getGrupo(gr.name);
               return (
                 <div
-                  key={gr.uuid}
-                  className={`${styles.grupoCard} ${gr.uuid === selectedUuid ? styles.grupoCardSel : ""}`}
+                  key={gr.id}
+                  className={`${styles.grupoCard} ${gr.id === selectedUuid ? styles.grupoCardSel : ""}`}
                   onClick={() => {
-                    setSelectedUuid(gr.uuid);
+                    setSelectedUuid(gr.id);
                     setBusqueda("");
                     setFiltroAsist("todos");
                   }}
                 >
                   <div
                     className={styles.gcBanner}
-                    style={{ background: g?.light }}
+                    style={{ background: g?.light ?? "var(--gris-bg)" }}
                   >
                     <AnimalIcon salon={gr.name} size={48} />
                   </div>
@@ -367,7 +367,7 @@ export default function Grupos() {
                     <span className={styles.configLbl}>Color</span>
                     <div
                       className={styles.colorDot}
-                      style={{ background: grupoSel.color }}
+                      style={{ background: gc?.color ?? "#E5E5E5" }}
                     />
                   </div>
                 </div>

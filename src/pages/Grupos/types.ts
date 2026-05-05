@@ -11,7 +11,7 @@ export interface ApiLevel {
 }
 
 export interface ApiGroup {
-    id: number;
+    id: string;
     uuid: string;
     level_id: number;
     teacher_id: number | null;
@@ -52,9 +52,10 @@ export interface NivelForm {
 }
 
 export interface GrupoForm {
-    level_id: string;
+    level_uuid: string;
     name: string;
     color: string;
+    icon_path: string;
     entry_time: string;
     dismissal_time: string;
     monthly_fee: string;
