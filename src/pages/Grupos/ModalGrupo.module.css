@@ -321,3 +321,31 @@
   border-top: 1px solid var(--gris-borde);
   background: #fff;
 }
+
+.colorChips {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.colorChip {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.12s,
+    border-color 0.12s;
+  flex-shrink: 0;
+}
+
+.colorChip:hover {
+  transform: scale(1.15);
+}
+
+.colorChipSel {
+  border-color: var(--texto);
+  box-shadow: 0 0 0 2px var(--texto);
+  transform: scale(1.15);
+}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MdClose } from "react-icons/md";
+import { MdClose, MdCheck } from "react-icons/md";
 import styles from "./ModalGrupo.module.css";
 import { GRUPOS } from "../../components/ui/AnimalKit";
 import type { ApiGroup, ApiLevel, GrupoForm } from "./types";
@@ -38,16 +38,16 @@ export default function ModalGrupo({
   useEffect(() => {
     if (grupo) {
       setForm({
-      level_uuid: grupo.level?.id ?? "",
-      name: grupo.name,
-      color: grupo.color,
-      icon_path: grupo.icon_path ?? "",
-      entry_time: grupo.entry_time?.slice(0, 5) ?? "08:00",
-      dismissal_time: grupo.dismissal_time?.slice(0, 5) ?? "13:00",
-      monthly_fee: grupo.monthly_fee,
-      capacity: grupo.capacity,
-      active: grupo.active
-    });
+        level_uuid: grupo.level?.id ?? "",
+        name: grupo.name,
+        color: grupo.color,
+        icon_path: grupo.icon_path ?? "",
+        entry_time: grupo.entry_time?.slice(0, 5) ?? "08:00",
+        dismissal_time: grupo.dismissal_time?.slice(0, 5) ?? "13:00",
+        monthly_fee: grupo.monthly_fee,
+        capacity: grupo.capacity,
+        active: grupo.active
+      });
     } else {
       setForm({ ...FORM_VACIO, level_uuid: niveles[0]?.id ?? "" });
     }
@@ -132,6 +132,11 @@ export default function ModalGrupo({
                       style={{ background: g.light }}
                     >
                       <g.Icon size={36} />
+                      {form.icon_path === g.name && (
+                        <div className={styles.checkMark}>
+                          <MdCheck size={10} color="#FFF" />
+                        </div>
+                      )}
                     </div>
                     <span className={styles.animalNombre}>{g.name}</span>
                   </div>
@@ -139,18 +144,18 @@ export default function ModalGrupo({
               </div>
             </div>
 
-  {/* NOMBRE DEL GRUPO */}
-  <div className={styles.campo}>
-    <span className={styles.label}>Nombre del grupo *</span>
-    <input
-      className={styles.input}
-      type="text"
-      placeholder="ej. Maternal A, Grupo Azul…"
-      value={form.name}
-      onChange={(e) => set("name", e.target.value)}
-      required
-    />
-  </div>
+            {/* NOMBRE DEL GRUPO */}
+            <div className={styles.campo}>
+              <span className={styles.label}>Nombre del grupo *</span>
+              <input
+                className={styles.input}
+                type="text"
+                placeholder="ej. Maternal A, Grupo Azul…"
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                required
+              />
+            </div>
 
             {/* HORARIO */}
             <div className={styles.g2}>
@@ -202,9 +207,21 @@ export default function ModalGrupo({
               </div>
             </div>
 
-            {/* COLOR — se autosetea al elegir animal, editable manualmente */}
+            {/* COLOR */}
             <div className={styles.campo}>
               <span className={styles.label}>Color del grupo</span>
+              <div className={styles.colorChips}>
+                {GRUPOS.map((g) => (
+                  <button
+                    key={g.name}
+                    type="button"
+                    className={`${styles.colorChip} ${form.color === g.color ? styles.colorChipSel : ""}`}
+                    style={{ background: g.color }}
+                    onClick={() => set("color", g.color)}
+                    title={g.name}
+                  />
+                ))}
+              </div>
               <div className={styles.colorWrap}>
                 <input
                   className={styles.colorInput}
