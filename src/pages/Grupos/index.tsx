@@ -4,8 +4,8 @@ import { AnimalIcon, getGrupo } from "../../components/ui/AnimalKit";
 import styles from "./Grupos.module.css";
 import type { ApiGroup, ApiLevel, FiltroAsist } from "./types";
 import { getGrupos, getNiveles } from "../../services/gruposService";
-import ModalNivel from "./ModalNivel";
 import ModalGrupo from "./ModalGrupo";
+import ModalGestionNiveles from "./ModalGestionNiveles";
 
 function formatHorario(entry: string | null, dismissal: string | null) {
   if (!entry && !dismissal) return "—";
@@ -30,7 +30,6 @@ export default function Grupos() {
   const [busqueda, setBusqueda] = useState("");
   const [filtroAsist, setFiltroAsist] = useState<FiltroAsist>("todos");
   const [modalNivelOpen, setModalNivelOpen] = useState(false);
-  const [nivelEditando, setNivelEditando] = useState<ApiLevel | null>(null);
   const [modalGrupoOpen, setModalGrupoOpen] = useState(false);
   const [grupoEditando, setGrupoEditando] = useState<ApiGroup | null>(null);
 
@@ -98,7 +97,6 @@ export default function Grupos() {
           <button
             className={styles.btnH}
             onClick={() => {
-              setNivelEditando(null);
               setModalNivelOpen(true);
             }}
           >
@@ -183,7 +181,7 @@ export default function Grupos() {
                   <div className={styles.gcBody}>
                     <div className={styles.gcNombre}>
                       {gr.name}
-                      {gr.uuid === selectedUuid && (
+                      {gr.id === selectedUuid && (
                         <span className={styles.gcSelBadge}>Seleccionado</span>
                       )}
                     </div>
@@ -376,15 +374,11 @@ export default function Grupos() {
           </div>
         </>
       )}
-      <ModalNivel
-        open={modalNivelOpen}
-        nivel={nivelEditando}
-        onClose={() => setModalNivelOpen(false)}
-        onSuccess={() => {
-          setModalNivelOpen(false);
-          recargar();
-        }}
-      />
+      <ModalGestionNiveles
+    open={modalNivelOpen}
+    onClose={() => setModalNivelOpen(false)}
+    onSuccess={recargar}
+  />
       <ModalGrupo
         open={modalGrupoOpen}
         grupo={grupoEditando}
