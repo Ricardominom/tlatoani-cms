@@ -124,7 +124,7 @@ export default function ModalGrupo({
                 {GRUPOS.map((g) => (
                   <div
                     key={g.name}
-                    className={`${styles.animalOpt} ${form.name === g.name ? styles.animalOptSel : ""}`}
+                    className={`${styles.animalOpt} ${form.icon_path === g.name ? styles.animalOptSel : ""}`}
                     onClick={() => seleccionarAnimal(g.name, g.color)}
                   >
                     <div
