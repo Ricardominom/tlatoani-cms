@@ -17,6 +17,7 @@ const FORM_VACIO: GrupoForm = {
   level_uuid: "",
   name: "",
   color: "#F5C800",
+  icon_path: "",
   entry_time: "08:00",
   dismissal_time: "13:00",
   monthly_fee: "3000",
@@ -69,7 +70,7 @@ export default function ModalGrupo({
     setError(null);
     try {
       if (grupo) {
-        await actualizarGrupo(grupo.uuid, form);
+        await actualizarGrupo(grupo.id, form);
       } else {
         await crearGrupo(form);
       }
