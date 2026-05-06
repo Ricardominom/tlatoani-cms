@@ -19,12 +19,12 @@
   overflow: hidden;
 }
 
-.form {                                                                                                                                     
-    display: flex;
-    flex-direction: column;                                                                                                                   
-    flex: 1;                                                                                                                                  
-    min-height: 0;                                                                                                                            
-    overflow: hidden;                                                                                                                         
+.form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .header {
@@ -285,12 +285,27 @@
 }
 
 .animalOptSel {
-  border-color: var(--amarillo) !important;
-  box-shadow: 0 0 0 3px var(--amarillo-light);
+  border-color: var(--texto) !important;
+  box-shadow: 0 0 0 2px var(--texto);
+  transform: translateY(-2px);
 }
 
 .animalBanner {
+  position: relative;
   height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checkMark {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--texto);
   display: flex;
   align-items: center;
   justify-content: center;
