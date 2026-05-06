@@ -17,15 +17,13 @@ const FORM_VACIO: GrupoForm = {
   level_uuid: "",
   name: "",
   color: "#F5C800",
-  icon_path: "",
+  icon_path: null,
   entry_time: "08:00",
   dismissal_time: "13:00",
   monthly_fee: "3000",
   capacity: 25,
   active: true
 };
-
-const COLORES_KIT = new Set(GRUPOS.map((g) => g.color));
 
 export default function ModalGrupo({
   open,
@@ -44,7 +42,7 @@ export default function ModalGrupo({
         level_uuid: grupo.level?.id ?? "",
         name: grupo.name,
         color: grupo.color,
-        icon_path: grupo.icon_path ?? "",
+        icon_path: grupo.icon_path,
         entry_time: grupo.entry_time?.slice(0, 5) ?? "08:00",
         dismissal_time: grupo.dismissal_time?.slice(0, 5) ?? "13:00",
         monthly_fee: grupo.monthly_fee,
@@ -62,12 +60,8 @@ export default function ModalGrupo({
   const set = <K extends keyof GrupoForm>(key: K, val: GrupoForm[K]) =>
     setForm((f) => ({ ...f, [key]: val }));
 
-  function seleccionarAnimal(nombre: string, color: string) {
-    setForm((f) => ({
-      ...f,
-      icon_path: nombre,
-      color: COLORES_KIT.has(f.color) ? color : f.color
-    }));
+  function seleccionarAnimal(nombre: string) {
+    setForm((f) => ({ ...f, icon_path: nombre === f.icon_path ? null : nombre }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -132,7 +126,7 @@ export default function ModalGrupo({
                   <div
                     key={g.name}
                     className={`${styles.animalOpt} ${form.icon_path === g.name ? styles.animalOptSel : ""}`}
-                    onClick={() => seleccionarAnimal(g.name, g.color)}
+                    onClick={() => seleccionarAnimal(g.name)}
                   >
                     <div
                       className={styles.animalBanner}

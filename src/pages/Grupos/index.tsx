@@ -56,7 +56,7 @@ export default function Grupos() {
     .filter((n) => n.grupos.length > 0);
 
   const grupoSel = grupos.find((g) => g.id === selectedUuid) ?? null;
-  const gc = grupoSel ? getGrupo(grupoSel.name) : null;
+  const gc = grupoSel ? getGrupo(grupoSel.icon_path ?? '') : null;
 
   if (cargando) {
     return <div className={styles.stateBox}>Cargando grupos…</div>;
@@ -161,7 +161,7 @@ export default function Grupos() {
 
           <div className={styles.gruposGrid}>
             {grs.map((gr) => {
-              const g = getGrupo(gr.name);
+              const g = getGrupo(gr.icon_path ?? "");
               return (
                 <div
                   key={gr.id}
@@ -174,9 +174,9 @@ export default function Grupos() {
                 >
                   <div
                     className={styles.gcBanner}
-                    style={{ background: g?.light ?? "var(--gris-bg)" }}
+                    style={{ background: `${gr.color}22` }}
                   >
-                    <AnimalIcon salon={gr.name} size={48} />
+                    <AnimalIcon salon={gr.icon_path ?? ""} size={48} />
                   </div>
                   <div className={styles.gcBody}>
                     <div className={styles.gcNombre}>
