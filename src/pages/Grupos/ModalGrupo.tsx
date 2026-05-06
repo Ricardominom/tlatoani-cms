@@ -61,7 +61,12 @@ export default function ModalGrupo({
     setForm((f) => ({ ...f, [key]: val }));
 
   function seleccionarAnimal(nombre: string) {
-    setForm((f) => ({ ...f, icon_path: nombre === f.icon_path ? null : nombre }));
+    if (form.icon_path === nombre) {
+      setForm((f) => ({ ...f, icon_path: null }));
+    } else {
+      const animal = GRUPOS.find((g) => g.name === nombre);
+      setForm((f) => ({ ...f, icon_path: nombre, color: animal?.color ?? f.color }));
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {

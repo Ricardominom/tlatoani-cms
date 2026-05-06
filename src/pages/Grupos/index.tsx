@@ -96,9 +96,7 @@ export default function Grupos() {
         <div className={styles.headerBtns}>
           <button
             className={styles.btnH}
-            onClick={() => {
-              setModalNivelOpen(true);
-            }}
+            onClick={() => setModalNivelOpen(true)}
           >
             <MdSettings size={13} /> Gestionar niveles
           </button>
@@ -113,6 +111,23 @@ export default function Grupos() {
           </button>
         </div>
       </div>
+
+      {grupoSel && (
+        <div className={styles.headerBtns} style={{ justifyContent: "flex-end" }}>
+          <button
+            className={styles.btnH}
+            onClick={() => {
+              setGrupoEditando(grupoSel);
+              setModalGrupoOpen(true);
+            }}
+          >
+            <MdEdit size={13} /> Editar
+          </button>
+          <button className={styles.btnDanger}>
+            <MdDelete size={13} /> Eliminar
+          </button>
+        </div>
+      )}
 
       {grupos.length === 0 && niveles.length === 0 && (
         <div className={styles.emptyAlumnos} style={{ padding: "48px 24px" }}>
@@ -228,33 +243,22 @@ export default function Grupos() {
             <div
               className={styles.detalleDot}
               style={{
-                background: gc?.color,
-                boxShadow: `0 1px 0 ${gc?.shadow}`
+                background: grupoSel.color,
+                boxShadow: `0 1px 0 ${gc?.shadow ?? "var(--gris-borde)"}`
               }}
             />
             <span className={styles.detalleTitulo}>
-              Detalle — {grupoSel.name}
+              {grupoSel.name}
             </span>
             <span
               className={styles.nivelBadge}
-              style={{ background: gc?.light, color: gc?.dark }}
+              style={{
+                background: gc?.light ?? "var(--gris-bg)",
+                color: gc?.dark ?? "var(--texto-2)"
+              }}
             >
               {grupoSel.level?.name ?? "Sin nivel"}
             </span>
-            <div className={styles.headerBtns} style={{ marginLeft: "auto" }}>
-              <button
-                className={styles.btnH}
-                onClick={() => {
-                  setGrupoEditando(grupoSel);
-                  setModalGrupoOpen(true);
-                }}
-              >
-                <MdEdit size={12} /> Editar
-              </button>
-              <button className={styles.btnDanger}>
-                <MdDelete size={12} /> Eliminar
-              </button>
-            </div>
           </div>
 
           <div className={styles.detalleLayout}>
