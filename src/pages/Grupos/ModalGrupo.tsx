@@ -25,6 +25,8 @@ const FORM_VACIO: GrupoForm = {
   active: true
 };
 
+const COLORES_KIT = new Set(GRUPOS.map((g) => g.color));
+
 export default function ModalGrupo({
   open,
   grupo,
@@ -61,7 +63,11 @@ export default function ModalGrupo({
     setForm((f) => ({ ...f, [key]: val }));
 
   function seleccionarAnimal(nombre: string, color: string) {
-    setForm((f) => ({ ...f, color, icon_path: nombre }));
+    setForm((f) => ({
+      ...f,
+      icon_path: nombre,
+      color: COLORES_KIT.has(f.color) ? color : f.color
+    }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
