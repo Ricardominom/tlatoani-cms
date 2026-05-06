@@ -3,7 +3,7 @@ import { MdSearch, MdAdd, MdEdit, MdDelete, MdSettings } from "react-icons/md";
 import { AnimalIcon, getGrupo } from "../../components/ui/AnimalKit";
 import styles from "./Grupos.module.css";
 import type { ApiGroup, ApiLevel, FiltroAsist } from "./types";
-import { getGrupos, getNiveles } from "../../services/gruposService";
+import { getGrupos, getNiveles, eliminarGrupo } from "../../services/gruposService";
 import ModalGrupo from "./ModalGrupo";
 import ModalGestionNiveles from "./ModalGestionNiveles";
 
@@ -32,6 +32,8 @@ export default function Grupos() {
   const [modalNivelOpen, setModalNivelOpen] = useState(false);
   const [modalGrupoOpen, setModalGrupoOpen] = useState(false);
   const [grupoEditando, setGrupoEditando] = useState<ApiGroup | null>(null);
+  const [eliminando, setEliminando] = useState(false);
+  const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -68,6 +70,22 @@ export default function Grupos() {
         {errorMsg}
       </div>
     );
+  }
+
+  async function handleEliminar() {
+    if (!grupoSel) return;
+    if (!window.confirm(`¿Eliminar el grupo "${grupoSel.name}"? Esta acción no se puede deshacer.`)) return;
+    setEliminando(true);
+    setErrorEliminar(null);
+    try {
+      await eliminarGrupo(grupoSel.id);
+      setSelectedUuid(null);
+      recargar();
+    } catch (err) {
+      setErrorEliminar(err instanceof Error ? err.message : "No se pudo eliminar el grupo.");
+    } finally {
+      setEliminando(false);
+    }
   }
 
   function recargar() {
@@ -123,9 +141,19 @@ export default function Grupos() {
           >
             <MdEdit size={13} /> Editar
           </button>
-          <button className={styles.btnDanger}>
-            <MdDelete size={13} /> Eliminar
+          <button
+            className={styles.btnDanger}
+            onClick={handleEliminar}
+            disabled={eliminando}
+          >
+            <MdDelete size={13} /> {eliminando ? "Eliminando…" : "Eliminar"}
           </button>
+        </div>
+      )}
+
+      {errorEliminar && (
+        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--rojo)", background: "var(--rojo-light)", borderRadius: 8, padding: "8px 14px" }}>
+          {errorEliminar}
         </div>
       )}
 
