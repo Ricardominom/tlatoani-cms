@@ -11,6 +11,7 @@ import {
 import ModalGrupo from "./ModalGrupo";
 import ModalGestionNiveles from "./ModalGestionNiveles";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import ModalAlumno from "../Alumnos/ModalAlumno";
 
 function formatHorario(entry: string | null, dismissal: string | null) {
   if (!entry && !dismissal) return "—";
@@ -39,6 +40,7 @@ export default function Grupos() {
   const [grupoEditando, setGrupoEditando] = useState<ApiGroup | null>(null);
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
   const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
+  const [modalAgregarAlumnoOpen, setModalAgregarAlumnoOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -306,7 +308,10 @@ export default function Grupos() {
                     Capacidad máx. {grupoSel.capacity} alumnos
                   </div>
                 </div>
-                <button className={styles.btnP}>
+                <button
+                  className={styles.btnP}
+                  onClick={() => setModalAgregarAlumnoOpen(true)}
+                >
                   <MdAdd size={11} /> Agregar alumno
                 </button>
               </div>
@@ -444,6 +449,13 @@ export default function Grupos() {
         mensaje={`¿Seguro que quieres eliminar "${grupoSel?.name}"? Esta acción no se puede deshacer.`}
         onConfirm={handleEliminar}
         onCancel={() => setConfirmEliminarOpen(false)}
+      />
+      <ModalAlumno
+        open={modalAgregarAlumnoOpen}
+        grupos={grupos}
+        defaultGroupUuid={grupoSel?.id}
+        onClose={() => setModalAgregarAlumnoOpen(false)}
+        onSuccess={() => setModalAgregarAlumnoOpen(false)}
       />
     </div>
   );
