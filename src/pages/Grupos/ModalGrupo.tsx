@@ -10,7 +10,7 @@ interface Props {
   grupo?: ApiGroup | null;
   niveles: ApiLevel[];
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (grupo: ApiGroup) => void;
 }
 
 const FORM_VACIO: GrupoForm = {
@@ -74,12 +74,13 @@ export default function ModalGrupo({
     setLoading(true);
     setError(null);
     try {
+      let grupoGuardado: ApiGroup;
       if (grupo) {
-        await actualizarGrupo(grupo.id, form);
+        grupoGuardado = await actualizarGrupo(grupo.id, form);
       } else {
-        await crearGrupo(form);
+        grupoGuardado = await crearGrupo(form);
       }
-      onSuccess();
+      onSuccess(grupoGuardado);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Ocurrió un error inesperado."

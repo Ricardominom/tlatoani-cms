@@ -75,21 +75,21 @@ export default function Grupos() {
   async function handleEliminar() {
     if (!grupoSel) return;
     if (!window.confirm(`¿Eliminar el grupo "${grupoSel.name}"? Esta acción no se puede deshacer.`)) return;
-    setEliminando(true);
-    setErrorEliminar(null);
+
+    const grupoEliminado = grupoSel;
+    setGrupos((prev) => prev.filter((g) => g.id !== grupoEliminado.id));
+    setSelectedUuid(null);
+
     try {
-      await eliminarGrupo(grupoSel.id);
-      setSelectedUuid(null);
-      recargar();
+      await eliminarGrupo(grupoEliminado.id);
     } catch (err) {
+      setGrupos((prev) => [...prev, grupoEliminado]);
+      setSelectedUuid(grupoEliminado.id);
       setErrorEliminar(err instanceof Error ? err.message : "No se pudo eliminar el grupo.");
-    } finally {
-      setEliminando(false);
     }
   }
 
   function recargar() {
-    setCargando(true);
     Promise.all([
       getGrupos({ active: true, per_page: 50 }),
       getNiveles({ order_by: "order", order_direction: "asc", per_page: 100 })
@@ -99,7 +99,6 @@ export default function Grupos() {
         setNiveles(nivelesRes.data);
       })
       .catch((err) => setErrorMsg(err.message))
-      .finally(() => setCargando(false));
   }
 
   return (
@@ -416,9 +415,16 @@ export default function Grupos() {
         grupo={grupoEditando}
         niveles={niveles}
         onClose={() => setModalGrupoOpen(false)}
-        onSuccess={() => {
+        onSuccess={(grupoGuardado) => {
           setModalGrupoOpen(false);
-          recargar();
+          setGrupos((prev) => {
+            const existe = prev.find((g) => g.id === grupoGuardado.id);
+            if (existe) {
+              return prev.map((g) => g.id === grupoGuardado.id ? grupoGuardado : g);
+            }
+            return [...prev, grupoGuardado];
+          });
+          setSelectedUuid(grupoGuardado.id);
         }}
       />
     </div>
