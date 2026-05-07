@@ -1,627 +1,104 @@
-/* ── CONTENIDO GENERAL ── */
-.content {
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 200;
   display: flex;
-  flex-direction: column;
-  gap: 18px;
+  align-items: center;
+  justify-content: center;
 }
 
-/* ── GRID DE CARDS DE GRUPOS ── */
-.gruposGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-}
-
-.grupoCard {
-  background: var(--gris-card);
+.modal {
+  background: #fff;
   border-radius: 16px;
-  border: 1px solid var(--gris-borde);
-  overflow: hidden;
-  cursor: pointer;
-  transition:
-    box-shadow 0.15s,
-    transform 0.12s;
-}
-.grupoCard:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
-}
-.grupoCardSel {
-  box-shadow:
-    0 0 0 2.5px var(--amarillo),
-    0 6px 20px rgba(245, 200, 0, 0.2) !important;
-  transform: translateY(-2px);
-}
-
-.gcBanner {
-  height: 72px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.gcBody {
-  padding: 13px 15px;
-}
-.gcNombre {
-  font-size: 15px;
-  font-weight: 900;
-  color: var(--texto);
-  margin-bottom: 2px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.gcSelBadge {
-  font-size: 9px;
-  font-weight: 900;
-  background: var(--amarillo);
-  color: #5a4800;
-  padding: 2px 8px;
-  border-radius: 20px;
-  box-shadow: 0 1px 0 var(--amarillo-s);
-}
-.gcNivel {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--texto-2);
-  margin-bottom: 10px;
-}
-.gcMaestra {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-bottom: 10px;
-}
-.gcMav {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 900;
-  flex-shrink: 0;
-}
-.gcMnombre {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--texto-2);
-}
-.gcStats {
-  display: flex;
-  gap: 8px;
-}
-.gcStat {
-  flex: 1;
+  width: 520px;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-}
-.gcNum {
-  font-size: 16px;
-  font-weight: 900;
-  color: var(--texto);
-  line-height: 1;
-}
-.gcLbl {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--texto-3);
-}
-
-/* ── CABECERA DEL DETALLE ── */
-.detalleHeader {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.detalleDot {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  flex-shrink: 0;
-}
-.detalleTitulo {
-  font-size: 13px;
-  font-weight: 900;
-  color: var(--texto);
-}
-.nivelBadge {
-  font-size: 10px;
-  font-weight: 900;
-  padding: 4px 11px;
-  border-radius: 20px;
-}
-
-/* ── LAYOUT DETALLE ── */
-.detalleLayout {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 16px;
-  align-items: start;
-}
-
-/* ── CARD BASE ── */
-.card {
-  background: var(--gris-card);
-  border-radius: 14px;
-  border: 1px solid var(--gris-borde);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   overflow: hidden;
 }
-.cardH {
-  padding: 13px 18px;
-  border-bottom: 1px solid var(--gris-borde);
+
+.form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-.cardT {
-  font-size: 13px;
-  font-weight: 900;
-  color: var(--texto);
-}
-.cardSub {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--texto-3);
-  margin-top: 2px;
-}
-.cardLnk {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--turquesa);
-  cursor: pointer;
-}
-.cardB {
-  padding: 14px 18px;
-}
-
-/* BTN INLINE */
-.btnP {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 900;
-  padding: 0 13px;
-  height: 30px;
-  border-radius: 9px;
-  border: none;
-  background: var(--amarillo);
-  color: #5a4800;
-  cursor: pointer;
-  font-family: "Nunito", sans-serif;
-  box-shadow: 0 2px 0 var(--amarillo-s);
-}
-.btnS {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 0 12px;
-  height: 30px;
-  border-radius: 9px;
-  border: 1px solid var(--gris-borde);
-  background: var(--gris-card);
-  color: var(--texto);
-  cursor: pointer;
-  font-family: "Nunito", sans-serif;
-  flex: 1;
-  justify-content: center;
-}
-.btnS:hover {
-  background: var(--gris-bg);
-}
-
-/* ── TABLA DE ALUMNOS ── */
-.searchRow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-.si {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  background: var(--gris-bg);
-  border-radius: 9px;
-  padding: 7px 11px;
-  border: 1px solid var(--gris-borde);
-  flex: 1;
-}
-.si input {
-  background: none;
-  border: none;
-  font-size: 12px;
-  font-family: "Nunito", sans-serif;
-  color: var(--texto);
-  font-weight: 600;
-  outline: none;
-  width: 100%;
-}
-.si input::placeholder {
-  color: var(--texto-3);
-}
-
-.filRow {
-  display: flex;
-  gap: 5px;
-}
-.fp {
-  font-size: 10px;
-  font-weight: 800;
-  padding: 5px 11px;
-  border-radius: 20px;
-  border: none;
-  cursor: pointer;
-  font-family: "Nunito", sans-serif;
-  white-space: nowrap;
-}
-.fpOn {
-  background: #1e1e1e;
-  color: var(--amarillo);
-}
-.fpOff {
-  background: var(--gris-bg);
-  color: var(--texto-2);
-  border: 1px solid var(--gris-borde);
-}
-.fpOk {
-  background: var(--verde-light);
-  color: var(--verde-s);
-}
-.fpAbs {
-  background: var(--rojo-light);
-  color: var(--rojo);
-}
-
-.tabla {
-  width: 100%;
-  border-collapse: collapse;
-}
-.tabla thead {
-  background: var(--gris-bg);
-}
-.tabla th {
-  padding: 8px 14px;
-  text-align: left;
-  font-size: 10px;
-  font-weight: 900;
-  color: var(--texto-2);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  padding: 18px 22px;
   border-bottom: 1px solid var(--gris-borde);
-  white-space: nowrap;
-}
-.tabla td {
-  padding: 11px 14px;
-  border-bottom: 1px solid var(--gris-borde);
-  vertical-align: middle;
-}
-.tabla tbody tr:last-child td {
-  border-bottom: none;
-}
-.tabla tbody tr:hover td {
-  background: var(--gris-bg);
-  cursor: pointer;
 }
 
-.alCell {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-}
-.alAv {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 900;
-  flex-shrink: 0;
-}
-.alNombre {
-  font-size: 12px;
+.titulo {
+  font-size: 14px;
   font-weight: 900;
   color: var(--texto);
 }
-.alEdad {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--texto-2);
-}
-.alFamilia {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--texto-2);
-}
-.stBadge {
-  font-size: 9px;
-  font-weight: 900;
-  padding: 3px 9px;
-  border-radius: 20px;
-}
-.bitNormal {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--texto-3);
-}
-.bitHoy {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--turquesa);
-}
-.bitAlerta {
-  font-size: 10px;
-  font-weight: 800;
-  color: var(--rojo);
-}
 
-.accCell {
-  display: flex;
-  gap: 5px;
-}
-.acBtn {
-  font-size: 10px;
-  font-weight: 800;
-  padding: 4px 10px;
+.closeBtn {
+  width: 28px;
+  height: 28px;
   border-radius: 8px;
   border: none;
-  cursor: pointer;
-  font-family: "Nunito", sans-serif;
-}
-.tablaFooter {
-  padding: 10px 0 0;
-  text-align: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--texto-3);
-}
-.tablaFooterLnk {
-  color: var(--turquesa);
-  cursor: pointer;
-}
-
-/* ── PANEL LATERAL ── */
-.infoStack {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.maestraCard {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
   background: var(--gris-bg);
-  border-radius: 10px;
-  border: 1px solid var(--gris-borde);
-}
-.mavFull {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  font-weight: 900;
-  flex-shrink: 0;
-}
-.mNombre {
-  font-size: 13px;
-  font-weight: 900;
-  color: var(--texto);
-}
-.mInfo {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--texto-2);
-  margin-top: 2px;
-}
-.mBtns {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.statsGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.smCard {
-  background: var(--gris-bg);
-  border-radius: 10px;
-  padding: 11px 12px;
-  border: 1px solid var(--gris-borde);
-}
-.smNum {
-  font-size: 20px;
-  font-weight: 900;
-  line-height: 1;
-  margin-bottom: 3px;
-}
-.smLbl {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--texto-3);
-}
-
-.configRow {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 9px 0;
-  border-bottom: 1px solid var(--gris-borde);
-}
-.configRow:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-.configLbl {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--texto);
-}
-.configVal {
-  font-size: 11px;
-  font-weight: 700;
   color: var(--texto-2);
 }
 
-.actItem {
-  display: flex;
-  gap: 9px;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--gris-borde);
+.closeBtn:hover {
+  background: var(--gris-borde);
 }
-.actItem:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-.actDot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  margin-top: 4px;
-}
-.actTxt {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--texto);
-  line-height: 1.4;
+
+.body {
+  padding: 20px 22px;
+  overflow-y: auto;
   flex: 1;
-}
-.actBold {
-  font-weight: 900;
-}
-.actHora {
-  font-size: 10px;
-  color: var(--texto-3);
-  font-weight: 600;
-  margin-top: 1px;
+  min-height: 0;
 }
 
-.colorDot {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-/* ── HEADER DE PÁGINA ── */
-.headerRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.headerBtns {
-  display: flex;
-  gap: 8px;
-}
-
-.btnH {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 0 12px;
-  height: 30px;
-  border-radius: 9px;
-  border: 1px solid var(--gris-borde);
-  background: var(--gris-card);
-  color: var(--texto);
-  cursor: pointer;
-  font-family: "Nunito", sans-serif;
-}
-
-.btnH:hover {
-  background: var(--gris-bg);
-}
-
-.btnDanger {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 0 12px;
-  height: 30px;
-  border-radius: 9px;
-  border: 1px solid var(--rojo-light);
-  background: var(--rojo-light);
-  color: var(--rojo);
-  cursor: pointer;
-  font-family: "Nunito", sans-serif;
-}
-
-/* ── SECCIÓN POR NIVEL ── */
-.nivelSeccion {
+.campo {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+.campo:last-child {
+  margin-bottom: 0;
 }
 
-.nivelHeader {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.nivelTitulo {
-  font-size: 11px;
-  font-weight: 900;
-  color: var(--texto-2);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.nivelDesc {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--texto-3);
-}
-
-.nivelCount {
+.label {
   font-size: 10px;
   font-weight: 800;
   color: var(--texto-3);
-  background: var(--gris-bg);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input {
+  padding: 9px 12px;
   border: 1px solid var(--gris-borde);
-  border-radius: 20px;
-  padding: 1px 8px;
-  margin-left: auto;
-}
-
-/* ── EMPTY / LOADING ── */
-.stateBox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--texto-3);
-}
-
-.emptyAlumnos {
-  text-align: center;
-  padding: 28px 16px;
-  color: var(--texto-3);
+  border-radius: 9px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--texto);
   background: var(--gris-bg);
-  border-radius: 10px;
-  border: 1px dashed var(--gris-borde);
+  outline: none;
+  font-family: "Nunito", sans-serif;
+  transition: border-color 0.15s;
+}
+
+.input:focus {
+  border-color: var(--amarillo);
+  background: #fff;
 }
 
 .textarea {
@@ -642,4 +119,110 @@
 .textarea:focus {
   border-color: var(--amarillo);
   background: #fff;
+}
+
+.error {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rojo);
+  background: var(--rojo-light);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--gris-borde);
+  background: var(--gris-bg);
+}
+
+.btnCancel {
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid var(--gris-borde);
+  background: #fff;
+  color: var(--texto-2);
+  font-family: "Nunito", sans-serif;
+}
+
+.btnCancel:hover {
+  background: var(--gris-borde);
+}
+
+.btnSubmit {
+  padding: 8px 18px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid var(--amarillo);
+  background: var(--amarillo);
+  color: #5a4800;
+  box-shadow: 0 2px 0 var(--amarillo-s);
+  font-family: "Nunito", sans-serif;
+}
+
+.btnSubmit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.g2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.toggleLbl {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.toggle {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.togOn {
+  background: var(--verde);
+}
+.togOff {
+  background: #d8d5ce;
+}
+
+.tThumb {
+  position: absolute;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  transition: left 0.2s;
+}
+
+.onPos {
+  left: 18px;
+}
+.offPos {
+  left: 2px;
 }
