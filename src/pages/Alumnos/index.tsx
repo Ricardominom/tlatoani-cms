@@ -97,7 +97,11 @@ export default function Alumnos() {
   async function handleEliminar() {
     if (!alumnoSel) return;
     const alumnoEliminado = alumnoSel;
-    setAlumnos((prev) => prev.filter((a) => a.id !== alumnoEliminado.id));
+    setAlumnos((prev) => {
+      const siguiente = prev.filter((a) => a.id !== alumnoEliminado.id);
+      _cacheAlumnos = siguiente;
+      return siguiente;
+    });
     setSelectedUuid(null);
     setConfirmEliminarOpen(false);
     try {
@@ -115,11 +119,11 @@ export default function Alumnos() {
     setModalAlumnoOpen(false);
     setAlumnos((prev) => {
       const existe = prev.find((a) => a.id === alumnoGuardado.id);
-      if (existe)
-        return prev.map((a) =>
-          a.id === alumnoGuardado.id ? alumnoGuardado : a
-        );
-      return [...prev, alumnoGuardado];
+      const siguiente = existe
+        ? prev.map((a) => (a.id === alumnoGuardado.id ? alumnoGuardado : a))
+        : [...prev, alumnoGuardado];
+      _cacheAlumnos = siguiente; // ← agregar
+      return siguiente;
     });
     setSelectedUuid(alumnoGuardado.id);
   }

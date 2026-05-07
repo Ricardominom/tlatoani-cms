@@ -135,6 +135,8 @@ export default function Grupos() {
       getNiveles({ order_by: "order", order_direction: "asc", per_page: 100 })
     ])
       .then(([gruposRes, nivelesRes]) => {
+        _cacheGrupos = gruposRes.data;   
+        _cacheNiveles = nivelesRes.data; 
         setGrupos(gruposRes.data);
         setNiveles(nivelesRes.data);
       })
