@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { MdSearch, MdAdd, MdEdit, MdDelete, MdSettings } from "react-icons/md";
 import { AnimalIcon, getGrupo } from "../../components/ui/AnimalKit";
 import styles from "./Grupos.module.css";
-import type { ApiGroup, ApiLevel, } from "./types";
+import type { ApiGroup, ApiLevel } from "./types";
 import {
   getGrupos,
   getNiveles,
@@ -30,18 +30,21 @@ function formatCuota(fee: string) {
 }
 
 function calcularEdad(birthDate: string): string {
-    const hoy = new Date();
-    const nac = new Date(birthDate + "T00:00:00");
-    let años = hoy.getFullYear() - nac.getFullYear();
-    const m = hoy.getMonth() - nac.getMonth();
-    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) años--;
-    return `${años} año${años !== 1 ? "s" : ""}`;
-  }
+  const hoy = new Date();
+  const nac = new Date(birthDate + "T00:00:00");
+  let años = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) años--;
+  return `${años} año${años !== 1 ? "s" : ""}`;
+}
+
+let _cacheGrupos: ApiGroup[] = [];
+let _cacheNiveles: ApiLevel[] = [];
 
 export default function Grupos() {
-  const [grupos, setGrupos] = useState<ApiGroup[]>([]);
-  const [niveles, setNiveles] = useState<ApiLevel[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const [grupos, setGrupos] = useState<ApiGroup[]>(_cacheGrupos);
+  const [niveles, setNiveles] = useState<ApiLevel[]>(_cacheNiveles);
+  const [cargando, setCargando] = useState(_cacheGrupos.length === 0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
@@ -51,7 +54,7 @@ export default function Grupos() {
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
   const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
   const [modalAgregarAlumnoOpen, setModalAgregarAlumnoOpen] = useState(false);
-  const [alumnosGrupo, setAlumnosGrupo] = useState<ApiStudent[]>([]);                                                                         
+  const [alumnosGrupo, setAlumnosGrupo] = useState<ApiStudent[]>([]);
   const [cargandoAlumnos, setCargandoAlumnos] = useState(false);
 
   useEffect(() => {
@@ -60,6 +63,8 @@ export default function Grupos() {
       getNiveles({ order_by: "order", order_direction: "asc", per_page: 100 })
     ])
       .then(([gruposRes, nivelesRes]) => {
+        _cacheGrupos = gruposRes.data;
+        _cacheNiveles = nivelesRes.data;
         setGrupos(gruposRes.data);
         setNiveles(nivelesRes.data);
         if (gruposRes.data.length > 0) setSelectedUuid(gruposRes.data[0].id);
@@ -89,9 +94,10 @@ export default function Grupos() {
 
   const grupoSel = grupos.find((g) => g.id === selectedUuid) ?? null;
   const gc = grupoSel ? getGrupo(grupoSel.icon_path ?? "") : null;
-  const alumnosFiltrados = alumnosGrupo.filter((a) =>
-    !busqueda ||
-    `${a.name} ${a.last_name}`.toLowerCase().includes(busqueda.toLowerCase())
+  const alumnosFiltrados = alumnosGrupo.filter(
+    (a) =>
+      !busqueda ||
+      `${a.name} ${a.last_name}`.toLowerCase().includes(busqueda.toLowerCase())
   );
 
   if (cargando) {
@@ -342,65 +348,77 @@ export default function Grupos() {
                 </button>
               </div>
               <div className={styles.cardB}>
-    <div className={styles.searchRow}>
-      <div className={styles.si}>
-        <MdSearch size={13} color="var(--texto-3)" />
-        <input
-          placeholder="Buscar alumno…"
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-        />
-      </div>
-    </div>
+                <div className={styles.searchRow}>
+                  <div className={styles.si}>
+                    <MdSearch size={13} color="var(--texto-3)" />
+                    <input
+                      placeholder="Buscar alumno…"
+                      value={busqueda}
+                      onChange={(e) => setBusqueda(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-    {cargandoAlumnos ? (
-      <div className={styles.emptyAlumnos}>Cargando alumnos…</div>
-    ) : alumnosFiltrados.length === 0 ? (
-      <div className={styles.emptyAlumnos}>
-        {busqueda ? "No se encontraron alumnos" : "Este grupo no tiene alumnos aún"}
-      </div>
-    ) : (
-      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        {alumnosFiltrados.map((a) => (
-          <div
-            key={a.id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "8px 4px",
-              borderBottom: "1px solid var(--gris-borde)"
-            }}
-          >
-            <div
-              className={styles.alAv}
-              style={{
-                background: gc?.light ?? "var(--gris-bg)",
-                color: gc?.dark ?? "var(--texto-2)",
-                border: `1.5px solid ${gc?.color ?? "var(--gris-borde)"}`
-              }}
-            >
-              {a.name.charAt(0).toUpperCase()}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div className={styles.alNombre}>{a.name} {a.last_name}</div>
-              <div className={styles.alEdad}>{calcularEdad(a.birth_date)}</div>
-            </div>
-            <span style={{
-              fontSize: 9,
-              fontWeight: 900,
-              padding: "2px 8px",
-              borderRadius: 20,
-              background: a.active ? "var(--verde-light)" : "var(--rojo-light)",
-              color: a.active ? "var(--verde-s)" : "var(--rojo)"
-            }}>
-              {a.active ? "Activo" : "Baja"}
-            </span>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
+                {cargandoAlumnos ? (
+                  <div className={styles.emptyAlumnos}>Cargando alumnos…</div>
+                ) : alumnosFiltrados.length === 0 ? (
+                  <div className={styles.emptyAlumnos}>
+                    {busqueda
+                      ? "No se encontraron alumnos"
+                      : "Este grupo no tiene alumnos aún"}
+                  </div>
+                ) : (
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 2 }}
+                  >
+                    {alumnosFiltrados.map((a) => (
+                      <div
+                        key={a.id}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "8px 4px",
+                          borderBottom: "1px solid var(--gris-borde)"
+                        }}
+                      >
+                        <div
+                          className={styles.alAv}
+                          style={{
+                            background: gc?.light ?? "var(--gris-bg)",
+                            color: gc?.dark ?? "var(--texto-2)",
+                            border: `1.5px solid ${gc?.color ?? "var(--gris-borde)"}`
+                          }}
+                        >
+                          {a.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div className={styles.alNombre}>
+                            {a.name} {a.last_name}
+                          </div>
+                          <div className={styles.alEdad}>
+                            {calcularEdad(a.birth_date)}
+                          </div>
+                        </div>
+                        <span
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 900,
+                            padding: "2px 8px",
+                            borderRadius: 20,
+                            background: a.active
+                              ? "var(--verde-light)"
+                              : "var(--rojo-light)",
+                            color: a.active ? "var(--verde-s)" : "var(--rojo)"
+                          }}
+                        >
+                          {a.active ? "Activo" : "Baja"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* PANEL LATERAL */}
