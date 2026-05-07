@@ -3,7 +3,11 @@ import { MdSearch, MdAdd, MdEdit, MdDelete, MdSettings } from "react-icons/md";
 import { AnimalIcon, getGrupo } from "../../components/ui/AnimalKit";
 import styles from "./Grupos.module.css";
 import type { ApiGroup, ApiLevel, FiltroAsist } from "./types";
-import { getGrupos, getNiveles, eliminarGrupo } from "../../services/gruposService";
+import {
+  getGrupos,
+  getNiveles,
+  eliminarGrupo
+} from "../../services/gruposService";
 import ModalGrupo from "./ModalGrupo";
 import ModalGestionNiveles from "./ModalGestionNiveles";
 
@@ -58,7 +62,7 @@ export default function Grupos() {
     .filter((n) => n.grupos.length > 0);
 
   const grupoSel = grupos.find((g) => g.id === selectedUuid) ?? null;
-  const gc = grupoSel ? getGrupo(grupoSel.icon_path ?? '') : null;
+  const gc = grupoSel ? getGrupo(grupoSel.icon_path ?? "") : null;
 
   if (cargando) {
     return <div className={styles.stateBox}>Cargando grupos…</div>;
@@ -74,7 +78,12 @@ export default function Grupos() {
 
   async function handleEliminar() {
     if (!grupoSel) return;
-    if (!window.confirm(`¿Eliminar el grupo "${grupoSel.name}"? Esta acción no se puede deshacer.`)) return;
+    if (
+      !window.confirm(
+        `¿Eliminar el grupo "${grupoSel.name}"? Esta acción no se puede deshacer.`
+      )
+    )
+      return;
 
     const grupoEliminado = grupoSel;
     setGrupos((prev) => prev.filter((g) => g.id !== grupoEliminado.id));
@@ -85,7 +94,9 @@ export default function Grupos() {
     } catch (err) {
       setGrupos((prev) => [...prev, grupoEliminado]);
       setSelectedUuid(grupoEliminado.id);
-      setErrorEliminar(err instanceof Error ? err.message : "No se pudo eliminar el grupo.");
+      setErrorEliminar(
+        err instanceof Error ? err.message : "No se pudo eliminar el grupo."
+      );
     }
   }
 
@@ -98,7 +109,7 @@ export default function Grupos() {
         setGrupos(gruposRes.data);
         setNiveles(nivelesRes.data);
       })
-      .catch((err) => setErrorMsg(err.message))
+      .catch((err) => setErrorMsg(err.message));
   }
 
   return (
@@ -130,7 +141,10 @@ export default function Grupos() {
       </div>
 
       {grupoSel && (
-        <div className={styles.headerBtns} style={{ justifyContent: "flex-end" }}>
+        <div
+          className={styles.headerBtns}
+          style={{ justifyContent: "flex-end" }}
+        >
           <button
             className={styles.btnH}
             onClick={() => {
@@ -151,7 +165,16 @@ export default function Grupos() {
       )}
 
       {errorEliminar && (
-        <div style={{ fontSize: 11, fontWeight: 700, color: "var(--rojo)", background: "var(--rojo-light)", borderRadius: 8, padding: "8px 14px" }}>
+        <div
+          style={{
+            fontSize: 11,
+            fontWeight: 700,
+            color: "var(--rojo)",
+            background: "var(--rojo-light)",
+            borderRadius: 8,
+            padding: "8px 14px"
+          }}
+        >
           {errorEliminar}
         </div>
       )}
@@ -274,9 +297,7 @@ export default function Grupos() {
                 boxShadow: `0 1px 0 ${gc?.shadow ?? "var(--gris-borde)"}`
               }}
             />
-            <span className={styles.detalleTitulo}>
-              {grupoSel.name}
-            </span>
+            <span className={styles.detalleTitulo}>{grupoSel.name}</span>
             <span
               className={styles.nivelBadge}
               style={{
@@ -406,10 +427,11 @@ export default function Grupos() {
         </>
       )}
       <ModalGestionNiveles
-    open={modalNivelOpen}
-    onClose={() => setModalNivelOpen(false)}
-    onSuccess={recargar}
-  />
+        open={modalNivelOpen}
+        niveles={niveles}
+        onClose={() => setModalNivelOpen(false)}
+        onSuccess={(nuevosNiveles) => setNiveles(nuevosNiveles)}
+      />
       <ModalGrupo
         open={modalGrupoOpen}
         grupo={grupoEditando}
@@ -420,7 +442,9 @@ export default function Grupos() {
           setGrupos((prev) => {
             const existe = prev.find((g) => g.id === grupoGuardado.id);
             if (existe) {
-              return prev.map((g) => g.id === grupoGuardado.id ? grupoGuardado : g);
+              return prev.map((g) =>
+                g.id === grupoGuardado.id ? grupoGuardado : g
+              );
             }
             return [...prev, grupoGuardado];
           });

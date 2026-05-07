@@ -3,7 +3,6 @@ import { MdClose, MdEdit, MdDelete, MdAdd } from "react-icons/md";
 import styles from "./ModalGestionNiveles.module.css";
 import type { ApiLevel, NivelForm } from "./types";
 import {
-  getNiveles,
   crearNivel,
   actualizarNivel,
   eliminarNivel
@@ -11,19 +10,19 @@ import {
 
 interface Props {
   open: boolean;
+  niveles: ApiLevel[];
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (niveles: ApiLevel[]) => void;
 }
 
 const FORM_VACIO: NivelForm = { name: "", description: "", order: 1 };
 
 export default function ModalGestionNiveles({
   open,
+  niveles,
   onClose,
   onSuccess
 }: Props) {
-  const [niveles, setNiveles] = useState<ApiLevel[]>([]);
-  const [cargando, setCargando] = useState(false);
   const [editando, setEditando] = useState<ApiLevel | "nuevo" | null>(null);
   const [form, setForm] = useState<NivelForm>(FORM_VACIO);
   const [saving, setSaving] = useState(false);
@@ -31,8 +30,7 @@ export default function ModalGestionNiveles({
   const [eliminando, setEliminando] = useState<string | null>(null);
 
   useEffect(() => {
-    if (open) cargar();
-    else setEditando(null);
+    if (!open) setEditando(null);
   }, [open]);
 
   useEffect(() => {
@@ -48,26 +46,19 @@ export default function ModalGestionNiveles({
     setFormError(null);
   }, [editando]);
 
-  function cargar() {
-    setCargando(true);
-    getNiveles({ order_by: "order", order_direction: "asc", per_page: 100 })
-      .then((res) => setNiveles(res.data))
-      .finally(() => setCargando(false));
-  }
-
   async function handleGuardar(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
     setFormError(null);
     try {
       if (editando === "nuevo") {
-        await crearNivel(form);
+        const nuevo = await crearNivel(form);
+        onSuccess([...niveles, nuevo]);
       } else if (editando !== null) {
-        await actualizarNivel(editando.id, form);
+        const actualizando = await actualizarNivel(editando.id, form);
+        onSuccess(niveles.map((n) => n.id === editando.id ? actualizando : n));
       }
       setEditando(null);
-      cargar();
-      onSuccess();
     } catch (err) {
       setFormError(
         err instanceof Error ? err.message : "Ocurrió un error inesperado."
@@ -81,8 +72,7 @@ export default function ModalGestionNiveles({
     setEliminando(nivel.id);
     try {
       await eliminarNivel(nivel.id);
-      cargar();
-      onSuccess();
+      onSuccess(niveles.filter((n) => n.id !== nivel.id));
     } catch (err) {
       setFormError(
         err instanceof Error ? err.message : "No se pudo eliminar el nivel."
@@ -111,9 +101,7 @@ export default function ModalGestionNiveles({
         </div>
 
         <div className={styles.body}>
-          {cargando ? (
-            <div className={styles.loading}>Cargando niveles…</div>
-          ) : niveles.length === 0 ? (
+          {niveles.length === 0 ? (
             <div className={styles.empty}>No hay niveles creados aún</div>
           ) : (
             niveles.map((n) => {
