@@ -37,7 +37,6 @@ export default function Grupos() {
   const [modalNivelOpen, setModalNivelOpen] = useState(false);
   const [modalGrupoOpen, setModalGrupoOpen] = useState(false);
   const [grupoEditando, setGrupoEditando] = useState<ApiGroup | null>(null);
-  const [eliminando, setEliminando] = useState(false);
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
   const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
 
@@ -151,7 +150,6 @@ export default function Grupos() {
           <button
             className={styles.btnDanger}
             onClick={() => setConfirmEliminarOpen(true)}
-            disabled={eliminando}
           >
             <MdDelete size={13} /> Eliminar
           </button>

@@ -7,6 +7,7 @@ import {
   actualizarNivel,
   eliminarNivel
 } from "../../services/gruposService";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 interface Props {
   open: boolean;
@@ -28,6 +29,7 @@ export default function ModalGestionNiveles({
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [eliminando, setEliminando] = useState<string | null>(null);
+  const [nivelAEliminar, setNivelAEliminar] = useState<ApiLevel | null>(null);
 
   useEffect(() => {
     if (!open) setEditando(null);
@@ -56,7 +58,9 @@ export default function ModalGestionNiveles({
         onSuccess([...niveles, nuevo]);
       } else if (editando !== null) {
         const actualizando = await actualizarNivel(editando.id, form);
-        onSuccess(niveles.map((n) => n.id === editando.id ? actualizando : n));
+        onSuccess(
+          niveles.map((n) => (n.id === editando.id ? actualizando : n))
+        );
       }
       setEditando(null);
     } catch (err) {
@@ -68,11 +72,13 @@ export default function ModalGestionNiveles({
     }
   }
 
-  async function handleEliminar(nivel: ApiLevel) {
-    setEliminando(nivel.id);
+  async function handleEliminar() {
+    if (!nivelAEliminar) return;
+    setEliminando(nivelAEliminar.id);
+    setNivelAEliminar(null);
     try {
-      await eliminarNivel(nivel.id);
-      onSuccess(niveles.filter((n) => n.id !== nivel.id));
+      await eliminarNivel(nivelAEliminar.id);
+      onSuccess(niveles.filter((n) => n.id !== nivelAEliminar.id));
     } catch (err) {
       setFormError(
         err instanceof Error ? err.message : "No se pudo eliminar el nivel."
@@ -131,7 +137,7 @@ export default function ModalGestionNiveles({
                       </button>
                       <button
                         className={`${styles.btnAcc} ${styles.btnDel}`}
-                        onClick={() => handleEliminar(n)}
+                        onClick={() => setNivelAEliminar(n)}
                         disabled={eliminando === n.id}
                         title="Eliminar"
                       >
@@ -284,6 +290,13 @@ export default function ModalGestionNiveles({
           </button>
         </div>
       </div>
+      <ConfirmDialog
+        open={nivelAEliminar !== null}
+        titulo="Eliminar nivel"
+        mensaje={`¿Seguro que quieres eliminar "${nivelAEliminar?.name}"? Los grupos de este nivel quedarán sin nivel asignado.`}
+        onConfirm={handleEliminar}
+        onCancel={() => setNivelAEliminar(null)}
+      />
     </div>
   );
 }
