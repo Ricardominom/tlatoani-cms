@@ -10,6 +10,7 @@ import {
 } from "../../services/gruposService";
 import ModalGrupo from "./ModalGrupo";
 import ModalGestionNiveles from "./ModalGestionNiveles";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 function formatHorario(entry: string | null, dismissal: string | null) {
   if (!entry && !dismissal) return "—";
@@ -38,6 +39,7 @@ export default function Grupos() {
   const [grupoEditando, setGrupoEditando] = useState<ApiGroup | null>(null);
   const [eliminando, setEliminando] = useState(false);
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
+  const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -78,17 +80,10 @@ export default function Grupos() {
 
   async function handleEliminar() {
     if (!grupoSel) return;
-    if (
-      !window.confirm(
-        `¿Eliminar el grupo "${grupoSel.name}"? Esta acción no se puede deshacer.`
-      )
-    )
-      return;
-
     const grupoEliminado = grupoSel;
     setGrupos((prev) => prev.filter((g) => g.id !== grupoEliminado.id));
     setSelectedUuid(null);
-
+    setConfirmEliminarOpen(false);
     try {
       await eliminarGrupo(grupoEliminado.id);
     } catch (err) {
@@ -139,7 +134,6 @@ export default function Grupos() {
           </button>
         </div>
       </div>
-
       {grupoSel && (
         <div
           className={styles.headerBtns}
@@ -156,14 +150,13 @@ export default function Grupos() {
           </button>
           <button
             className={styles.btnDanger}
-            onClick={handleEliminar}
+            onClick={() => setConfirmEliminarOpen(true)}
             disabled={eliminando}
           >
-            <MdDelete size={13} /> {eliminando ? "Eliminando…" : "Eliminar"}
+            <MdDelete size={13} /> Eliminar
           </button>
         </div>
       )}
-
       {errorEliminar && (
         <div
           style={{
@@ -178,7 +171,6 @@ export default function Grupos() {
           {errorEliminar}
         </div>
       )}
-
       {grupos.length === 0 && niveles.length === 0 && (
         <div className={styles.emptyAlumnos} style={{ padding: "48px 24px" }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🏫</div>
@@ -197,7 +189,6 @@ export default function Grupos() {
           </div>
         </div>
       )}
-
       {grupos.length === 0 && niveles.length > 0 && (
         <div className={styles.emptyAlumnos} style={{ padding: "48px 24px" }}>
           <div
@@ -212,7 +203,6 @@ export default function Grupos() {
           </div>
         </div>
       )}
-
       {/* ── GRUPOS POR NIVEL ── */}
       {gruposPorNivel.map(({ nivel, grupos: grs }) => (
         <div key={nivel.id} className={styles.nivelSeccion}>
@@ -285,7 +275,6 @@ export default function Grupos() {
           </div>
         </div>
       ))}
-
       {/* ── DETALLE ── */}
       {grupoSel && (
         <>
@@ -450,6 +439,13 @@ export default function Grupos() {
           });
           setSelectedUuid(grupoGuardado.id);
         }}
+      />
+      <ConfirmDialog
+        open={confirmEliminarOpen}
+        titulo="Eliminar grupo"
+        mensaje={`¿Seguro que quieres eliminar "${grupoSel?.name}"? Esta acción no se puede deshacer.`}
+        onConfirm={handleEliminar}
+        onCancel={() => setConfirmEliminarOpen(false)}
       />
     </div>
   );
