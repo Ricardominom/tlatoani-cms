@@ -41,10 +41,13 @@ function formatFecha(dateStr: string): string {
   });
 }
 
+let _cacheAlumnos: ApiStudent[] = [];
+let _cacheGruposAlumnos: ApiGroup[] = [];
+
 export default function Alumnos() {
-  const [alumnos, setAlumnos] = useState<ApiStudent[]>([]);
-  const [grupos, setGrupos] = useState<ApiGroup[]>([]);
-  const [cargando, setCargando] = useState(true);
+  const [alumnos, setAlumnos] = useState<ApiStudent[]>(_cacheAlumnos);
+  const [grupos, setGrupos] = useState<ApiGroup[]>(_cacheGruposAlumnos);
+  const [cargando, setCargando] = useState(_cacheAlumnos.length === 0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [filtroGrupo, setFiltroGrupo] = useState<string | null>(null);
@@ -64,6 +67,8 @@ export default function Alumnos() {
       getGrupos({ active: true, per_page: 50 })
     ])
       .then(([alumnosRes, gruposRes]) => {
+        _cacheAlumnos = alumnosRes.data;
+        _cacheGruposAlumnos = gruposRes.data;
         setAlumnos(alumnosRes.data);
         setGrupos(gruposRes.data);
         if (alumnosRes.data.length > 0) setSelectedUuid(alumnosRes.data[0].id);
