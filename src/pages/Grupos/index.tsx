@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { MdSearch, MdAdd, MdEdit, MdDelete, MdSettings } from "react-icons/md";
 import { AnimalIcon, getGrupo } from "../../components/ui/AnimalKit";
 import styles from "./Grupos.module.css";
-import type { ApiGroup, ApiLevel, FiltroAsist } from "./types";
+import type { ApiGroup, ApiLevel, } from "./types";
 import {
   getGrupos,
   getNiveles,
@@ -12,6 +12,8 @@ import ModalGrupo from "./ModalGrupo";
 import ModalGestionNiveles from "./ModalGestionNiveles";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import ModalAlumno from "../Alumnos/ModalAlumno";
+import { getAlumnos } from "../../services/alumnosService";
+import type { ApiStudent } from "../Alumnos/types";
 
 function formatHorario(entry: string | null, dismissal: string | null) {
   if (!entry && !dismissal) return "—";
@@ -27,6 +29,15 @@ function formatCuota(fee: string) {
   return `$${parseFloat(fee).toLocaleString("es-MX")} MXN`;
 }
 
+function calcularEdad(birthDate: string): string {
+    const hoy = new Date();
+    const nac = new Date(birthDate + "T00:00:00");
+    let años = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) años--;
+    return `${años} año${años !== 1 ? "s" : ""}`;
+  }
+
 export default function Grupos() {
   const [grupos, setGrupos] = useState<ApiGroup[]>([]);
   const [niveles, setNiveles] = useState<ApiLevel[]>([]);
@@ -34,13 +45,14 @@ export default function Grupos() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
-  const [filtroAsist, setFiltroAsist] = useState<FiltroAsist>("todos");
   const [modalNivelOpen, setModalNivelOpen] = useState(false);
   const [modalGrupoOpen, setModalGrupoOpen] = useState(false);
   const [grupoEditando, setGrupoEditando] = useState<ApiGroup | null>(null);
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
   const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
   const [modalAgregarAlumnoOpen, setModalAgregarAlumnoOpen] = useState(false);
+  const [alumnosGrupo, setAlumnosGrupo] = useState<ApiStudent[]>([]);                                                                         
+  const [cargandoAlumnos, setCargandoAlumnos] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -56,6 +68,17 @@ export default function Grupos() {
       .finally(() => setCargando(false));
   }, []);
 
+  useEffect(() => {
+    if (!selectedUuid) {
+      setAlumnosGrupo([]);
+      return;
+    }
+    setCargandoAlumnos(true);
+    getAlumnos({ group_uuid: selectedUuid, per_page: 100 })
+      .then((res) => setAlumnosGrupo(res.data))
+      .finally(() => setCargandoAlumnos(false));
+  }, [selectedUuid]);
+
   const gruposPorNivel = niveles
     .sort((a, b) => a.order - b.order)
     .map((nivel) => ({
@@ -66,6 +89,10 @@ export default function Grupos() {
 
   const grupoSel = grupos.find((g) => g.id === selectedUuid) ?? null;
   const gc = grupoSel ? getGrupo(grupoSel.icon_path ?? "") : null;
+  const alumnosFiltrados = alumnosGrupo.filter((a) =>
+    !busqueda ||
+    `${a.name} ${a.last_name}`.toLowerCase().includes(busqueda.toLowerCase())
+  );
 
   if (cargando) {
     return <div className={styles.stateBox}>Cargando grupos…</div>;
@@ -224,7 +251,6 @@ export default function Grupos() {
                   onClick={() => {
                     setSelectedUuid(gr.id);
                     setBusqueda("");
-                    setFiltroAsist("todos");
                   }}
                 >
                   <div
@@ -316,39 +342,65 @@ export default function Grupos() {
                 </button>
               </div>
               <div className={styles.cardB}>
-                <div className={styles.searchRow}>
-                  <div className={styles.si}>
-                    <MdSearch size={13} color="var(--texto-3)" />
-                    <input
-                      placeholder="Buscar alumno…"
-                      value={busqueda}
-                      onChange={(e) => setBusqueda(e.target.value)}
-                    />
-                  </div>
-                  <div className={styles.filRow}>
-                    {(["todos", "presentes", "ausentes"] as FiltroAsist[]).map(
-                      (f) => (
-                        <button
-                          key={f}
-                          className={`${styles.fp} ${filtroAsist === f ? styles.fpOn : styles.fpOff}`}
-                          onClick={() => setFiltroAsist(f)}
-                        >
-                          {
-                            {
-                              todos: "Todos",
-                              presentes: "Presentes",
-                              ausentes: "Ausentes"
-                            }[f]
-                          }
-                        </button>
-                      )
-                    )}
-                  </div>
-                </div>
-                <div className={styles.emptyAlumnos}>
-                  Los alumnos de este grupo se mostrarán aquí
-                </div>
-              </div>
+    <div className={styles.searchRow}>
+      <div className={styles.si}>
+        <MdSearch size={13} color="var(--texto-3)" />
+        <input
+          placeholder="Buscar alumno…"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
+      </div>
+    </div>
+
+    {cargandoAlumnos ? (
+      <div className={styles.emptyAlumnos}>Cargando alumnos…</div>
+    ) : alumnosFiltrados.length === 0 ? (
+      <div className={styles.emptyAlumnos}>
+        {busqueda ? "No se encontraron alumnos" : "Este grupo no tiene alumnos aún"}
+      </div>
+    ) : (
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        {alumnosFiltrados.map((a) => (
+          <div
+            key={a.id}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "8px 4px",
+              borderBottom: "1px solid var(--gris-borde)"
+            }}
+          >
+            <div
+              className={styles.alAv}
+              style={{
+                background: gc?.light ?? "var(--gris-bg)",
+                color: gc?.dark ?? "var(--texto-2)",
+                border: `1.5px solid ${gc?.color ?? "var(--gris-borde)"}`
+              }}
+            >
+              {a.name.charAt(0).toUpperCase()}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div className={styles.alNombre}>{a.name} {a.last_name}</div>
+              <div className={styles.alEdad}>{calcularEdad(a.birth_date)}</div>
+            </div>
+            <span style={{
+              fontSize: 9,
+              fontWeight: 900,
+              padding: "2px 8px",
+              borderRadius: 20,
+              background: a.active ? "var(--verde-light)" : "var(--rojo-light)",
+              color: a.active ? "var(--verde-s)" : "var(--rojo)"
+            }}>
+              {a.active ? "Activo" : "Baja"}
+            </span>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
             </div>
 
             {/* PANEL LATERAL */}
@@ -455,7 +507,10 @@ export default function Grupos() {
         grupos={grupos}
         defaultGroupUuid={grupoSel?.id}
         onClose={() => setModalAgregarAlumnoOpen(false)}
-        onSuccess={() => setModalAgregarAlumnoOpen(false)}
+        onSuccess={(alumnoGuardado) => {
+          setModalAgregarAlumnoOpen(false);
+          setAlumnosGrupo((prev) => [...prev, alumnoGuardado]);
+        }}
       />
     </div>
   );
