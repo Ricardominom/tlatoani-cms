@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MdSearch, MdAdd, MdEdit, MdDelete, MdSettings } from "react-icons/md";
 import { AnimalIcon, getGrupo } from "../../components/ui/AnimalKit";
 import styles from "./Grupos.module.css";
-import type { ApiGroup, ApiLevel } from "./types";
+import type { ApiGroup, ApiLevel, PaginatedResponse } from "./types";
 import {
   getGrupos,
   getNiveles,
@@ -13,7 +14,7 @@ import ModalGestionNiveles from "./ModalGestionNiveles";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import ModalAlumno from "../Alumnos/ModalAlumno";
 import { getAlumnos } from "../../services/alumnosService";
-import type { ApiStudent } from "../Alumnos/types";
+import type { ApiStudent, PaginatedResponse as PRStudent } from "../Alumnos/types";
 
 function formatHorario(entry: string | null, dismissal: string | null) {
   if (!entry && !dismissal) return "—";
@@ -38,14 +39,10 @@ function calcularEdad(birthDate: string): string {
   return `${años} año${años !== 1 ? "s" : ""}`;
 }
 
-let _cacheGrupos: ApiGroup[] = [];
-let _cacheNiveles: ApiLevel[] = [];
-
 export default function Grupos() {
-  const [grupos, setGrupos] = useState<ApiGroup[]>(_cacheGrupos);
-  const [niveles, setNiveles] = useState<ApiLevel[]>(_cacheNiveles);
-  const [cargando, setCargando] = useState(_cacheGrupos.length === 0);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  // ── Estado de UI ──────────────────────────────────────────────
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [modalNivelOpen, setModalNivelOpen] = useState(false);
@@ -54,41 +51,67 @@ export default function Grupos() {
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
   const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
   const [modalAgregarAlumnoOpen, setModalAgregarAlumnoOpen] = useState(false);
-  const [alumnosGrupo, setAlumnosGrupo] = useState<ApiStudent[]>([]);
-  const [cargandoAlumnos, setCargandoAlumnos] = useState(false);
 
-  useEffect(() => {
-    Promise.all([
-      getGrupos({ active: true, per_page: 50 }),
-      getNiveles({ order_by: "order", order_direction: "asc", per_page: 100 })
-    ])
-      .then(([gruposRes, nivelesRes]) => {
-        _cacheGrupos = gruposRes.data;
-        _cacheNiveles = nivelesRes.data;
-        setGrupos(gruposRes.data);
-        setNiveles(nivelesRes.data);
-        if (gruposRes.data.length > 0) setSelectedUuid(gruposRes.data[0].id);
-      })
-      .catch((err) => setErrorMsg(err.message))
-      .finally(() => setCargando(false));
-  }, []);
+  // ── Queries ───────────────────────────────────────────────────
+  const { data: nivelesRes, isLoading: cargandoNiveles } = useQuery({
+    queryKey: ["niveles"],
+    queryFn: () => getNiveles({ order_by: "order", order_direction: "asc", per_page: 100 }),
+  });
 
+  const { data: gruposRes, isLoading: cargandoGrupos, error: gruposError } = useQuery({
+    queryKey: ["grupos"],
+    queryFn: () => getGrupos({ active: true, per_page: 50 }),
+  });
+
+  // Alumnos del grupo seleccionado — TanStack cachea por grupo automáticamente
+  const { data: alumnosRes, isLoading: cargandoAlumnos } = useQuery({
+    queryKey: ["alumnos-grupo", selectedUuid],
+    queryFn: () => getAlumnos({ group_uuid: selectedUuid!, per_page: 100 }),
+    enabled: !!selectedUuid,
+  });
+
+  const niveles = nivelesRes?.data ?? [];
+  const grupos = gruposRes?.data ?? [];
+  const alumnosGrupo = alumnosRes?.data ?? [];
+  const cargando = cargandoNiveles || cargandoGrupos;
+  const errorMsg = gruposError instanceof Error ? gruposError.message : null;
+
+  // Seleccionar el primer grupo cuando cargan los datos
   useEffect(() => {
-    if (!selectedUuid) {
-      setAlumnosGrupo([]);
-      return;
+    if (grupos.length > 0 && !selectedUuid) {
+      setSelectedUuid(grupos[0].id);
     }
-    setCargandoAlumnos(true);
-    getAlumnos({ group_uuid: selectedUuid, per_page: 100 })
-      .then((res) => setAlumnosGrupo(res.data))
-      .finally(() => setCargandoAlumnos(false));
-  }, [selectedUuid]);
+  }, [grupos]);
 
-  const gruposPorNivel = niveles
+  // ── Mutation: eliminar grupo con optimistic update ────────────
+  const eliminarMutation = useMutation({
+    mutationFn: (uuid: string) => eliminarGrupo(uuid),
+    onMutate: async (uuid) => {
+      await queryClient.cancelQueries({ queryKey: ["grupos"] });
+      const prevData = queryClient.getQueryData(["grupos"]);
+      queryClient.setQueryData<PaginatedResponse<ApiGroup>>(["grupos"], (old) =>
+        old ? { ...old, data: old.data.filter((g) => g.id !== uuid) } : old
+      );
+      setSelectedUuid(null);
+      setConfirmEliminarOpen(false);
+      return { prevData, uuid };
+    },
+    onError: (err, uuid, context) => {
+      queryClient.setQueryData(["grupos"], context?.prevData);
+      setSelectedUuid(uuid);
+      setErrorEliminar(err instanceof Error ? err.message : "No se pudo eliminar el grupo.");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["grupos"] });
+    },
+  });
+
+  // ── Derivados ─────────────────────────────────────────────────
+  const gruposPorNivel = [...niveles]
     .sort((a, b) => a.order - b.order)
     .map((nivel) => ({
       nivel,
-      grupos: grupos.filter((g) => g.level?.id === nivel.id)
+      grupos: grupos.filter((g) => g.level?.id === nivel.id),
     }))
     .filter((n) => n.grupos.length > 0);
 
@@ -112,51 +135,20 @@ export default function Grupos() {
     );
   }
 
-  async function handleEliminar() {
+  function handleEliminar() {
     if (!grupoSel) return;
-    const grupoEliminado = grupoSel;
-    setGrupos((prev) => prev.filter((g) => g.id !== grupoEliminado.id));
-    setSelectedUuid(null);
-    setConfirmEliminarOpen(false);
-    try {
-      await eliminarGrupo(grupoEliminado.id);
-    } catch (err) {
-      setGrupos((prev) => [...prev, grupoEliminado]);
-      setSelectedUuid(grupoEliminado.id);
-      setErrorEliminar(
-        err instanceof Error ? err.message : "No se pudo eliminar el grupo."
-      );
-    }
-  }
-
-  function recargar() {
-    Promise.all([
-      getGrupos({ active: true, per_page: 50 }),
-      getNiveles({ order_by: "order", order_direction: "asc", per_page: 100 })
-    ])
-      .then(([gruposRes, nivelesRes]) => {
-        _cacheGrupos = gruposRes.data;   
-        _cacheNiveles = nivelesRes.data; 
-        setGrupos(gruposRes.data);
-        setNiveles(nivelesRes.data);
-      })
-      .catch((err) => setErrorMsg(err.message));
+    eliminarMutation.mutate(grupoSel.id);
   }
 
   return (
     <div className={styles.content}>
       {/* ── HEADER ── */}
       <div className={styles.headerRow}>
-        <span
-          style={{ fontSize: 12, fontWeight: 700, color: "var(--texto-3)" }}
-        >
+        <span style={{ fontSize: 12, fontWeight: 700, color: "var(--texto-3)" }}>
           {grupos.length} grupos · {niveles.length} niveles
         </span>
         <div className={styles.headerBtns}>
-          <button
-            className={styles.btnH}
-            onClick={() => setModalNivelOpen(true)}
-          >
+          <button className={styles.btnH} onClick={() => setModalNivelOpen(true)}>
             <MdSettings size={13} /> Gestionar niveles
           </button>
           <button
@@ -170,11 +162,9 @@ export default function Grupos() {
           </button>
         </div>
       </div>
+
       {grupoSel && (
-        <div
-          className={styles.headerBtns}
-          style={{ justifyContent: "flex-end" }}
-        >
+        <div className={styles.headerBtns} style={{ justifyContent: "flex-end" }}>
           <button
             className={styles.btnH}
             onClick={() => {
@@ -192,6 +182,7 @@ export default function Grupos() {
           </button>
         </div>
       )}
+
       {errorEliminar && (
         <div
           style={{
@@ -200,23 +191,17 @@ export default function Grupos() {
             color: "var(--rojo)",
             background: "var(--rojo-light)",
             borderRadius: 8,
-            padding: "8px 14px"
+            padding: "8px 14px",
           }}
         >
           {errorEliminar}
         </div>
       )}
+
       {grupos.length === 0 && niveles.length === 0 && (
         <div className={styles.emptyAlumnos} style={{ padding: "48px 24px" }}>
           <div style={{ fontSize: 28, marginBottom: 8 }}>🏫</div>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 800,
-              color: "var(--texto-2)",
-              marginBottom: 4
-            }}
-          >
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--texto-2)", marginBottom: 4 }}>
             No hay grupos registrados
           </div>
           <div style={{ fontSize: 11, fontWeight: 600 }}>
@@ -224,20 +209,15 @@ export default function Grupos() {
           </div>
         </div>
       )}
+
       {grupos.length === 0 && niveles.length > 0 && (
         <div className={styles.emptyAlumnos} style={{ padding: "48px 24px" }}>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 800,
-              color: "var(--texto-2)",
-              marginBottom: 4
-            }}
-          >
+          <div style={{ fontSize: 13, fontWeight: 800, color: "var(--texto-2)", marginBottom: 4 }}>
             Niveles creados — ahora agrega grupos
           </div>
         </div>
       )}
+
       {/* ── GRUPOS POR NIVEL ── */}
       {gruposPorNivel.map(({ nivel, grupos: grs }) => (
         <div key={nivel.id} className={styles.nivelSeccion}>
@@ -261,10 +241,7 @@ export default function Grupos() {
                     setBusqueda("");
                   }}
                 >
-                  <div
-                    className={styles.gcBanner}
-                    style={{ background: `${gr.color}22` }}
-                  >
+                  <div className={styles.gcBanner} style={{ background: `${gr.color}22` }}>
                     <AnimalIcon salon={gr.icon_path ?? ""} size={48} />
                   </div>
                   <div className={styles.gcBody}>
@@ -281,10 +258,7 @@ export default function Grupos() {
                         <span className={styles.gcLbl}>Capacidad</span>
                       </div>
                       <div className={styles.gcStat}>
-                        <span
-                          className={styles.gcNum}
-                          style={{ color: "var(--verde)", fontSize: 12 }}
-                        >
+                        <span className={styles.gcNum} style={{ color: "var(--verde)", fontSize: 12 }}>
                           {formatCuota(gr.monthly_fee)}
                         </span>
                         <span className={styles.gcLbl}>Cuota</span>
@@ -292,10 +266,7 @@ export default function Grupos() {
                       <div className={styles.gcStat}>
                         <span
                           className={styles.gcNum}
-                          style={{
-                            color: gr.active ? "var(--verde)" : "var(--rojo)",
-                            fontSize: 12
-                          }}
+                          style={{ color: gr.active ? "var(--verde)" : "var(--rojo)", fontSize: 12 }}
                         >
                           {gr.active ? "Activo" : "Inactivo"}
                         </span>
@@ -309,6 +280,7 @@ export default function Grupos() {
           </div>
         </div>
       ))}
+
       {/* ── DETALLE ── */}
       {grupoSel && (
         <>
@@ -317,7 +289,7 @@ export default function Grupos() {
               className={styles.detalleDot}
               style={{
                 background: grupoSel.color,
-                boxShadow: `0 1px 0 ${gc?.shadow ?? "var(--gris-borde)"}`
+                boxShadow: `0 1px 0 ${gc?.shadow ?? "var(--gris-borde)"}`,
               }}
             />
             <span className={styles.detalleTitulo}>{grupoSel.name}</span>
@@ -325,7 +297,7 @@ export default function Grupos() {
               className={styles.nivelBadge}
               style={{
                 background: gc?.light ?? "var(--gris-bg)",
-                color: gc?.dark ?? "var(--texto-2)"
+                color: gc?.dark ?? "var(--texto-2)",
               }}
             >
               {grupoSel.level?.name ?? "Sin nivel"}
@@ -338,14 +310,9 @@ export default function Grupos() {
               <div className={styles.cardH}>
                 <div>
                   <div className={styles.cardT}>Alumnos del salón</div>
-                  <div className={styles.cardSub}>
-                    Capacidad máx. {grupoSel.capacity} alumnos
-                  </div>
+                  <div className={styles.cardSub}>Capacidad máx. {grupoSel.capacity} alumnos</div>
                 </div>
-                <button
-                  className={styles.btnP}
-                  onClick={() => setModalAgregarAlumnoOpen(true)}
-                >
+                <button className={styles.btnP} onClick={() => setModalAgregarAlumnoOpen(true)}>
                   <MdAdd size={11} /> Agregar alumno
                 </button>
               </div>
@@ -365,14 +332,10 @@ export default function Grupos() {
                   <div className={styles.emptyAlumnos}>Cargando alumnos…</div>
                 ) : alumnosFiltrados.length === 0 ? (
                   <div className={styles.emptyAlumnos}>
-                    {busqueda
-                      ? "No se encontraron alumnos"
-                      : "Este grupo no tiene alumnos aún"}
+                    {busqueda ? "No se encontraron alumnos" : "Este grupo no tiene alumnos aún"}
                   </div>
                 ) : (
-                  <div
-                    style={{ display: "flex", flexDirection: "column", gap: 2 }}
-                  >
+                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                     {alumnosFiltrados.map((a) => (
                       <div
                         key={a.id}
@@ -381,7 +344,7 @@ export default function Grupos() {
                           alignItems: "center",
                           gap: 10,
                           padding: "8px 4px",
-                          borderBottom: "1px solid var(--gris-borde)"
+                          borderBottom: "1px solid var(--gris-borde)",
                         }}
                       >
                         <div
@@ -389,18 +352,14 @@ export default function Grupos() {
                           style={{
                             background: gc?.light ?? "var(--gris-bg)",
                             color: gc?.dark ?? "var(--texto-2)",
-                            border: `1.5px solid ${gc?.color ?? "var(--gris-borde)"}`
+                            border: `1.5px solid ${gc?.color ?? "var(--gris-borde)"}`,
                           }}
                         >
                           {a.name.charAt(0).toUpperCase()}
                         </div>
                         <div style={{ flex: 1 }}>
-                          <div className={styles.alNombre}>
-                            {a.name} {a.last_name}
-                          </div>
-                          <div className={styles.alEdad}>
-                            {calcularEdad(a.birth_date)}
-                          </div>
+                          <div className={styles.alNombre}>{a.name} {a.last_name}</div>
+                          <div className={styles.alEdad}>{calcularEdad(a.birth_date)}</div>
                         </div>
                         <span
                           style={{
@@ -408,10 +367,8 @@ export default function Grupos() {
                             fontWeight: 900,
                             padding: "2px 8px",
                             borderRadius: 20,
-                            background: a.active
-                              ? "var(--verde-light)"
-                              : "var(--rojo-light)",
-                            color: a.active ? "var(--verde-s)" : "var(--rojo)"
+                            background: a.active ? "var(--verde-light)" : "var(--rojo-light)",
+                            color: a.active ? "var(--verde-s)" : "var(--rojo)",
                           }}
                         >
                           {a.active ? "Activo" : "Baja"}
@@ -433,30 +390,21 @@ export default function Grupos() {
                 <div className={styles.cardB}>
                   <div className={styles.configRow}>
                     <span className={styles.configLbl}>Nivel</span>
-                    <span className={styles.configVal}>
-                      {grupoSel.level?.name ?? "—"}
-                    </span>
+                    <span className={styles.configVal}>{grupoSel.level?.name ?? "—"}</span>
                   </div>
                   <div className={styles.configRow}>
                     <span className={styles.configLbl}>Horario</span>
                     <span className={styles.configVal}>
-                      {formatHorario(
-                        grupoSel.entry_time,
-                        grupoSel.dismissal_time
-                      )}
+                      {formatHorario(grupoSel.entry_time, grupoSel.dismissal_time)}
                     </span>
                   </div>
                   <div className={styles.configRow}>
                     <span className={styles.configLbl}>Capacidad máx.</span>
-                    <span className={styles.configVal}>
-                      {grupoSel.capacity} alumnos
-                    </span>
+                    <span className={styles.configVal}>{grupoSel.capacity} alumnos</span>
                   </div>
                   <div className={styles.configRow}>
                     <span className={styles.configLbl}>Cuota mensual</span>
-                    <span className={styles.configVal}>
-                      {formatCuota(grupoSel.monthly_fee)}
-                    </span>
+                    <span className={styles.configVal}>{formatCuota(grupoSel.monthly_fee)}</span>
                   </div>
                   <div className={styles.configRow}>
                     <span className={styles.configLbl}>Estado</span>
@@ -466,12 +414,8 @@ export default function Grupos() {
                         fontWeight: 700,
                         padding: "2px 8px",
                         borderRadius: 10,
-                        background: grupoSel.active
-                          ? "var(--verde-light)"
-                          : "var(--rojo-light)",
-                        color: grupoSel.active
-                          ? "var(--verde-s)"
-                          : "var(--rojo)"
+                        background: grupoSel.active ? "var(--verde-light)" : "var(--rojo-light)",
+                        color: grupoSel.active ? "var(--verde-s)" : "var(--rojo)",
                       }}
                     >
                       {grupoSel.active ? "Activo" : "Inactivo"}
@@ -490,12 +434,21 @@ export default function Grupos() {
           </div>
         </>
       )}
+
+      {/* ── MODALES ── */}
       <ModalGestionNiveles
         open={modalNivelOpen}
         niveles={niveles}
         onClose={() => setModalNivelOpen(false)}
-        onSuccess={(nuevosNiveles) => setNiveles(nuevosNiveles)}
+        onSuccess={(nuevosNiveles) => {
+          queryClient.setQueryData<PaginatedResponse<ApiLevel>>(["niveles"], (old) =>
+            old ? { ...old, data: nuevosNiveles } : old
+          );
+          queryClient.invalidateQueries({ queryKey: ["niveles"] });
+          queryClient.invalidateQueries({ queryKey: ["grupos"] });
+        }}
       />
+
       <ModalGrupo
         open={modalGrupoOpen}
         grupo={grupoEditando}
@@ -503,18 +456,19 @@ export default function Grupos() {
         onClose={() => setModalGrupoOpen(false)}
         onSuccess={(grupoGuardado) => {
           setModalGrupoOpen(false);
-          setGrupos((prev) => {
-            const existe = prev.find((g) => g.id === grupoGuardado.id);
+          queryClient.setQueryData<PaginatedResponse<ApiGroup>>(["grupos"], (old) => {
+            if (!old) return old;
+            const existe = old.data.find((g) => g.id === grupoGuardado.id);
             if (existe) {
-              return prev.map((g) =>
-                g.id === grupoGuardado.id ? grupoGuardado : g
-              );
+              return { ...old, data: old.data.map((g) => g.id === grupoGuardado.id ? grupoGuardado : g) };
             }
-            return [...prev, grupoGuardado];
+            return { ...old, data: [...old.data, grupoGuardado] };
           });
+          queryClient.invalidateQueries({ queryKey: ["grupos"] });
           setSelectedUuid(grupoGuardado.id);
         }}
       />
+
       <ConfirmDialog
         open={confirmEliminarOpen}
         titulo="Eliminar grupo"
@@ -522,6 +476,7 @@ export default function Grupos() {
         onConfirm={handleEliminar}
         onCancel={() => setConfirmEliminarOpen(false)}
       />
+
       <ModalAlumno
         open={modalAgregarAlumnoOpen}
         grupos={grupos}
@@ -529,7 +484,11 @@ export default function Grupos() {
         onClose={() => setModalAgregarAlumnoOpen(false)}
         onSuccess={(alumnoGuardado) => {
           setModalAgregarAlumnoOpen(false);
-          setAlumnosGrupo((prev) => [...prev, alumnoGuardado]);
+          queryClient.setQueryData<PRStudent<ApiStudent>>(
+            ["alumnos-grupo", selectedUuid],
+            (old) => old ? { ...old, data: [...old.data, alumnoGuardado] } : old
+          );
+          queryClient.invalidateQueries({ queryKey: ["alumnos-grupo", selectedUuid] });
         }}
       />
     </div>
