@@ -1,4 +1,3 @@
-
 // TIPOS DE LA API
 
 export interface ApiLevel {

@@ -42,7 +42,7 @@ function calcularEdad(birthDate: string): string {
 export default function Grupos() {
   const queryClient = useQueryClient();
 
-  // ── Estado de UI ──────────────────────────────────────────────
+  // Estado de UI 
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [modalNivelOpen, setModalNivelOpen] = useState(false);
@@ -52,7 +52,7 @@ export default function Grupos() {
   const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
   const [modalAgregarAlumnoOpen, setModalAgregarAlumnoOpen] = useState(false);
 
-  // ── Queries ───────────────────────────────────────────────────
+  // Queries
   const { data: nivelesRes, isLoading: cargandoNiveles } = useQuery({
     queryKey: ["niveles"],
     queryFn: () => getNiveles({ order_by: "order", order_direction: "asc", per_page: 100 }),
@@ -81,9 +81,9 @@ export default function Grupos() {
     if (grupos.length > 0 && !selectedUuid) {
       setSelectedUuid(grupos[0].id);
     }
-  }, [grupos]);
+  }, [grupos.length]);
 
-  // ── Mutation: eliminar grupo con optimistic update ────────────
+  // Mutation: eliminar grupo con optimistic update
   const eliminarMutation = useMutation({
     mutationFn: (uuid: string) => eliminarGrupo(uuid),
     onMutate: async (uuid) => {
@@ -106,7 +106,7 @@ export default function Grupos() {
     },
   });
 
-  // ── Derivados ─────────────────────────────────────────────────
+  // Derivados
   const gruposPorNivel = [...niveles]
     .sort((a, b) => a.order - b.order)
     .map((nivel) => ({
