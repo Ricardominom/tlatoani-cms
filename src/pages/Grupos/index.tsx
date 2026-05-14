@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MdSearch, MdAdd, MdEdit, MdDelete, MdSettings } from "react-icons/md";
 import { AnimalIcon, getGrupo } from "../../components/ui/AnimalKit";
 import styles from "./Grupos.module.css";
-import type { ApiGroup, ApiLevel, PaginatedResponse } from "./types";
 import {
   getGrupos,
   getNiveles,
@@ -15,6 +14,7 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import ModalAlumno from "../Alumnos/ModalAlumno";
 import { getAlumnos } from "../../services/alumnosService";
 import type { ApiStudent, PaginatedResponse as PRStudent } from "../Alumnos/types";
+import type { Grupo, GrupoFormData, Nivel, PaginatedResponseS } from "../../types";
 
 function formatHorario(entry: string | null, dismissal: string | null) {
   if (!entry && !dismissal) return "—";
@@ -47,7 +47,7 @@ export default function Grupos() {
   const [busqueda, setBusqueda] = useState("");
   const [modalNivelOpen, setModalNivelOpen] = useState(false);
   const [modalGrupoOpen, setModalGrupoOpen] = useState(false);
-  const [grupoEditando, setGrupoEditando] = useState<ApiGroup | null>(null);
+  const [grupoEditando, setGrupoEditando] = useState<GrupoFormData | null>(null);
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
   const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
   const [modalAgregarAlumnoOpen, setModalAgregarAlumnoOpen] = useState(false);
@@ -89,7 +89,7 @@ export default function Grupos() {
     onMutate: async (uuid) => {
       await queryClient.cancelQueries({ queryKey: ["grupos"] });
       const prevData = queryClient.getQueryData(["grupos"]);
-      queryClient.setQueryData<PaginatedResponse<ApiGroup>>(["grupos"], (old) =>
+      queryClient.setQueryData<PaginatedResponseS<Grupo>>(["grupos"], (old) =>
         old ? { ...old, data: old.data.filter((g) => g.id !== uuid) } : old
       );
       setSelectedUuid(null);
@@ -441,7 +441,7 @@ export default function Grupos() {
         niveles={niveles}
         onClose={() => setModalNivelOpen(false)}
         onSuccess={(nuevosNiveles) => {
-          queryClient.setQueryData<PaginatedResponse<ApiLevel>>(["niveles"], (old) =>
+          queryClient.setQueryData<PaginatedResponseS<Nivel>>(["niveles"], (old) =>
             old ? { ...old, data: nuevosNiveles } : old
           );
           queryClient.invalidateQueries({ queryKey: ["niveles"] });
@@ -456,7 +456,7 @@ export default function Grupos() {
         onClose={() => setModalGrupoOpen(false)}
         onSuccess={(grupoGuardado) => {
           setModalGrupoOpen(false);
-          queryClient.setQueryData<PaginatedResponse<ApiGroup>>(["grupos"], (old) => {
+          queryClient.setQueryData<PaginatedResponseS<Grupo>>(["grupos"], (old) => {
             if (!old) return old;
             const existe = old.data.find((g) => g.id === grupoGuardado.id);
             if (existe) {

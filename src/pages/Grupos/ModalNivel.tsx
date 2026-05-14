@@ -1,18 +1,18 @@
 import { useState, useEffect } from "react";
 import { MdClose } from "react-icons/md";
 import styles from "./ModalNivel.module.css";
-import type { ApiLevel, NivelForm } from "./types";
 import { crearNivel, actualizarNivel } from "../../services/gruposService";
+import type { Nivel, NivelFormData } from "../../types";
 
 interface Props {
   open: boolean;
-  nivel?: ApiLevel | null;
+  nivel?: Nivel | null;
   onClose: () => void;
   onSuccess: () => void;
 }
 
 export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
-  const [form, setForm] = useState<NivelForm>({
+  const [form, setForm] = useState<NivelFormData>({
     name: "",
     description: "",
     order: 1

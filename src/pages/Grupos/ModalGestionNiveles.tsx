@@ -1,22 +1,22 @@
 import { useState, useEffect } from "react";
 import { MdClose, MdEdit, MdDelete, MdAdd } from "react-icons/md";
 import styles from "./ModalGestionNiveles.module.css";
-import type { ApiLevel, NivelForm } from "./types";
 import {
   crearNivel,
   actualizarNivel,
   eliminarNivel
 } from "../../services/gruposService";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
+import type { Nivel, NivelFormData } from "../../types";
 
 interface Props {
   open: boolean;
-  niveles: ApiLevel[];
+  niveles: Nivel[];
   onClose: () => void;
-  onSuccess: (niveles: ApiLevel[]) => void;
+  onSuccess: (niveles: Nivel[]) => void;
 }
 
-const FORM_VACIO: NivelForm = { name: "", description: "", order: 1 };
+const FORM_VACIO: NivelFormData = { name: "", description: "", order: 1 };
 
 export default function ModalGestionNiveles({
   open,
@@ -24,12 +24,12 @@ export default function ModalGestionNiveles({
   onClose,
   onSuccess
 }: Props) {
-  const [editando, setEditando] = useState<ApiLevel | "nuevo" | null>(null);
-  const [form, setForm] = useState<NivelForm>(FORM_VACIO);
+  const [editando, setEditando] = useState<Nivel | "nuevo" | null>(null);
+  const [form, setForm] = useState<NivelFormData>(FORM_VACIO);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [eliminando, setEliminando] = useState<string | null>(null);
-  const [nivelAEliminar, setNivelAEliminar] = useState<ApiLevel | null>(null);
+  const [nivelAEliminar, setNivelAEliminar] = useState<Nivel | null>(null);
 
   useEffect(() => {
     if (!open) setEditando(null);
@@ -88,7 +88,7 @@ export default function ModalGestionNiveles({
     }
   }
 
-  function toggleEditar(nivel: ApiLevel) {
+  function toggleEditar(nivel: Nivel) {
     const yaEditando =
       editando !== "nuevo" && editando !== null && editando.id === nivel.id;
     setEditando(yaEditando ? null : nivel);
