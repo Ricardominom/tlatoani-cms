@@ -4,27 +4,43 @@ import { z } from 'zod';
 export const nivelSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
-    description: z.string(),
+    description: z.string().nullable(),
     order: z.number(),
     created_at: z.string(),
     updated_at: z.string(),
-})
+});
+export const nivelFormSchema = z.object({
+    name: z.string().min(1, 'El nombre del nivel es requerido'),
+    description: z.string().nullable(),
+    order: z.number().min(1, 'El orden debe ser mayor a 0')
+});
 
 // Grupos
 export const grupoSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
-    teacher_id: z.number(),
+    teacher_id: z.number().optional(),
     color: z.string(),
     icon_path: z.string().nullable(),
     entry_time: z.string().nullable(),
-    dismissal_time: z.string().nullable,
+    dismissal_time: z.string().nullable(),
     monthly_fee: z.string(),
     capacity: z.number(),
-    active: z.string(),
-    level: nivelSchema,
+    active: z.boolean(),
+    level: nivelSchema.optional(),
     created_at: z.string(),
     updated_at: z.string(),
+})
+export const grupoFormSchema = z.object({
+    name: z.string().min(1, 'El nombre del grupo es requerido'),
+    color: z.string().min(1, 'El color es requerido'),
+    icon_path: z.string().nullable(),
+    entry_time: z.string().nullable(),
+    dismissal_time: z.string().nullable(),
+    monthly_fee: z.string(),
+    capacity: z.number(),
+    active: z.boolean(),
+    level_uuid: z.string().min(1, 'El nivel es requerido'),
 })
 
 //Respues de pagina
@@ -57,7 +73,9 @@ export const paginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =
 export type Nivel = z.infer<typeof nivelSchema>
 export type Grupo = z.infer<typeof grupoSchema>
 
-export type PaginatedResponseS = z.infer<ReturnType<typeof paginatedResponseSchema<typeof grupoSchema>>>
+export type PaginatedResponse<T extends z.ZodTypeAny> = z.infer<ReturnType<typeof paginatedResponseSchema<T>>>
 
-export type NivelFormData = Pick<Nivel, 'name' | 'description' | 'order'>
-export type GrupoFormData = Pick<Grupo, 'name' | 'color' | 'icon_path' | 'entry_time'| 'dismissal_time' | 'monthly_fee' | 'capacity' | 'active'>
+export type NivelFormData = z.infer<typeof nivelFormSchema>
+export type GrupoFormData = z.infer<typeof grupoFormSchema>
+export type NivelesPaginados = PaginatedResponse<typeof nivelSchema>
+export type GruposPaginados = PaginatedResponse<typeof grupoSchema>

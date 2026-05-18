@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { MdClose } from "react-icons/md";
 import styles from "./ModalNivel.module.css";
 import { crearNivel, actualizarNivel } from "../../services/gruposService";
-import type { Nivel, NivelFormData } from "../../types";
+import { nivelFormSchema, type Nivel, type NivelFormData } from "../../types";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from 'react-toastify';
 
 interface Props {
   open: boolean;
@@ -11,49 +15,42 @@ interface Props {
   onSuccess: () => void;
 }
 
-export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
-  const [form, setForm] = useState<NivelFormData>({
+const initialValues : NivelFormData = {
     name: "",
     description: "",
     order: 1
+}
+
+export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
+
+  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm<NivelFormData>({ resolver: zodResolver(nivelFormSchema), defaultValues: initialValues});
+
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationFn: (FormData: NivelFormData) =>
+      nivel ? actualizarNivel(nivel.id, FormData) : crearNivel(FormData),
+    onSuccess: () => {
+      toast.success(nivel ? 'Nivel actualizado' : 'Nivel creado');
+      queryClient.invalidateQueries({ queryKey: ['niveles']});
+      queryClient.invalidateQueries({ queryKey: ['grupos']});
+      onSuccess();
+    },
+    onError: (error) => {
+      setError('root', { message: error instanceof Error ? error.message : 'Error inesperado'});
+    }
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (nivel) {
-      setForm({
-        name: nivel.name,
-        description: nivel.description ?? "",
-        order: nivel.order
-      });
+      reset ({ name: nivel.name, description: nivel.description ?? "", order: nivel.order })
     } else {
-      setForm({ name: "", description: "", order: 1 });
+      reset(initialValues);
     }
-    setError(null);
-  }, [nivel, open]);
+  }, [nivel, open, reset]);
+
+  const handleForm = (formData: NivelFormData) => mutate(formData);
 
   if (!open) return null;
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      if (nivel) {
-        await actualizarNivel(nivel.id, form);
-      } else {
-        await crearNivel(form);
-      }
-      onSuccess();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Ocurrió un error inesperado."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -67,19 +64,16 @@ export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(handleForm)}>
           <div className={styles.body}>
-            {error && <div className={styles.error}>{error}</div>}
+            {errors.root && <div className={styles.error}>{errors.root.message}</div>}
 
             <div className={styles.campo}>
               <span className={styles.label}>Nombre del nivel *</span>
               <input
                 className={styles.input}
                 placeholder="ej. Casa de niños"
-                value={form.name}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, name: e.target.value }))
-                }
+                {...register('name')}
                 required
               />
             </div>
@@ -89,10 +83,7 @@ export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
               <textarea
                 className={styles.textarea}
                 placeholder="Descripción breve del nivel educativo…"
-                value={form.description}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, description: e.target.value }))
-                }
+                {...register('description')}
               />
             </div>
 
@@ -102,13 +93,7 @@ export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
                 className={styles.input}
                 type="number"
                 min={1}
-                value={form.order}
-                onChange={(e) =>
-                  setForm((f) => ({
-                    ...f,
-                    order: parseInt(e.target.value) || 1
-                  }))
-                }
+                {...register('order', { valueAsNumber: true })}
                 required
               />
             </div>
@@ -125,9 +110,9 @@ export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
             <button
               type="submit"
               className={styles.btnSubmit}
-              disabled={loading || !form.name.trim()}
+              disabled={isPending}
             >
-              {loading
+              {isPending
                 ? "Guardando…"
                 : nivel
                   ? "Guardar cambios"

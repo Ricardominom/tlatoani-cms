@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MdSearch, MdAdd, MdEdit, MdDelete, MdSettings } from "react-icons/md";
 import { AnimalIcon, getGrupo } from "../../components/ui/AnimalKit";
@@ -14,7 +14,7 @@ import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import ModalAlumno from "../Alumnos/ModalAlumno";
 import { getAlumnos } from "../../services/alumnosService";
 import type { ApiStudent, PaginatedResponse as PRStudent } from "../Alumnos/types";
-import type { Grupo, GrupoFormData, Nivel, PaginatedResponseS } from "../../types";
+import type { Grupo, GruposPaginados } from "../../types";
 
 function formatHorario(entry: string | null, dismissal: string | null) {
   if (!entry && !dismissal) return "—";
@@ -47,7 +47,7 @@ export default function Grupos() {
   const [busqueda, setBusqueda] = useState("");
   const [modalNivelOpen, setModalNivelOpen] = useState(false);
   const [modalGrupoOpen, setModalGrupoOpen] = useState(false);
-  const [grupoEditando, setGrupoEditando] = useState<GrupoFormData | null>(null);
+  const [grupoEditando, setGrupoEditando] = useState<Grupo | null>(null);
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
   const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
   const [modalAgregarAlumnoOpen, setModalAgregarAlumnoOpen] = useState(false);
@@ -63,25 +63,20 @@ export default function Grupos() {
     queryFn: () => getGrupos({ active: true, per_page: 50 }),
   });
 
-  // Alumnos del grupo seleccionado — TanStack cachea por grupo automáticamente
+  const grupos = gruposRes?.data ?? [];
+  const activeUuid = selectedUuid ?? grupos[0]?.id ?? null;
+
+  // Alumnos del grupo seleccionado 
   const { data: alumnosRes, isLoading: cargandoAlumnos } = useQuery({
-    queryKey: ["alumnos-grupo", selectedUuid],
-    queryFn: () => getAlumnos({ group_uuid: selectedUuid!, per_page: 100 }),
-    enabled: !!selectedUuid,
+    queryKey: ["alumnos-grupo", activeUuid],
+    queryFn: () => getAlumnos({ group_uuid: activeUuid!, per_page: 100 }),
+    enabled: !!activeUuid,
   });
 
   const niveles = nivelesRes?.data ?? [];
-  const grupos = gruposRes?.data ?? [];
   const alumnosGrupo = alumnosRes?.data ?? [];
   const cargando = cargandoNiveles || cargandoGrupos;
   const errorMsg = gruposError instanceof Error ? gruposError.message : null;
-
-  // Seleccionar el primer grupo cuando cargan los datos
-  useEffect(() => {
-    if (grupos.length > 0 && !selectedUuid) {
-      setSelectedUuid(grupos[0].id);
-    }
-  }, [grupos.length]);
 
   // Mutation: eliminar grupo con optimistic update
   const eliminarMutation = useMutation({
@@ -89,7 +84,7 @@ export default function Grupos() {
     onMutate: async (uuid) => {
       await queryClient.cancelQueries({ queryKey: ["grupos"] });
       const prevData = queryClient.getQueryData(["grupos"]);
-      queryClient.setQueryData<PaginatedResponseS<Grupo>>(["grupos"], (old) =>
+      queryClient.setQueryData<GruposPaginados>(["grupos"], (old) =>
         old ? { ...old, data: old.data.filter((g) => g.id !== uuid) } : old
       );
       setSelectedUuid(null);
@@ -115,7 +110,7 @@ export default function Grupos() {
     }))
     .filter((n) => n.grupos.length > 0);
 
-  const grupoSel = grupos.find((g) => g.id === selectedUuid) ?? null;
+  const grupoSel = grupos.find((g) => g.id === activeUuid) ?? null;
   const gc = grupoSel ? getGrupo(grupoSel.icon_path ?? "") : null;
   const alumnosFiltrados = alumnosGrupo.filter(
     (a) =>
@@ -231,11 +226,10 @@ export default function Grupos() {
 
           <div className={styles.gruposGrid}>
             {grs.map((gr) => {
-              const g = getGrupo(gr.icon_path ?? "");
               return (
                 <div
                   key={gr.id}
-                  className={`${styles.grupoCard} ${gr.id === selectedUuid ? styles.grupoCardSel : ""}`}
+                  className={`${styles.grupoCard} ${gr.id === activeUuid ? styles.grupoCardSel : ""}`}
                   onClick={() => {
                     setSelectedUuid(gr.id);
                     setBusqueda("");
@@ -247,7 +241,7 @@ export default function Grupos() {
                   <div className={styles.gcBody}>
                     <div className={styles.gcNombre}>
                       {gr.name}
-                      {gr.id === selectedUuid && (
+                      {gr.id === activeUuid && (
                         <span className={styles.gcSelBadge}>Seleccionado</span>
                       )}
                     </div>
@@ -440,13 +434,7 @@ export default function Grupos() {
         open={modalNivelOpen}
         niveles={niveles}
         onClose={() => setModalNivelOpen(false)}
-        onSuccess={(nuevosNiveles) => {
-          queryClient.setQueryData<PaginatedResponseS<Nivel>>(["niveles"], (old) =>
-            old ? { ...old, data: nuevosNiveles } : old
-          );
-          queryClient.invalidateQueries({ queryKey: ["niveles"] });
-          queryClient.invalidateQueries({ queryKey: ["grupos"] });
-        }}
+        onSuccess={() => setModalNivelOpen(false)}
       />
 
       <ModalGrupo
@@ -454,18 +442,9 @@ export default function Grupos() {
         grupo={grupoEditando}
         niveles={niveles}
         onClose={() => setModalGrupoOpen(false)}
-        onSuccess={(grupoGuardado) => {
+        onSuccess={(grupoId) => {
           setModalGrupoOpen(false);
-          queryClient.setQueryData<PaginatedResponseS<Grupo>>(["grupos"], (old) => {
-            if (!old) return old;
-            const existe = old.data.find((g) => g.id === grupoGuardado.id);
-            if (existe) {
-              return { ...old, data: old.data.map((g) => g.id === grupoGuardado.id ? grupoGuardado : g) };
-            }
-            return { ...old, data: [...old.data, grupoGuardado] };
-          });
-          queryClient.invalidateQueries({ queryKey: ["grupos"] });
-          setSelectedUuid(grupoGuardado.id);
+          setSelectedUuid(grupoId);
         }}
       />
 

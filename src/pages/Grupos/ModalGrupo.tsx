@@ -1,19 +1,23 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { MdClose, MdCheck } from "react-icons/md";
 import styles from "./ModalGrupo.module.css";
 import { GRUPOS } from "../../components/ui/AnimalKit";
-import type { ApiGroup, ApiLevel, GrupoForm } from "./types";
 import { crearGrupo, actualizarGrupo } from "../../services/gruposService";
+import { grupoFormSchema, type Grupo, type GrupoFormData, type Nivel } from "../../types";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from 'react-toastify';
 
 interface Props {
   open: boolean;
-  grupo?: ApiGroup | null;
-  niveles: ApiLevel[];
+  grupo?: Grupo | null;
+  niveles: Nivel[];
   onClose: () => void;
-  onSuccess: (grupo: ApiGroup) => void;
+  onSuccess: (grupoId: string) => void;
 }
 
-const FORM_VACIO: GrupoForm = {
+const initialValues: GrupoFormData = {
   level_uuid: "",
   name: "",
   color: "#F5C800",
@@ -32,13 +36,32 @@ export default function ModalGrupo({
   onClose,
   onSuccess
 }: Props) {
-  const [form, setForm] = useState<GrupoForm>(FORM_VACIO);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const { register, handleSubmit, reset, setError, setValue, control, formState: { errors } } = useForm<GrupoFormData>({resolver: zodResolver(grupoFormSchema), defaultValues: initialValues});
+
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationFn: (formData: GrupoFormData) =>
+      grupo ? actualizarGrupo(grupo.id, formData) : crearGrupo(formData),
+    onSuccess: (grupoGuardado) => {
+      toast.success(grupo ? "Grupo actualizado" : "Grupo creado");
+      queryClient.invalidateQueries({ queryKey: ["grupos"] });
+      onSuccess(grupoGuardado.id);
+    },
+    onError: (error) => {
+      setError("root", {
+        message: error instanceof Error ? error.message : "Ocurrió un error inesperado."
+      });
+    }
+  });
+
+  const iconPath = useWatch({control, name: 'icon_path'});
+  const color = useWatch({control, name: 'color'});
+  const active = useWatch({control, name: 'active'});
 
   useEffect(() => {
     if (grupo) {
-      setForm({
+      reset({
         level_uuid: grupo.level?.id ?? "",
         name: grupo.name,
         color: grupo.color,
@@ -50,45 +73,23 @@ export default function ModalGrupo({
         active: grupo.active
       });
     } else {
-      setForm({ ...FORM_VACIO, level_uuid: niveles[0]?.id ?? "" });
+      reset({ ...initialValues, level_uuid: niveles[0]?.id ?? "" });
     }
-    setError(null);
-  }, [grupo, open, niveles]);
+  }, [grupo, open, niveles, reset]);
 
   if (!open) return null;
 
-  const set = <K extends keyof GrupoForm>(key: K, val: GrupoForm[K]) =>
-    setForm((f) => ({ ...f, [key]: val }));
-
   function seleccionarAnimal(nombre: string) {
-    if (form.icon_path === nombre) {
-      setForm((f) => ({ ...f, icon_path: null }));
+    if (iconPath === nombre) {
+      setValue('icon_path', null);
     } else {
       const animal = GRUPOS.find((g) => g.name === nombre);
-      setForm((f) => ({ ...f, icon_path: nombre, color: animal?.color ?? f.color }));
+      setValue('icon_path', nombre);
+      setValue('color', animal?.color ?? color);
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      let grupoGuardado: ApiGroup;
-      if (grupo) {
-        grupoGuardado = await actualizarGrupo(grupo.id, form);
-      } else {
-        grupoGuardado = await crearGrupo(form);
-      }
-      onSuccess(grupoGuardado);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Ocurrió un error inesperado."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+  const handleForm = ( formData : GrupoFormData) => mutate(formData);
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -102,17 +103,16 @@ export default function ModalGrupo({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit(handleForm)} className={styles.form}>
           <div className={styles.body}>
-            {error && <div className={styles.error}>{error}</div>}
+            {errors.root && <div className={styles.error}>{errors.root.message}</div>}
 
             {/* NIVEL */}
             <div className={styles.campo}>
               <span className={styles.label}>Nivel *</span>
               <select
                 className={styles.input}
-                value={form.level_uuid}
-                onChange={(e) => set("level_uuid", e.target.value)}
+                {...register('level_uuid')}
                 required
               >
                 <option value="">Selecciona un nivel…</option>
@@ -131,7 +131,7 @@ export default function ModalGrupo({
                 {GRUPOS.map((g) => (
                   <div
                     key={g.name}
-                    className={`${styles.animalOpt} ${form.icon_path === g.name ? styles.animalOptSel : ""}`}
+                    className={`${styles.animalOpt} ${iconPath === g.name ? styles.animalOptSel : ""}`}
                     onClick={() => seleccionarAnimal(g.name)}
                   >
                     <div
@@ -139,7 +139,7 @@ export default function ModalGrupo({
                       style={{ background: g.light }}
                     >
                       <g.Icon size={36} />
-                      {form.icon_path === g.name && (
+                      {iconPath === g.name && (
                         <div className={styles.checkMark}>
                           <MdCheck size={10} color="#FFF" />
                         </div>
@@ -158,8 +158,7 @@ export default function ModalGrupo({
                 className={styles.input}
                 type="text"
                 placeholder="ej. Maternal A, Grupo Azul…"
-                value={form.name}
-                onChange={(e) => set("name", e.target.value)}
+                {...register('name')}
                 required
               />
             </div>
@@ -171,8 +170,7 @@ export default function ModalGrupo({
                 <input
                   className={styles.input}
                   type="time"
-                  value={form.entry_time}
-                  onChange={(e) => set("entry_time", e.target.value)}
+                  {...register('entry_time')}
                 />
               </div>
               <div className={styles.campo}>
@@ -180,8 +178,7 @@ export default function ModalGrupo({
                 <input
                   className={styles.input}
                   type="time"
-                  value={form.dismissal_time}
-                  onChange={(e) => set("dismissal_time", e.target.value)}
+                  {...register('dismissal_time')}
                 />
               </div>
             </div>
@@ -195,8 +192,7 @@ export default function ModalGrupo({
                   type="number"
                   min={0}
                   placeholder="3000"
-                  value={form.monthly_fee}
-                  onChange={(e) => set("monthly_fee", e.target.value)}
+                  {...register('monthly_fee')}
                 />
               </div>
               <div className={styles.campo}>
@@ -206,10 +202,7 @@ export default function ModalGrupo({
                   type="number"
                   min={1}
                   placeholder="25"
-                  value={form.capacity}
-                  onChange={(e) =>
-                    set("capacity", parseInt(e.target.value) || 1)
-                  }
+                  {...register('capacity', { valueAsNumber: true })}
                 />
               </div>
             </div>
@@ -222,9 +215,9 @@ export default function ModalGrupo({
                   <button
                     key={g.name}
                     type="button"
-                    className={`${styles.colorChip} ${form.color === g.color ? styles.colorChipSel : ""}`}
+                    className={`${styles.colorChip} ${color === g.color ? styles.colorChipSel : ""}`}
                     style={{ background: g.color }}
-                    onClick={() => set("color", g.color)}
+                    onClick={() => setValue("color", g.color)}
                     title={g.name}
                   />
                 ))}
@@ -233,13 +226,13 @@ export default function ModalGrupo({
                 <input
                   className={styles.colorInput}
                   type="color"
-                  value={form.color}
-                  onChange={(e) => set("color", e.target.value)}
+                  value={color}
+                  onChange={(e) => setValue("color", e.target.value)}
                 />
                 <input
                   className={styles.colorHex}
-                  value={form.color}
-                  onChange={(e) => set("color", e.target.value)}
+                  value={color}
+                  onChange={(e) => setValue("color", e.target.value)}
                   placeholder="#F5C800"
                   maxLength={7}
                 />
@@ -250,11 +243,11 @@ export default function ModalGrupo({
             <div className={styles.toggleRow}>
               <span className={styles.toggleLbl}>Grupo activo</span>
               <div
-                className={`${styles.toggle} ${form.active ? styles.togOn : styles.togOff}`}
-                onClick={() => set("active", !form.active)}
+                className={`${styles.toggle} ${active ? styles.togOn : styles.togOff}`}
+                onClick={() => setValue("active", !active)}
               >
                 <div
-                  className={`${styles.tThumb} ${form.active ? styles.onPos : styles.offPos}`}
+                  className={`${styles.tThumb} ${active ? styles.onPos : styles.offPos}`}
                 />
               </div>
             </div>
@@ -271,9 +264,9 @@ export default function ModalGrupo({
             <button
               type="submit"
               className={styles.btnSubmit}
-              disabled={loading || !form.name || !form.level_uuid}
+              disabled={isPending}
             >
-              {loading
+              {isPending
                 ? "Guardando…"
                 : grupo
                   ? "Guardar cambios"

@@ -7,85 +7,86 @@ import {
   eliminarNivel
 } from "../../services/gruposService";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
-import type { Nivel, NivelFormData } from "../../types";
+import { nivelFormSchema, type Nivel, type NivelFormData } from "../../types";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from 'react-toastify';
 
 interface Props {
   open: boolean;
   niveles: Nivel[];
   onClose: () => void;
-  onSuccess: (niveles: Nivel[]) => void;
+  onSuccess: () => void;
 }
 
-const FORM_VACIO: NivelFormData = { name: "", description: "", order: 1 };
+const initialValues : NivelFormData = {
+    name: "",
+    description: "",
+    order: 1
+}
 
-export default function ModalGestionNiveles({
-  open,
-  niveles,
-  onClose,
-  onSuccess
-}: Props) {
+export default function ModalGestionNiveles({ open, niveles, onClose, onSuccess }: Props) {
+
   const [editando, setEditando] = useState<Nivel | "nuevo" | null>(null);
-  const [form, setForm] = useState<NivelFormData>(FORM_VACIO);
-  const [saving, setSaving] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
-  const [eliminando, setEliminando] = useState<string | null>(null);
   const [nivelAEliminar, setNivelAEliminar] = useState<Nivel | null>(null);
+  const [eliminarError, setEliminarError] = useState<string | null>(null);
+
+  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm({ resolver: zodResolver(nivelFormSchema), defaultValues: initialValues });
+
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationFn: (formData: NivelFormData) => {
+      if (editando === 'nuevo') return crearNivel(formData);
+      if (editando !== null) return actualizarNivel(editando.id, formData);
+      return Promise.reject(new Error("Estado inválido"));
+    },
+    onSuccess: () => {
+      toast.success(editando === 'nuevo' ? "Nivel creado" : "Nivel actualizado");
+      queryClient.invalidateQueries({ queryKey: ["niveles"] });
+      queryClient.invalidateQueries({ queryKey: ["grupos"] });
+      setEditando(null);
+      onSuccess();
+    },
+    onError: (error) => {
+      setError("root", {
+        message: error instanceof Error ? error.message : "Ocurrió un error inesperado."
+      });
+    }
+  });
+  const { mutate: mutateEliminar, isPending: eliminandoPending, variables: eliminandoId } = useMutation({
+    mutationFn: (uuid: string) => eliminarNivel(uuid),
+    onSuccess: () => {
+      toast.success("Nivel eliminado");
+      queryClient.invalidateQueries({ queryKey: ["niveles"] });
+      queryClient.invalidateQueries({ queryKey: ["grupos"] });
+      onSuccess();
+    },
+    onError: (error) => {
+      setEliminarError(
+        error instanceof Error ? error.message : "No se pudo eliminar el nivel."
+      );
+    }
+  });
 
   useEffect(() => {
-    if (!open) setEditando(null);
-  }, [open]);
-
-  useEffect(() => {
-    if (editando === "nuevo") {
-      setForm({ ...FORM_VACIO, order: niveles.length + 1 });
-    } else if (editando !== null) {
-      setForm({
+    if(editando === 'nuevo') {
+      reset({ ...initialValues, order: niveles.length + 1 });
+    } else if(editando !== null) {
+      reset({
         name: editando.name,
         description: editando.description ?? "",
         order: editando.order
-      });
+      })
     }
-    setFormError(null);
-  }, [editando]);
+  }, [editando, niveles.length, reset]);
 
-  async function handleGuardar(e: React.FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setFormError(null);
-    try {
-      if (editando === "nuevo") {
-        const nuevo = await crearNivel(form);
-        onSuccess([...niveles, nuevo]);
-      } else if (editando !== null) {
-        const actualizando = await actualizarNivel(editando.id, form);
-        onSuccess(
-          niveles.map((n) => (n.id === editando.id ? actualizando : n))
-        );
-      }
-      setEditando(null);
-    } catch (err) {
-      setFormError(
-        err instanceof Error ? err.message : "Ocurrió un error inesperado."
-      );
-    } finally {
-      setSaving(false);
-    }
-  }
+  const handleGuardar = (formData: NivelFormData) => mutate(formData); 
 
-  async function handleEliminar() {
-    if (!nivelAEliminar) return;
-    setEliminando(nivelAEliminar.id);
+  function handleEliminar() {
+    if(!nivelAEliminar) return;
+    mutateEliminar(nivelAEliminar.id);
     setNivelAEliminar(null);
-    try {
-      await eliminarNivel(nivelAEliminar.id);
-      onSuccess(niveles.filter((n) => n.id !== nivelAEliminar.id));
-    } catch (err) {
-      setFormError(
-        err instanceof Error ? err.message : "No se pudo eliminar el nivel."
-      );
-    } finally {
-      setEliminando(null);
-    }
   }
 
   function toggleEditar(nivel: Nivel) {
@@ -94,19 +95,27 @@ export default function ModalGestionNiveles({
     setEditando(yaEditando ? null : nivel);
   }
 
+  function handleCerrar() {
+    setEditando(null);
+    onClose();
+  }
+
   if (!open) return null;
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
+    <div className={styles.overlay} onClick={handleCerrar}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <span className={styles.titulo}>Gestionar niveles</span>
-          <button className={styles.closeBtn} type="button" onClick={onClose}>
+          <button className={styles.closeBtn} type="button" onClick={handleCerrar}>
             <MdClose size={16} />
           </button>
         </div>
 
         <div className={styles.body}>
+          {eliminarError && (
+            <div className={styles.error}>{eliminarError}</div>
+          )}
           {niveles.length === 0 ? (
             <div className={styles.empty}>No hay niveles creados aún</div>
           ) : (
@@ -138,7 +147,7 @@ export default function ModalGestionNiveles({
                       <button
                         className={`${styles.btnAcc} ${styles.btnDel}`}
                         onClick={() => setNivelAEliminar(n)}
-                        disabled={eliminando === n.id}
+                        disabled={eliminandoPending && eliminandoId === n.id}
                         title="Eliminar"
                       >
                         <MdDelete size={13} />
@@ -149,19 +158,16 @@ export default function ModalGestionNiveles({
                   {isEditing && (
                     <form
                       className={styles.inlineForm}
-                      onSubmit={handleGuardar}
+                      onSubmit={handleSubmit(handleGuardar)}
                     >
-                      {formError && (
-                        <div className={styles.error}>{formError}</div>
+                      {errors.root && (
+                        <div className={styles.error}>{errors.root.message}</div>
                       )}
                       <div className={styles.campo}>
                         <span className={styles.label}>Nombre *</span>
                         <input
                           className={styles.input}
-                          value={form.name}
-                          onChange={(e) =>
-                            setForm((f) => ({ ...f, name: e.target.value }))
-                          }
+                          {...register('name')}
                           autoFocus
                           required
                         />
@@ -170,13 +176,7 @@ export default function ModalGestionNiveles({
                         <span className={styles.label}>Descripción</span>
                         <input
                           className={styles.input}
-                          value={form.description}
-                          onChange={(e) =>
-                            setForm((f) => ({
-                              ...f,
-                              description: e.target.value
-                            }))
-                          }
+                          {...register('description')}
                         />
                       </div>
                       <div className={styles.campo}>
@@ -185,13 +185,7 @@ export default function ModalGestionNiveles({
                           className={styles.input}
                           type="number"
                           min={1}
-                          value={form.order}
-                          onChange={(e) =>
-                            setForm((f) => ({
-                              ...f,
-                              order: parseInt(e.target.value) || 1
-                            }))
-                          }
+                          {...register('order', { valueAsNumber: true })}
                         />
                       </div>
                       <div className={styles.inlineFooter}>
@@ -205,9 +199,9 @@ export default function ModalGestionNiveles({
                         <button
                           type="submit"
                           className={styles.btnSubmit}
-                          disabled={saving || !form.name.trim()}
+                          disabled={isPending}
                         >
-                          {saving ? "Guardando…" : "Guardar cambios"}
+                          {isPending ? "Guardando…" : "Guardar cambios"}
                         </button>
                       </div>
                     </form>
@@ -218,17 +212,14 @@ export default function ModalGestionNiveles({
           )}
 
           {editando === "nuevo" && (
-            <form className={styles.inlineForm} onSubmit={handleGuardar}>
-              {formError && <div className={styles.error}>{formError}</div>}
+            <form className={styles.inlineForm} onSubmit={handleSubmit(handleGuardar)}>
+              {errors.root && <div className={styles.error}>{errors.root.message}</div>}
               <div className={styles.campo}>
                 <span className={styles.label}>Nombre *</span>
                 <input
                   className={styles.input}
                   placeholder="ej. Preescolar"
-                  value={form.name}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, name: e.target.value }))
-                  }
+                  {...register('name')}
                   autoFocus
                   required
                 />
@@ -238,10 +229,7 @@ export default function ModalGestionNiveles({
                 <input
                   className={styles.input}
                   placeholder="Descripción breve…"
-                  value={form.description}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, description: e.target.value }))
-                  }
+                  {...register('description')}
                 />
               </div>
               <div className={styles.campo}>
@@ -250,13 +238,7 @@ export default function ModalGestionNiveles({
                   className={styles.input}
                   type="number"
                   min={1}
-                  value={form.order}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      order: parseInt(e.target.value) || 1
-                    }))
-                  }
+                  {...register('order', { valueAsNumber: true })}
                 />
               </div>
               <div className={styles.inlineFooter}>
@@ -270,9 +252,9 @@ export default function ModalGestionNiveles({
                 <button
                   type="submit"
                   className={styles.btnSubmit}
-                  disabled={saving || !form.name.trim()}
+                  disabled={isPending}
                 >
-                  {saving ? "Guardando…" : "Crear nivel"}
+                  {isPending ? "Guardando…" : "Crear nivel"}
                 </button>
               </div>
             </form>
