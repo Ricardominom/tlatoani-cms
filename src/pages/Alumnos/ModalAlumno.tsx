@@ -1,20 +1,28 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { MdClose } from "react-icons/md";
 import styles from "./ModalAlumno.module.css";
-import type { ApiStudent, AlumnoForm } from "./types";
-import type { ApiGroup } from "../Grupos/types";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import {
+  alumnoFormSchema,
+  type Alumno,
+  type AlumnoFormData,
+  type Grupo
+} from "../../types";
 import { crearAlumno, actualizarAlumno } from "../../services/alumnosService";
 
 interface Props {
   open: boolean;
-  alumno?: ApiStudent | null;
-  grupos: ApiGroup[];
+  alumno?: Alumno | null;
+  grupos: Grupo[];
   defaultGroupUuid?: string;
   onClose: () => void;
-  onSuccess: (alumno: ApiStudent) => void;
+  onSuccess: (alumno: Alumno) => void;
 }
 
-const FORM_VACIO: AlumnoForm = {
+const initialValues: AlumnoFormData = {
   group_uuid: "",
   name: "",
   last_name: "",
@@ -34,13 +42,43 @@ export default function ModalAlumno({
   onClose,
   onSuccess
 }: Props) {
-  const [form, setForm] = useState<AlumnoForm>(FORM_VACIO);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    setValue,
+    control,
+    formState: { errors }
+  } = useForm<AlumnoFormData>({
+    resolver: zodResolver(alumnoFormSchema),
+    defaultValues: initialValues
+  });
+
+  const queryClient = useQueryClient();
+  const { mutate, isPending } = useMutation({
+    mutationFn: (formData: AlumnoFormData) =>
+      alumno ? actualizarAlumno(alumno.id, formData) : crearAlumno(formData),
+    onSuccess: (alumnoGuardado) => {
+      toast.success(alumno ? "Alumno actualizado" : "Alumno creado");
+      queryClient.invalidateQueries({ queryKey: ["alumnos"] });
+      onSuccess(alumnoGuardado);
+    },
+    onError: (error) => {
+      setError("root", {
+        message:
+          error instanceof Error
+            ? error.message
+            : "Ocurrió un error inesperado."
+      });
+    }
+  });
+
+  const active = useWatch({ control, name: "active" });
 
   useEffect(() => {
     if (alumno) {
-      setForm({
+      reset({
         group_uuid: alumno.group?.id ?? "",
         name: alumno.name,
         last_name: alumno.last_name,
@@ -52,36 +90,16 @@ export default function ModalAlumno({
         active: alumno.active
       });
     } else {
-      setForm({
-        ...FORM_VACIO,
+      reset({
+        ...initialValues,
         group_uuid: defaultGroupUuid ?? grupos[0]?.id ?? ""
       });
     }
-    setError(null);
-  }, [alumno, open, grupos, defaultGroupUuid]);
+  }, [alumno, open, grupos, defaultGroupUuid, reset]);
 
   if (!open) return null;
 
-  const set = <K extends keyof AlumnoForm>(key: K, val: AlumnoForm[K]) =>
-    setForm((f) => ({ ...f, [key]: val }));
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      const alumnoGuardado = alumno
-        ? await actualizarAlumno(alumno.id, form)
-        : await crearAlumno(form);
-      onSuccess(alumnoGuardado);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Ocurrió un error inesperado."
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
+  const handleForm = (formData: AlumnoFormData) => mutate(formData);
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -95,11 +113,12 @@ export default function ModalAlumno({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
+        <form onSubmit={handleSubmit(handleForm)} className={styles.form}>
           <div className={styles.body}>
-            {error && <div className={styles.error}>{error}</div>}
+            {errors.root && (
+              <div className={styles.error}>{errors.root.message}</div>
+            )}
 
-            {/* NOMBRE Y APELLIDOS */}
             <div className={styles.g2}>
               <div className={styles.campo}>
                 <span className={styles.label}>Nombre *</span>
@@ -107,9 +126,7 @@ export default function ModalAlumno({
                   className={styles.input}
                   type="text"
                   placeholder="ej. Sofía"
-                  value={form.name}
-                  onChange={(e) => set("name", e.target.value)}
-                  required
+                  {...register("name")}
                 />
               </div>
               <div className={styles.campo}>
@@ -118,23 +135,18 @@ export default function ModalAlumno({
                   className={styles.input}
                   type="text"
                   placeholder="ej. Ramírez Mendoza"
-                  value={form.last_name}
-                  onChange={(e) => set("last_name", e.target.value)}
-                  required
+                  {...register("last_name")}
                 />
               </div>
             </div>
 
-            {/* FECHA DE NACIMIENTO Y CURP */}
             <div className={styles.g2}>
               <div className={styles.campo}>
                 <span className={styles.label}>Fecha de nacimiento *</span>
                 <input
                   className={styles.input}
                   type="date"
-                  value={form.birth_date}
-                  onChange={(e) => set("birth_date", e.target.value)}
-                  required
+                  {...register("birth_date")}
                 />
               </div>
               <div className={styles.campo}>
@@ -143,22 +155,20 @@ export default function ModalAlumno({
                   className={styles.input}
                   type="text"
                   placeholder="ej. RASF201015..."
-                  value={form.curp}
-                  onChange={(e) => set("curp", e.target.value.toUpperCase())}
+                  {...register("curp")}
+                  onChange={(e) =>
+                    setValue("curp", e.target.value.toUpperCase(), {
+                      shouldValidate: true
+                    })
+                  }
                   maxLength={18}
-                  required
                 />
               </div>
             </div>
 
-            {/* GRUPO */}
             <div className={styles.campo}>
               <span className={styles.label}>Grupo</span>
-              <select
-                className={styles.input}
-                value={form.group_uuid}
-                onChange={(e) => set("group_uuid", e.target.value)}
-              >
+              <select className={styles.input} {...register("group_uuid")}>
                 <option value="">Sin grupo asignado</option>
                 {grupos.map((g) => (
                   <option key={g.id} value={g.id}>
@@ -168,50 +178,43 @@ export default function ModalAlumno({
               </select>
             </div>
 
-            {/* TIPO DE SANGRE */}
             <div className={styles.campo}>
               <span className={styles.label}>Tipo de sangre</span>
               <input
                 className={styles.input}
                 type="text"
                 placeholder="ej. O+, A-, AB+"
-                value={form.blood_type}
-                onChange={(e) => set("blood_type", e.target.value)}
+                {...register("blood_type")}
                 maxLength={3}
               />
             </div>
 
-            {/* ALERGIAS */}
             <div className={styles.campo}>
               <span className={styles.label}>Alergias</span>
               <textarea
                 className={styles.textarea}
                 placeholder="Describe las alergias conocidas…"
-                value={form.allergies}
-                onChange={(e) => set("allergies", e.target.value)}
+                {...register("allergies")}
               />
             </div>
 
-            {/* MEDICAMENTOS */}
             <div className={styles.campo}>
               <span className={styles.label}>Medicamentos</span>
               <textarea
                 className={styles.textarea}
                 placeholder="Medicamentos que toma regularmente…"
-                value={form.medicines}
-                onChange={(e) => set("medicines", e.target.value)}
+                {...register("medicines")}
               />
             </div>
 
-            {/* ACTIVO */}
             <div className={styles.toggleRow}>
               <span className={styles.toggleLbl}>Alumno activo</span>
               <div
-                className={`${styles.toggle} ${form.active ? styles.togOn : styles.togOff}`}
-                onClick={() => set("active", !form.active)}
+                className={`${styles.toggle} ${active ? styles.togOn : styles.togOff}`}
+                onClick={() => setValue("active", !active)}
               >
                 <div
-                  className={`${styles.tThumb} ${form.active ? styles.onPos : styles.offPos}`}
+                  className={`${styles.tThumb} ${active ? styles.onPos : styles.offPos}`}
                 />
               </div>
             </div>
@@ -228,15 +231,9 @@ export default function ModalAlumno({
             <button
               type="submit"
               className={styles.btnSubmit}
-              disabled={
-                loading ||
-                !form.name ||
-                !form.last_name ||
-                !form.birth_date ||
-                !form.curp
-              }
+              disabled={isPending}
             >
-              {loading
+              {isPending
                 ? "Guardando…"
                 : alumno
                   ? "Guardar cambios"

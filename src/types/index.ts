@@ -50,18 +50,18 @@ export const paginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =
         links: z.object({
             first: z.string().nullable(),
             last: z.string().nullable(),
-            prev: z.string().nullable(),   
-            next: z.string().nullable(),  
+            prev: z.string().nullable(),
+            next: z.string().nullable(),
         }),
         meta: z.object({
             current_page: z.number(),
-            from: z.number(),             
-            last_page: z.number(),        
+            from: z.number(),
+            last_page: z.number(),
             per_page: z.number(),
-            to: z.number(),              
+            to: z.number(),
             total: z.number(),
-            path: z.string(),             
-            links: z.array(z.object({     
+            path: z.string(),
+            links: z.array(z.object({
                 url: z.string().nullable(),
                 label: z.string(),
                 page: z.number().nullable(),
@@ -70,12 +70,46 @@ export const paginatedResponseSchema = <T extends z.ZodTypeAny>(itemSchema: T) =
         }),
     })
 
+//Alumno
+export const alumnoSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    last_name: z.string(),
+    birth_date: z.string(),
+    curp: z.string(),
+    photo_path: z.string().nullable(),
+    blood_type: z.string().nullable(),
+    allergies: z.string().nullable(),
+    medicines: z.string().nullable(),
+    active: z.boolean(),
+    created_at: z.string(),
+    updated_at: z.string(),
+    group: grupoSchema.optional().nullable(),
+})
+
+export const alumnoFormSchema = z.object({
+    group_uuid: z.string(),
+    name: z.string().min(1, 'El nombre es requerido'),
+    last_name: z.string().min(1, 'Los apellidos son requeridos'),
+    birth_date: z.string().min(1, 'La fecha de nacimiento es requerida'),
+    curp: z.string().length(18, 'El CURP debe tener 18 caracteres'),
+    blood_type: z.string(),
+    allergies: z.string(),
+    medicines: z.string(),
+    active: z.boolean(),
+})
+
+
 export type Nivel = z.infer<typeof nivelSchema>
 export type Grupo = z.infer<typeof grupoSchema>
+export type Alumno = z.infer<typeof alumnoSchema>
 
 export type PaginatedResponse<T extends z.ZodTypeAny> = z.infer<ReturnType<typeof paginatedResponseSchema<T>>>
 
 export type NivelFormData = z.infer<typeof nivelFormSchema>
 export type GrupoFormData = z.infer<typeof grupoFormSchema>
+export type AlumnoFormData = z.infer<typeof alumnoFormSchema>
+
 export type NivelesPaginados = PaginatedResponse<typeof nivelSchema>
 export type GruposPaginados = PaginatedResponse<typeof grupoSchema>
+export type AlumnosPaginados = PaginatedResponse<typeof alumnoSchema>

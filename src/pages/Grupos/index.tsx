@@ -13,7 +13,7 @@ import ModalGestionNiveles from "./ModalGestionNiveles";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import ModalAlumno from "../Alumnos/ModalAlumno";
 import { getAlumnos } from "../../services/alumnosService";
-import type { ApiStudent, PaginatedResponse as PRStudent } from "../Alumnos/types";
+import type { AlumnosPaginados } from "../../types";
 import type { Grupo, GruposPaginados } from "../../types";
 
 function formatHorario(entry: string | null, dismissal: string | null) {
@@ -463,7 +463,7 @@ export default function Grupos() {
         onClose={() => setModalAgregarAlumnoOpen(false)}
         onSuccess={(alumnoGuardado) => {
           setModalAgregarAlumnoOpen(false);
-          queryClient.setQueryData<PRStudent<ApiStudent>>(
+          queryClient.setQueryData<AlumnosPaginados>(
             ["alumnos-grupo", selectedUuid],
             (old) => old ? { ...old, data: [...old.data, alumnoGuardado] } : old
           );

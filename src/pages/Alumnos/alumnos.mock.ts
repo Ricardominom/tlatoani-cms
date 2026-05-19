@@ -1,16 +1,3 @@
-import type { Alumno } from "./types";
-
-export const ALUMNOS: Alumno[] = [
-    { id: 1, nombre: "Sofía Ramírez", inicial: "S", salon: "Abejas", nivel: "Casa de niños", edad: "4 años", status: "Presente" },
-    { id: 2, nombre: "Valeria Torres", inicial: "V", salon: "Abejas", nivel: "Casa de niños", edad: "4 años", status: "Retardo" },
-    { id: 3, nombre: "Mateo López", inicial: "M", salon: "Abejas", nivel: "Casa de niños", edad: "5 años", status: "Ausente" },
-    { id: 4, nombre: "Emilio Vega", inicial: "E", salon: "Abejas", nivel: "Casa de niños", edad: "4 años", status: "Presente" },
-    { id: 5, nombre: "Diego Ramírez", inicial: "D", salon: "Halcones", nivel: "Taller 1", edad: "7 años", status: "Presente" },
-    { id: 6, nombre: "Renata Hernández", inicial: "R", salon: "Lobos", nivel: "Taller 2", edad: "9 años", status: "Presente" },
-    { id: 7, nombre: "Lucas Hernández", inicial: "L", salon: "Abejas", nivel: "Casa de niños", edad: "5 años", status: "Presente" },
-    { id: 8, nombre: "Isabela Moreno", inicial: "I", salon: "Abejas", nivel: "Casa de niños", edad: "4 años", status: "Presente" },
-];
-
 export const SALONES_FILTER = [
     { label: "Todos", count: 102 },
     { label: "Abejas", count: 22 },

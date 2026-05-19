@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MdDownload, MdEdit, MdAdd, MdSearch, MdDelete } from "react-icons/md";
 import {
@@ -8,7 +8,7 @@ import {
   getGrupo
 } from "../../components/ui/AnimalKit";
 import styles from "./Alumnos.module.css";
-import type { ApiStudent, PaginatedResponse } from "./types";
+import type { Alumno, AlumnosPaginados } from "../../types";
 import { getAlumnos, eliminarAlumno } from "../../services/alumnosService";
 import { getGrupos } from "../../services/gruposService";
 import ModalAlumno from "./ModalAlumno";
@@ -44,16 +44,16 @@ function formatFecha(dateStr: string): string {
 export default function Alumnos() {
   const queryClient = useQueryClient();
 
-  // ── Estado de UI ──────────────────────────────────────────────
+  // Estado de UI
   const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [filtroGrupo, setFiltroGrupo] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [modalAlumnoOpen, setModalAlumnoOpen] = useState(false);
-  const [alumnoEditando, setAlumnoEditando] = useState<ApiStudent | null>(null);
+  const [alumnoEditando, setAlumnoEditando] = useState<Alumno | null>(null);
   const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
   const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
 
-  // ── Queries ───────────────────────────────────────────────────
+  // Queries
   const { data: alumnosRes, isLoading: cargandoAlumnos, error: alumnosError } = useQuery({
     queryKey: ["alumnos"],
     queryFn: () => getAlumnos({ order_by: "last_name", order_direction: "asc", per_page: 100 }),
@@ -67,22 +67,16 @@ export default function Alumnos() {
 
   const alumnos = alumnosRes?.data ?? [];
   const grupos = gruposRes?.data ?? [];
+  const activeUuid = selectedUuid ?? alumnos[0]?.id ?? null;
   const errorMsg = alumnosError instanceof Error ? alumnosError.message : null;
 
-  // Seleccionar el primer alumno cuando cargan los datos
-  useEffect(() => {
-    if (alumnos.length > 0 && !selectedUuid) {
-      setSelectedUuid(alumnos[0].id);
-    }
-  }, [alumnos]);
-
-  // ── Mutation: eliminar alumno con optimistic update ───────────
+  // Mutation: eliminar alumno con optimistic update
   const eliminarMutation = useMutation({
     mutationFn: (uuid: string) => eliminarAlumno(uuid),
     onMutate: async (uuid) => {
       await queryClient.cancelQueries({ queryKey: ["alumnos"] });
       const prevData = queryClient.getQueryData(["alumnos"]);
-      queryClient.setQueryData<PaginatedResponse<ApiStudent>>(["alumnos"], (old) =>
+      queryClient.setQueryData<AlumnosPaginados>(["alumnos"], (old) =>
         old ? { ...old, data: old.data.filter((a) => a.id !== uuid) } : old
       );
       setSelectedUuid(null);
@@ -99,22 +93,13 @@ export default function Alumnos() {
     },
   });
 
-  // ── Guardar alumno (crear o editar) ──────────────────────────
-  function handleAlumnoGuardado(alumnoGuardado: ApiStudent) {
+  // Guardar alumno (crear o editar)
+  function handleAlumnoGuardado(alumnoGuardado: Alumno) {
     setModalAlumnoOpen(false);
-    queryClient.setQueryData<PaginatedResponse<ApiStudent>>(["alumnos"], (old) => {
-      if (!old) return old;
-      const existe = old.data.find((a) => a.id === alumnoGuardado.id);
-      if (existe) {
-        return { ...old, data: old.data.map((a) => a.id === alumnoGuardado.id ? alumnoGuardado : a) };
-      }
-      return { ...old, data: [...old.data, alumnoGuardado] };
-    });
-    queryClient.invalidateQueries({ queryKey: ["alumnos"] });
     setSelectedUuid(alumnoGuardado.id);
   }
 
-  // ── Derivados ─────────────────────────────────────────────────
+  // Derivados 
   const gruposConAlumnos = grupos.filter((g) =>
     alumnos.some((a) => a.group?.id === g.id)
   );
@@ -129,8 +114,7 @@ export default function Alumnos() {
     return matchBusqueda && matchGrupo;
   });
 
-  const alumnoSel = alumnos.find((a) => a.id === selectedUuid) ?? null;
-  const gc = alumnoSel ? getGrupo(alumnoSel.group?.icon_path ?? "") : null;
+  const alumnoSel = alumnos.find((a) => a.id === activeUuid) ?? null;
 
   if (cargandoAlumnos)
     return (
@@ -212,7 +196,7 @@ export default function Alumnos() {
             return (
               <div
                 key={a.id}
-                className={`${styles.alItem} ${a.id === selectedUuid ? styles.alSel : ""}`}
+                className={`${styles.alItem} ${a.id === activeUuid ? styles.alSel : ""}`}
                 onClick={() => setSelectedUuid(a.id)}
               >
                 <div

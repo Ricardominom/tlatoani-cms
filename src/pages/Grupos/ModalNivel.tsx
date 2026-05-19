@@ -27,8 +27,8 @@ export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
 
   const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
-    mutationFn: (FormData: NivelFormData) =>
-      nivel ? actualizarNivel(nivel.id, FormData) : crearNivel(FormData),
+    mutationFn: (formData: NivelFormData) =>
+      nivel ? actualizarNivel(nivel.id, formData) : crearNivel(formData),
     onSuccess: () => {
       toast.success(nivel ? 'Nivel actualizado' : 'Nivel creado');
       queryClient.invalidateQueries({ queryKey: ['niveles']});
