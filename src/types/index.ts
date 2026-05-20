@@ -99,17 +99,70 @@ export const alumnoFormSchema = z.object({
     active: z.boolean(),
 })
 
+ // Usuario
+  export const ROLES_USUARIO = ['superadmin', 'admin', 'teacher', 'family'] as const;
+  export const rolUsuarioSchema = z.enum(ROLES_USUARIO);
+
+  export const usuarioSchema = z.object({
+      id: z.string().uuid(),
+      name: z.string(),
+      last_name: z.string(),
+      email: z.string().email(),
+      phone_number: z.string().nullable(),
+      role: rolUsuarioSchema,
+      active: z.boolean(),
+      last_access: z.string().nullable(),
+      profile_picture_url: z.string().nullable(),
+      created_at: z.string(),
+      updated_at: z.string(),
+  })
+
+  const usuarioBaseFormSchema = z.object({
+      name: z.string().min(1, 'El nombre es requerido'),
+      last_name: z.string().min(1, 'Los apellidos son requeridos'),
+      email: z.string().min(1, 'El correo es requerido').email('Correo inválido'),
+      phone_number: z.string().max(13, 'Máximo 13 caracteres'),
+      role: rolUsuarioSchema,
+      active: z.boolean(),
+      password: z.string(),
+      password_confirmation: z.string(),
+  })
+
+  export const usuarioCreateFormSchema = usuarioBaseFormSchema
+      .refine((d) => d.password.length >= 8, {
+          message: 'Mínimo 8 caracteres',
+          path: ['password'],
+      })
+      .refine((d) => d.password === d.password_confirmation, {
+          message: 'Los passwords no coinciden',
+          path: ['password_confirmation'],
+      })
+
+  export const usuarioUpdateFormSchema = usuarioBaseFormSchema
+      .refine((d) => !d.password || d.password.length >= 8, {
+          message: 'Mínimo 8 caracteres',
+          path: ['password'],
+      })
+      .refine((d) => !d.password || d.password === d.password_confirmation, {
+          message: 'Los passwords no coinciden',
+          path: ['password_confirmation'],
+      })
+
 
 export type Nivel = z.infer<typeof nivelSchema>
 export type Grupo = z.infer<typeof grupoSchema>
 export type Alumno = z.infer<typeof alumnoSchema>
+export type Usuario = z.infer<typeof usuarioSchema>
+export type RolUsuario = z.infer<typeof rolUsuarioSchema>
 
 export type PaginatedResponse<T extends z.ZodTypeAny> = z.infer<ReturnType<typeof paginatedResponseSchema<T>>>
 
 export type NivelFormData = z.infer<typeof nivelFormSchema>
 export type GrupoFormData = z.infer<typeof grupoFormSchema>
 export type AlumnoFormData = z.infer<typeof alumnoFormSchema>
+export type UsuarioFormData = z.infer<typeof usuarioBaseFormSchema>
 
 export type NivelesPaginados = PaginatedResponse<typeof nivelSchema>
 export type GruposPaginados = PaginatedResponse<typeof grupoSchema>
 export type AlumnosPaginados = PaginatedResponse<typeof alumnoSchema>
+export type UsuariosPaginados = PaginatedResponse<typeof usuarioSchema>

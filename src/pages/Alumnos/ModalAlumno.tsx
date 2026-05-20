@@ -82,7 +82,7 @@ export default function ModalAlumno({
         group_uuid: alumno.group?.id ?? "",
         name: alumno.name,
         last_name: alumno.last_name,
-        birth_date: alumno.birth_date,
+        birth_date: alumno.birth_date.substring(0, 10),
         curp: alumno.curp,
         blood_type: alumno.blood_type ?? "",
         allergies: alumno.allergies ?? "",

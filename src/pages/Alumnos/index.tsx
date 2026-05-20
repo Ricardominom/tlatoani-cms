@@ -25,7 +25,7 @@ const ASIST_CLASS: Record<string, string> = {
 
 function calcularEdad(birthDate: string): string {
   const hoy = new Date();
-  const nac = new Date(birthDate + "T00:00:00");
+  const nac = new Date(birthDate);
   let años = hoy.getFullYear() - nac.getFullYear();
   const m = hoy.getMonth() - nac.getMonth();
   if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) años--;
@@ -33,7 +33,7 @@ function calcularEdad(birthDate: string): string {
 }
 
 function formatFecha(dateStr: string): string {
-  const fecha = new Date(dateStr + "T00:00:00");
+  const fecha = new Date(dateStr);
   return fecha.toLocaleDateString("es-MX", {
     day: "numeric",
     month: "short",
