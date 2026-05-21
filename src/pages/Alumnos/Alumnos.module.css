@@ -180,6 +180,7 @@
 /* ── PANEL EXPEDIENTE ── */
 .panelExp {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: var(--gris-bg);
@@ -247,11 +248,16 @@
 
 .expContent {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 20px 22px 40px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.expContent > * {
+  flex-shrink: 0;
 }
 
 /* HERO */

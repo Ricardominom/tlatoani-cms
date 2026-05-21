@@ -1,8 +1,7 @@
-import { useEffect } from "react";
 import { MdClose } from "react-icons/md";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import styles from "./ModalAlumno.module.css";
 import {
@@ -40,15 +39,16 @@ export default function ModalContactoEmergencia({
   const {
     register,
     handleSubmit,
-    reset,
     setError,
     formState: { errors }
   } = useForm<EmergencyContactFormData>({
     resolver: zodResolver(emergencyContactFormSchema),
-    defaultValues: initialValues
+    defaultValues: contacto
+      ? { name: contacto.name, last_name: contacto.last_name,
+          phone_number: contacto.phone_number, relationship: contacto.relationship }
+      : initialValues
   });
 
-  const queryClient = useQueryClient();
   const { mutate, isPending } = useMutation({
     mutationFn: (formData: EmergencyContactFormData) =>
       contacto
@@ -56,9 +56,6 @@ export default function ModalContactoEmergencia({
         : crearEmergencyContact(alumnoUuid, formData),
     onSuccess: (contactoGuardado) => {
       toast.success(contacto ? "Contacto actualizado" : "Contacto agregado");
-      queryClient.invalidateQueries({
-        queryKey: ["emergency-contacts", alumnoUuid]
-      });
       onSuccess(contactoGuardado);
     },
     onError: (error) => {
@@ -70,19 +67,6 @@ export default function ModalContactoEmergencia({
       });
     }
   });
-
-  useEffect(() => {
-    if (contacto) {
-      reset({
-        name: contacto.name,
-        last_name: contacto.last_name,
-        phone_number: contacto.phone_number,
-        relationship: contacto.relationship
-      });
-    } else {
-      reset(initialValues);
-    }
-  }, [contacto, open, reset]);
 
   if (!open) return null;
 

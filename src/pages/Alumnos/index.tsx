@@ -830,8 +830,15 @@ export default function Alumnos() {
         open={modalContactoOpen}
         contacto={contactoEditando}
         alumnoUuid={activeUuid ?? ""}
-        onClose={() => setModalContactoOpen(false)}
-        onSuccess={() => setModalContactoOpen(false)}
+        onClose={() => {
+          setModalContactoOpen(false);
+          setContactoEditando(null);
+        }}
+        onSuccess={() => {
+          queryClient.invalidateQueries({ queryKey: ["emergency-contacts", activeUuid] });
+          setModalContactoOpen(false);
+          setContactoEditando(null);
+        }}
       />
 
       <ConfirmDialog
