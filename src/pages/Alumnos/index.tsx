@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MdDownload, MdEdit, MdAdd, MdSearch, MdDelete, MdPhone } from "react-icons/md";
+import {
+  MdDownload,
+  MdEdit,
+  MdAdd,
+  MdSearch,
+  MdDelete,
+  MdPhone,
+  MdLocalHospital
+} from "react-icons/md";
 import {
   AnimalAvatar,
   AnimalPillLight,
@@ -8,7 +16,12 @@ import {
   getGrupo
 } from "../../components/ui/AnimalKit";
 import styles from "./Alumnos.module.css";
-import type { Alumno, AlumnosPaginados, EmergencyContact } from "../../types";
+import type {
+  Alumno,
+  AlumnosPaginados,
+  EmergencyContact,
+  DoctorInformation
+} from "../../types";
 import { getAlumnos, eliminarAlumno } from "../../services/alumnosService";
 import { getGrupos } from "../../services/gruposService";
 import ModalAlumno from "./ModalAlumno";
@@ -20,6 +33,11 @@ import {
   eliminarEmergencyContact
 } from "../../services/emergencyContactsService";
 import { toast } from "react-toastify";
+import ModalDoctor from "./ModalDoctor";
+import {
+  getDoctors,
+  eliminarDoctor
+} from "../../services/doctorInformationService";
 
 const ASIST_CLASS: Record<string, string> = {
   vac: styles.dVac,
@@ -64,9 +82,19 @@ export default function Alumnos() {
   const [confirmContactoOpen, setConfirmContactoOpen] = useState(false);
   const [contactoAEliminar, setContactoAEliminar] =
     useState<EmergencyContact | null>(null);
+  const [modalDoctorOpen, setModalDoctorOpen] = useState(false);
+  const [doctorEditando, setDoctorEditando] =
+    useState<DoctorInformation | null>(null);
+  const [confirmDoctorOpen, setConfirmDoctorOpen] = useState(false);
+  const [doctorAEliminar, setDoctorAEliminar] =
+    useState<DoctorInformation | null>(null);
 
   // Queries
-  const { data: alumnosRes, isLoading: cargandoAlumnos, error: alumnosError } = useQuery({
+  const {
+    data: alumnosRes,
+    isLoading: cargandoAlumnos,
+    error: alumnosError
+  } = useQuery({
     queryKey: ["alumnos"],
     queryFn: () =>
       getAlumnos({
@@ -93,6 +121,11 @@ export default function Alumnos() {
     enabled: !!activeUuid
   });
 
+  const { data: doctores = [] } = useQuery({
+    queryKey: ["doctor-information", activeUuid],
+    queryFn: () => getDoctors(activeUuid!),
+    enabled: !!activeUuid
+  });
 
   // Mutation: eliminar alumno con optimistic update
   const eliminarMutation = useMutation({
@@ -133,6 +166,24 @@ export default function Alumnos() {
     onError: (err) => {
       toast.error(
         err instanceof Error ? err.message : "No se pudo eliminar el contacto."
+      );
+    }
+  });
+
+  const eliminarDoctorMutation = useMutation({
+    mutationFn: ({ doctorUuid }: { doctorUuid: string }) =>
+      eliminarDoctor(activeUuid!, doctorUuid),
+    onSuccess: () => {
+      toast.success("Médico eliminado");
+      queryClient.invalidateQueries({
+        queryKey: ["doctor-information", activeUuid]
+      });
+      setConfirmDoctorOpen(false);
+      setDoctorAEliminar(null);
+    },
+    onError: (err) => {
+      toast.error(
+        err instanceof Error ? err.message : "No se pudo eliminar el médico."
       );
     }
   });
@@ -744,6 +795,98 @@ export default function Alumnos() {
                 )}
               </div>
             </div>
+
+            <div className={styles.dc}>
+              <div className={styles.dch}>
+                <div>
+                  <span className={styles.dct}>Información médica</span>
+                  <div
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 700,
+                      color: "var(--texto-3)",
+                      marginTop: 2
+                    }}
+                  >
+                    {doctores.length === 0
+                      ? "Sin médico registrado"
+                      : `${doctores.length} médico${doctores.length !== 1 ? "s" : ""}`}
+                  </div>
+                </div>
+                <span
+                  className={styles.dcl}
+                  onClick={() => {
+                    setDoctorEditando(null);
+                    setModalDoctorOpen(true);
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  + Agregar
+                </span>
+              </div>
+              <div className={styles.dcb}>
+                {doctores.length === 0 ? (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "var(--texto-3)",
+                      textAlign: "center",
+                      padding: "16px 0"
+                    }}
+                  >
+                    No hay médico registrado
+                  </div>
+                ) : (
+                  doctores.map((d) => (
+                    <div key={d.id} className={styles.autRow}>
+                      <div
+                        className={styles.autAv}
+                        style={{
+                          background: "var(--turquesa-light)",
+                          color: "var(--turquesa-s)",
+                          border: "1.5px solid var(--turquesa)"
+                        }}
+                      >
+                        <MdLocalHospital size={16} />
+                      </div>
+                      <div className={styles.autDatos}>
+                        <div className={styles.autNombre}>
+                          Dr. {d.name} {d.last_name}
+                        </div>
+                        {d.clinic_name && (
+                          <div className={styles.autRel}>{d.clinic_name}</div>
+                        )}
+                        <div className={styles.autTel}>{d.phone_number}</div>
+                      </div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <span
+                          className={styles.dcl}
+                          style={{ cursor: "pointer" }}
+                          onClick={() => {
+                            setDoctorEditando(d);
+                            setModalDoctorOpen(true);
+                          }}
+                        >
+                          Editar
+                        </span>
+                        <span
+                          className={styles.dcl}
+                          style={{ cursor: "pointer", color: "var(--rojo)" }}
+                          onClick={() => {
+                            setDoctorAEliminar(d);
+                            setConfirmDoctorOpen(true);
+                          }}
+                        >
+                          Eliminar
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
             <div className={styles.dc}>
               <div className={styles.dch}>
                 <div>
@@ -835,7 +978,9 @@ export default function Alumnos() {
           setContactoEditando(null);
         }}
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ["emergency-contacts", activeUuid] });
+          queryClient.invalidateQueries({
+            queryKey: ["emergency-contacts", activeUuid]
+          });
           setModalContactoOpen(false);
           setContactoEditando(null);
         }}
@@ -852,6 +997,37 @@ export default function Alumnos() {
         onCancel={() => {
           setConfirmContactoOpen(false);
           setContactoAEliminar(null);
+        }}
+      />
+      <ModalDoctor
+        key={doctorEditando?.id ?? "nuevo-doctor"}
+        open={modalDoctorOpen}
+        doctor={doctorEditando}
+        alumnoUuid={activeUuid ?? ""}
+        onClose={() => {
+          setModalDoctorOpen(false);
+          setDoctorEditando(null);
+        }}
+        onSuccess={() => {
+          queryClient.invalidateQueries({
+            queryKey: ["doctor-information", activeUuid]
+          });
+          setModalDoctorOpen(false);
+          setDoctorEditando(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={confirmDoctorOpen}
+        titulo="Eliminar médico"
+        mensaje={`¿Seguro que quieres eliminar al Dr. "${doctorAEliminar?.name} ${doctorAEliminar?.last_name}"?`}
+        onConfirm={() =>
+          doctorAEliminar &&
+          eliminarDoctorMutation.mutate({ doctorUuid: doctorAEliminar.id })
+        }
+        onCancel={() => {
+          setConfirmDoctorOpen(false);
+          setDoctorAEliminar(null);
         }}
       />
     </div>
