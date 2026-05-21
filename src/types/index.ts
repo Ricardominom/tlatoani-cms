@@ -99,61 +99,138 @@ export const alumnoFormSchema = z.object({
     active: z.boolean(),
 })
 
- // Usuario
-  export const ROLES_USUARIO = ['superadmin', 'admin', 'teacher', 'family'] as const;
-  export const rolUsuarioSchema = z.enum(ROLES_USUARIO);
+// Usuario
+export const ROLES_USUARIO = ['superadmin', 'admin', 'teacher', 'family'] as const;
+export const rolUsuarioSchema = z.enum(ROLES_USUARIO);
 
-  export const usuarioSchema = z.object({
-      id: z.string().uuid(),
-      name: z.string(),
-      last_name: z.string(),
-      email: z.string().email(),
-      phone_number: z.string().nullable(),
-      role: rolUsuarioSchema,
-      active: z.boolean(),
-      last_access: z.string().nullable(),
-      profile_picture_url: z.string().nullable(),
-      created_at: z.string(),
-      updated_at: z.string(),
-  })
+export const usuarioSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    last_name: z.string(),
+    email: z.string().email(),
+    phone_number: z.string().nullable(),
+    role: rolUsuarioSchema,
+    active: z.boolean(),
+    last_access: z.string().nullable(),
+    profile_picture_url: z.string().nullable(),
+    created_at: z.string(),
+    updated_at: z.string(),
+})
 
-  const usuarioBaseFormSchema = z.object({
-      name: z.string().min(1, 'El nombre es requerido'),
-      last_name: z.string().min(1, 'Los apellidos son requeridos'),
-      email: z.string().min(1, 'El correo es requerido').email('Correo inválido'),
-      phone_number: z.string().max(13, 'Máximo 13 caracteres'),
-      role: rolUsuarioSchema,
-      active: z.boolean(),
-      password: z.string(),
-      password_confirmation: z.string(),
-  })
+const usuarioBaseFormSchema = z.object({
+    name: z.string().min(1, 'El nombre es requerido'),
+    last_name: z.string().min(1, 'Los apellidos son requeridos'),
+    email: z.string().min(1, 'El correo es requerido').email('Correo inválido'),
+    phone_number: z.string().max(13, 'Máximo 13 caracteres'),
+    role: rolUsuarioSchema,
+    active: z.boolean(),
+    password: z.string(),
+    password_confirmation: z.string(),
+})
 
-  export const usuarioCreateFormSchema = usuarioBaseFormSchema
-      .refine((d) => d.password.length >= 8, {
-          message: 'Mínimo 8 caracteres',
-          path: ['password'],
-      })
-      .refine((d) => d.password === d.password_confirmation, {
-          message: 'Los passwords no coinciden',
-          path: ['password_confirmation'],
-      })
+export const usuarioCreateFormSchema = usuarioBaseFormSchema
+    .refine((d) => d.password.length >= 8, {
+        message: 'Mínimo 8 caracteres',
+        path: ['password'],
+    })
+    .refine((d) => d.password === d.password_confirmation, {
+        message: 'Los passwords no coinciden',
+        path: ['password_confirmation'],
+    })
 
-  export const usuarioUpdateFormSchema = usuarioBaseFormSchema
-      .refine((d) => !d.password || d.password.length >= 8, {
-          message: 'Mínimo 8 caracteres',
-          path: ['password'],
-      })
-      .refine((d) => !d.password || d.password === d.password_confirmation, {
-          message: 'Los passwords no coinciden',
-          path: ['password_confirmation'],
-      })
+export const usuarioUpdateFormSchema = usuarioBaseFormSchema
+    .refine((d) => !d.password || d.password.length >= 8, {
+        message: 'Mínimo 8 caracteres',
+        path: ['password'],
+    })
+    .refine((d) => !d.password || d.password === d.password_confirmation, {
+        message: 'Los passwords no coinciden',
+        path: ['password_confirmation'],
+    })
 
+// Emergency Contact
+export const emergencyContactSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    last_name: z.string(),
+    phone_number: z.string(),
+    relationship: z.string(),
+    created_at: z.string(),
+    updated_at: z.string(),
+})
+
+export const emergencyContactFormSchema = z.object({
+    name: z.string().min(1, 'El nombre es requerido'),
+    last_name: z.string().min(1, 'Los apellidos son requeridos'),
+    phone_number: z.string().min(1, 'El teléfono es requerido').max(13, 'Máximo 13 caracteres'),
+    relationship: z.string().min(1, 'La relación es requerida'),
+})
+
+export const emergencyContactsResponseSchema = z.object({
+    data: z.array(emergencyContactSchema),
+})
+
+// Doctor Information
+export const doctorInformationSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    last_name: z.string(),
+    phone_number: z.string(),
+    clinic_name: z.string().nullable(),
+    clinic_address: z.string().nullable(),
+    created_at: z.string(),
+    updated_at: z.string(),
+})
+
+export const doctorInformationFormSchema = z.object({
+    name: z.string().min(1, 'El nombre es requerido'),
+    last_name: z.string().min(1, 'Los apellidos son requeridos'),
+    phone_number: z.string().min(1, 'El teléfono es requerido').max(13, 'Máximo 13 caracteres'),
+    clinic_name: z.string(),
+    clinic_address: z.string(),
+})
+
+export const doctorInformationResponseSchema = z.object({
+    data: z.array(doctorInformationSchema),
+})
+
+// Family Member (Usuario con pivot)
+export const familyPivotSchema = z.object({
+    relationship: z.string(),
+    primary_contact: z.boolean(),
+})
+
+export const familyMemberSchema = usuarioSchema.extend({
+    pivot: familyPivotSchema,
+})
+
+export const familyMemberAttachFormSchema = z.object({
+    user_uuid: z.string().min(1, 'Selecciona un usuario'),
+    relationship: z.string().min(1, 'La relación es requerida'),
+    primary_contact: z.boolean(),
+})
+
+export const familyMemberUpdateFormSchema = z.object({
+    relationship: z.string().min(1, 'La relación es requerida'),
+    primary_contact: z.boolean(),
+})
+
+export const familyMembersResponseSchema = z.object({
+    data: z.array(familyMemberSchema),
+})
 
 export type Nivel = z.infer<typeof nivelSchema>
 export type Grupo = z.infer<typeof grupoSchema>
 export type Alumno = z.infer<typeof alumnoSchema>
 export type Usuario = z.infer<typeof usuarioSchema>
 export type RolUsuario = z.infer<typeof rolUsuarioSchema>
+export type EmergencyContact = z.infer<typeof emergencyContactSchema>
+export type DoctorInformation = z.infer<typeof doctorInformationSchema>
+export type FamilyPivot = z.infer<typeof familyPivotSchema>
+export type FamilyMember = z.infer<typeof familyMemberSchema>
+export type EmergencyContactsResponse = z.infer<typeof emergencyContactsResponseSchema>
+export type DoctorInformationResponse = z.infer<typeof doctorInformationResponseSchema>
+export type FamilyMembersResponse = z.infer<typeof familyMembersResponseSchema>
 
 export type PaginatedResponse<T extends z.ZodTypeAny> = z.infer<ReturnType<typeof paginatedResponseSchema<T>>>
 
@@ -161,6 +238,10 @@ export type NivelFormData = z.infer<typeof nivelFormSchema>
 export type GrupoFormData = z.infer<typeof grupoFormSchema>
 export type AlumnoFormData = z.infer<typeof alumnoFormSchema>
 export type UsuarioFormData = z.infer<typeof usuarioBaseFormSchema>
+export type EmergencyContactFormData = z.infer<typeof emergencyContactFormSchema>
+export type DoctorInformationFormData = z.infer<typeof doctorInformationFormSchema>
+export type FamilyMemberAttachFormData = z.infer<typeof familyMemberAttachFormSchema>
+export type FamilyMemberUpdateFormData = z.infer<typeof familyMemberUpdateFormSchema>
 
 export type NivelesPaginados = PaginatedResponse<typeof nivelSchema>
 export type GruposPaginados = PaginatedResponse<typeof grupoSchema>
