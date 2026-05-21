@@ -27,7 +27,7 @@ function handleServiceError(error: unknown): never {
 
 export async function getDoctors(studentUuid: string): Promise<DoctorInformation[]> {
     try {
-        const res = await api.get<unknown>(`/v1/students/${studentUuid}/doctor-information`);
+        const res = await api.get<unknown>(`/v1/students/${studentUuid}/doctor-informations`);
         const parse = doctorInformationResponseSchema.parse(res.data);
         return parse.data;
     } catch (error) {
@@ -41,7 +41,7 @@ export async function crearDoctor(
 ): Promise<DoctorInformation> {
     try {
         const res = await api.post<{ data: unknown }>(
-            `/v1/students/${studentUuid}/doctor-information`,
+            `/v1/students/${studentUuid}/doctor-informations`,
             toPayload(data)
         );
         return doctorInformationSchema.parse(res.data.data);
@@ -57,7 +57,7 @@ export async function actualizarDoctor(
 ): Promise<DoctorInformation> {
     try {
         const res = await api.put<{ data: unknown }>(
-            `/v1/students/${studentUuid}/doctor-information/${doctorUuid}`,
+            `/v1/students/${studentUuid}/doctor-informations/${doctorUuid}`,
             toPayload(data)
         );
         return doctorInformationSchema.parse(res.data.data);
@@ -71,7 +71,7 @@ export async function eliminarDoctor(
     doctorUuid: string
 ): Promise<void> {
     try {
-        await api.delete(`/v1/students/${studentUuid}/doctor-information/${doctorUuid}`);
+        await api.delete(`/v1/students/${studentUuid}/doctor-informations/${doctorUuid}`);
     } catch (error) {
         handleServiceError(error);
     }

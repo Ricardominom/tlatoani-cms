@@ -122,7 +122,7 @@ export default function Alumnos() {
   });
 
   const { data: doctores = [] } = useQuery({
-    queryKey: ["doctor-information", activeUuid],
+    queryKey: ["doctor-informations", activeUuid],
     queryFn: () => getDoctors(activeUuid!),
     enabled: !!activeUuid
   });
@@ -176,7 +176,7 @@ export default function Alumnos() {
     onSuccess: () => {
       toast.success("Médico eliminado");
       queryClient.invalidateQueries({
-        queryKey: ["doctor-information", activeUuid]
+        queryKey: ["doctor-informations", activeUuid]
       });
       setConfirmDoctorOpen(false);
       setDoctorAEliminar(null);
@@ -1010,7 +1010,7 @@ export default function Alumnos() {
         }}
         onSuccess={() => {
           queryClient.invalidateQueries({
-            queryKey: ["doctor-information", activeUuid]
+            queryKey: ["doctor-informations", activeUuid]
           });
           setModalDoctorOpen(false);
           setDoctorEditando(null);
