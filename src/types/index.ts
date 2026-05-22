@@ -251,3 +251,30 @@ export type NivelesPaginados = PaginatedResponse<typeof nivelSchema>
 export type GruposPaginados = PaginatedResponse<typeof grupoSchema>
 export type AlumnosPaginados = PaginatedResponse<typeof alumnoSchema>
 export type UsuariosPaginados = PaginatedResponse<typeof usuarioSchema>
+
+
+// Padre Pendiente — estado local del modal antes de guardar el alumno
+export const padreNuevoFormSchema = z.object({
+    name: z.string().min(1, 'El nombre es requerido'),
+    last_name: z.string().min(1, 'Los apellidos son requeridos'),
+    email: z.string().min(1, 'El correo es requerido').email('Correo inválido'),
+    phone_number: z.string().max(13, 'Máximo 13 caracteres'),
+    password: z.string(),
+    password_confirmation: z.string(),
+    relationship: z.string().min(1, 'La relación es requerida'),
+    primary_contact: z.boolean(),
+})
+    .refine((d) => d.password.length >= 8, {
+        message: 'Mínimo 8 caracteres',
+        path: ['password'],
+    })
+    .refine((d) => d.password === d.password_confirmation, {
+        message: 'Los passwords no coinciden',
+        path: ['password_confirmation'],
+    })
+
+export type PadreNuevoFormData = z.infer<typeof padreNuevoFormSchema>
+
+export type PadrePendiente =
+    | { tipo: "existente"; usuario: Usuario; relationship: string; primary_contact: boolean }
+    | { tipo: "nuevo"; formData: PadreNuevoFormData }
