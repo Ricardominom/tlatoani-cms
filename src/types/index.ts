@@ -194,14 +194,15 @@ export const doctorInformationResponseSchema = z.object({
     data: z.array(doctorInformationSchema),
 })
 
-// Family Member (Usuario con pivot)
-export const familyPivotSchema = z.object({
+// Family Member
+export const familyMemberSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    last_name: z.string(),
+    email: z.string().email(),
+    phone_number: z.string().nullable(),
     relationship: z.string(),
     primary_contact: z.boolean(),
-})
-
-export const familyMemberSchema = usuarioSchema.extend({
-    pivot: familyPivotSchema,
 })
 
 export const familyMemberAttachFormSchema = z.object({
@@ -219,6 +220,10 @@ export const familyMembersResponseSchema = z.object({
     data: z.array(familyMemberSchema),
 })
 
+export const familyMemberResponseSchema = z.object({
+    data: familyMemberSchema,
+})
+
 export type Nivel = z.infer<typeof nivelSchema>
 export type Grupo = z.infer<typeof grupoSchema>
 export type Alumno = z.infer<typeof alumnoSchema>
@@ -226,11 +231,10 @@ export type Usuario = z.infer<typeof usuarioSchema>
 export type RolUsuario = z.infer<typeof rolUsuarioSchema>
 export type EmergencyContact = z.infer<typeof emergencyContactSchema>
 export type DoctorInformation = z.infer<typeof doctorInformationSchema>
-export type FamilyPivot = z.infer<typeof familyPivotSchema>
 export type FamilyMember = z.infer<typeof familyMemberSchema>
+
 export type EmergencyContactsResponse = z.infer<typeof emergencyContactsResponseSchema>
 export type DoctorInformationResponse = z.infer<typeof doctorInformationResponseSchema>
-export type FamilyMembersResponse = z.infer<typeof familyMembersResponseSchema>
 
 export type PaginatedResponse<T extends z.ZodTypeAny> = z.infer<ReturnType<typeof paginatedResponseSchema<T>>>
 
