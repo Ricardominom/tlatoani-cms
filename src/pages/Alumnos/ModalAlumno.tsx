@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import ModalBase from "../../components/ui/ModalBase";
 import styles from "./ModalAlumno.module.css";
@@ -9,9 +9,14 @@ import {
   alumnoFormSchema,
   type Alumno,
   type AlumnoFormData,
-  type Grupo
+  type Grupo,
+  type PadrePendiente
 } from "../../types";
 import { crearAlumno, actualizarAlumno } from "../../services/alumnosService";
+import SeccionPadres from "./SeccionPadres";
+import { crearUsuario } from "../../services/usuariosService";
+import { vincularFamilyMember } from "../../services/familyMembersService";
+import { getFamilyMembers } from "../../services/familyMembersService";
 
 interface Props {
   open: boolean;
@@ -56,9 +61,69 @@ export default function ModalAlumno({
   });
 
   const queryClient = useQueryClient();
+
+  const { data: familyMembers = [] } = useQuery({
+    queryKey: ["family-members", alumno?.id],
+    queryFn: () => getFamilyMembers(alumno!.id),
+    enabled: !!alumno?.id
+  });
+
+  const [padresPendientes, setPadresPendientes] = useState<PadrePendiente[]>(
+    []
+  );
+
   const { mutate, isPending } = useMutation({
-    mutationFn: (formData: AlumnoFormData) =>
-      alumno ? actualizarAlumno(alumno.id, formData) : crearAlumno(formData),
+    mutationFn: async (formData: AlumnoFormData) => {
+      if (alumno) {
+        return actualizarAlumno(alumno.id, formData);
+      }
+
+      const alumnoGuardado = await crearAlumno(formData);
+
+      const erroresPadres: string[] = [];
+
+      for (const padre of padresPendientes) {
+        try {
+          if (padre.tipo === "existente") {
+            await vincularFamilyMember(alumnoGuardado.id, {
+              user_uuid: padre.usuario.id,
+              relationship: padre.relationship,
+              primary_contact: padre.primary_contact
+            });
+          } else {
+            const usuarioCreado = await crearUsuario({
+              name: padre.formData.name,
+              last_name: padre.formData.last_name,
+              email: padre.formData.email,
+              phone_number: padre.formData.phone_number,
+              password: padre.formData.password,
+              password_confirmation: padre.formData.password_confirmation,
+              role: "family",
+              active: true
+            });
+            await vincularFamilyMember(alumnoGuardado.id, {
+              user_uuid: usuarioCreado.id,
+              relationship: padre.formData.relationship,
+              primary_contact: padre.formData.primary_contact
+            });
+          }
+        } catch {
+          const nombre =
+            padre.tipo === "existente"
+              ? `${padre.usuario.name} ${padre.usuario.last_name}`
+              : `${padre.formData.name} ${padre.formData.last_name}`;
+          erroresPadres.push(nombre);
+        }
+      }
+
+      if (erroresPadres.length > 0) {
+        toast.warning(
+          `Alumno creado. No se pudieron vincular: ${erroresPadres.join(", ")}`
+        );
+      }
+
+      return alumnoGuardado;
+    },
     onSuccess: (alumnoGuardado) => {
       toast.success(alumno ? "Alumno actualizado" : "Alumno creado");
       queryClient.invalidateQueries({ queryKey: ["alumnos"] });
@@ -77,6 +142,7 @@ export default function ModalAlumno({
   const active = useWatch({ control, name: "active" });
 
   useEffect(() => {
+    setPadresPendientes([]);
     if (alumno) {
       reset({
         group_uuid: alumno.group?.id ?? "",
@@ -95,7 +161,7 @@ export default function ModalAlumno({
         group_uuid: defaultGroupUuid ?? grupos[0]?.id ?? ""
       });
     }
-  }, [alumno, open, grupos, defaultGroupUuid, reset]);
+  }, [alumno, open, grupos, defaultGroupUuid, reset, setPadresPendientes]);
 
   return (
     <ModalBase
@@ -206,6 +272,20 @@ export default function ModalAlumno({
           {...register("medicines")}
         />
       </div>
+
+      {alumno ? (
+        <SeccionPadres
+          modo="editar"
+          studentUuid={alumno.id}
+          familyMembers={familyMembers}
+        />
+      ) : (
+        <SeccionPadres
+          modo="crear"
+          padresPendientes={padresPendientes}
+          onChangePendientes={setPadresPendientes}
+        />
+      )}
 
       <div className={styles.toggleRow}>
         <span className={styles.toggleLbl}>Alumno activo</span>

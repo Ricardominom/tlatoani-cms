@@ -252,7 +252,7 @@ export type GruposPaginados = PaginatedResponse<typeof grupoSchema>
 export type AlumnosPaginados = PaginatedResponse<typeof alumnoSchema>
 export type UsuariosPaginados = PaginatedResponse<typeof usuarioSchema>
 
-
+ 
 // Padre Pendiente — estado local del modal antes de guardar el alumno
 export const padreNuevoFormSchema = z.object({
     name: z.string().min(1, 'El nombre es requerido'),

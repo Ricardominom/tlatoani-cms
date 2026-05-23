@@ -20,13 +20,14 @@ import type {
   Alumno,
   AlumnosPaginados,
   EmergencyContact,
-  DoctorInformation
+  DoctorInformation,
+  FamilyMember
 } from "../../types";
 import { getAlumnos, eliminarAlumno } from "../../services/alumnosService";
 import { getGrupos } from "../../services/gruposService";
 import ModalAlumno from "./ModalAlumno";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
-import { ASISTENCIA, AREAS, AUTORIZADOS, BITACORAS } from "./alumnos.mock";
+import { ASISTENCIA, AREAS, BITACORAS } from "./alumnos.mock";
 import ModalContactoEmergencia from "./ModalContactoEmergencia";
 import {
   getEmergencyContacts,
@@ -38,6 +39,7 @@ import {
   getDoctors,
   eliminarDoctor
 } from "../../services/doctorInformationService";
+import { getFamilyMembers } from "../../services/familyMembersService";
 
 const ASIST_CLASS: Record<string, string> = {
   vac: styles.dVac,
@@ -124,6 +126,12 @@ export default function Alumnos() {
   const { data: doctores = [] } = useQuery({
     queryKey: ["doctor-informations", activeUuid],
     queryFn: () => getDoctors(activeUuid!),
+    enabled: !!activeUuid
+  });
+
+  const { data: familyMembers = [] } = useQuery({
+    queryKey: ["family-members", activeUuid],
+    queryFn: () => getFamilyMembers(activeUuid!),
     enabled: !!activeUuid
   });
 
@@ -668,38 +676,84 @@ export default function Alumnos() {
 
               <div className={styles.dc}>
                 <div className={styles.dch}>
-                  <span className={styles.dct}>Personas autorizadas</span>
-                  <span className={styles.dcl}>+ Agregar</span>
+                  <div>
+                    <span className={styles.dct}>Padres y tutores</span>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "var(--texto-3)",
+                        marginTop: 2
+                      }}
+                    >
+                      {familyMembers.length === 0
+                        ? "Sin padres registrados"
+                        : `${familyMembers.length} padre${familyMembers.length !== 1 ? "s" : ""}`}
+                    </div>
+                  </div>
+                  <span
+                    className={styles.dcl}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => {
+                      setAlumnoEditando(alumnoSel);
+                      setModalAlumnoOpen(true);
+                    }}
+                  >
+                    Gestionar
+                  </span>
                 </div>
                 <div className={styles.dcb}>
-                  {AUTORIZADOS.map((p) => (
-                    <div key={p.nombre} className={styles.autRow}>
-                      <div
-                        className={styles.autAv}
-                        style={{
-                          background: p.bg,
-                          color: p.color,
-                          border: `1.5px solid ${p.border}`
-                        }}
-                      >
-                        {p.inicial}
-                      </div>
-                      <div className={styles.autDatos}>
-                        <div className={styles.autNombre}>{p.nombre}</div>
-                        <div className={styles.autRel}>{p.rel}</div>
-                        <div className={styles.autTel}>{p.tel}</div>
-                      </div>
-                      <span
-                        className={styles.autBadge}
-                        style={{ background: p.badgeBg, color: p.badgeColor }}
-                      >
-                        {p.badge}
-                      </span>
+                  {familyMembers.length === 0 ? (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "var(--texto-3)",
+                        textAlign: "center",
+                        padding: "16px 0"
+                      }}
+                    >
+                      Sin padres o tutores registrados
                     </div>
-                  ))}
-                  <button className={styles.btnAdd}>
-                    <MdAdd size={14} /> Agregar persona autorizada
-                  </button>
+                  ) : (
+                    familyMembers.map((m) => (
+                      <div key={m.id} className={styles.autRow}>
+                        <div
+                          className={styles.autAv}
+                          style={{
+                            background: "var(--amarillo-light)",
+                            color: "var(--amarillo-s)",
+                            border: "1.5px solid var(--amarillo)"
+                          }}
+                        >
+                          {m.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div className={styles.autDatos}>
+                          <div className={styles.autNombre}>
+                            {m.name} {m.last_name}
+                          </div>
+                          <div className={styles.autRel}>{m.relationship}</div>
+                          {m.phone_number && (
+                            <div className={styles.autTel}>
+                              <MdPhone size={10} style={{ marginRight: 3 }} />
+                              {m.phone_number}
+                            </div>
+                          )}
+                        </div>
+                        {m.primary_contact && (
+                          <span
+                            className={styles.autBadge}
+                            style={{
+                              background: "var(--verde-light)",
+                              color: "var(--verde-s)"
+                            }}
+                          >
+                            Principal
+                          </span>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

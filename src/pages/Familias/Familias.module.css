@@ -652,3 +652,74 @@
   border-color: var(--turquesa);
   color: var(--turquesa);
 }
+
+.famEmail {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-2);
+  margin-top: 3px;
+}
+.famPhone {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-3);
+  margin-top: 1px;
+}
+.sinResultados {
+  padding: 32px 16px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+.datoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--gris-borde);
+  gap: 12px;
+}
+.datoRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.datoLbl {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-3);
+  flex-shrink: 0;
+}
+.datoVal {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto);
+  text-align: right;
+}
+.dcSub {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--texto-3);
+  margin-top: 2px;
+}
+.placeholder {
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.placeholderTxt {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-3);
+}
+.placeholderCode {
+  font-size: 10px;
+  background: var(--gris-bg);
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: var(--texto-2);
+  font-weight: 800;
+}

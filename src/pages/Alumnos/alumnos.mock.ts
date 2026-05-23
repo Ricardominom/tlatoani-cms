@@ -1,10 +1,3 @@
-export const SALONES_FILTER = [
-    { label: "Todos", count: 102 },
-    { label: "Abejas", count: 22 },
-    { label: "Hormigas", count: 24 },
-    { label: "Halcones", count: 29 },
-    { label: "Lobos", count: 27 },
-];
 
 export const ASISTENCIA = [
     { dia: 1, tipo: "vac" }, { dia: 2, tipo: "pres" }, { dia: 3, tipo: "pres" },
@@ -38,20 +31,6 @@ export const AREAS = [
     },
 ];
 
-export const AUTORIZADOS = [
-    {
-        inicial: "C", nombre: "Carlos Ramírez", rel: "Papá", tel: "222 345 6789", badge: "Principal", bg: "var(--amarillo-light)",
-        color: "#7A6200", border: "var(--amarillo)", badgeBg: "var(--amarillo-light)", badgeColor: "#B89600"
-    },
-    {
-        inicial: "L", nombre: "Laura Mendoza", rel: "Mamá", tel: "222 456 7890", badge: "Principal", bg: "var(--rosa-light)",
-        color: "var(--rosa-s)", border: "var(--rosa)", badgeBg: "var(--rosa-light)", badgeColor: "var(--rosa-s)"
-    },
-    {
-        inicial: "R", nombre: "Rosa Flores", rel: "Abuela materna", tel: "222 567 8901", badge: "Autorizada", bg: "var(--verde-light)",
-        color: "var(--verde-s)", border: "var(--verde)", badgeBg: "var(--verde-light)", badgeColor: "var(--verde-s)"
-    },
-];
 
 export const BITACORAS = [
     {

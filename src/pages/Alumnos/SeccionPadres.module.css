@@ -1,0 +1,336 @@
+.seccion {
+  margin-top: 20px;
+  border-top: 1px solid var(--gris-borde);
+  padding-top: 16px;
+}
+
+.seccionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.seccionTitulo {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--texto-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.btnAgregar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--amarillo-dark);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+.btnAgregar:hover {
+  background: var(--amarillo-light);
+}
+
+/* Lista de padres ya agregados */
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.padreCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  border-radius: 10px;
+}
+
+.padreInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.padreNombre {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.padreMeta {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--texto-3);
+}
+
+.padreBadge {
+  font-size: 9px;
+  font-weight: 800;
+  color: var(--verde-dark);
+  background: var(--verde-light);
+  border-radius: 4px;
+  padding: 2px 6px;
+  text-transform: uppercase;
+}
+
+.padreAcciones {
+  display: flex;
+  gap: 6px;
+}
+
+.btnIcono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  background: none;
+  color: var(--texto-3);
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.btnIcono:hover {
+  background: var(--gris-borde);
+  color: var(--texto);
+}
+.btnIconoRojo:hover {
+  background: var(--rojo-light);
+  color: var(--rojo);
+}
+
+/* Panel de búsqueda / formulario */
+.panel {
+  background: var(--gris-bg);
+  border: 1px solid var(--gris-borde);
+  border-radius: 10px;
+  padding: 14px;
+  margin-top: 8px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.panelTitulo {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--texto);
+}
+
+.btnVolver {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-3);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 5px;
+}
+.btnVolver:hover {
+  background: var(--gris-borde);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.campo:last-child {
+  margin-bottom: 0;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--texto-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input {
+  padding: 9px 12px;
+  border: 1px solid var(--gris-borde);
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto);
+  background: #fff;
+  outline: none;
+  font-family: "Nunito", sans-serif;
+  transition: border-color 0.15s;
+}
+.input:focus {
+  border-color: var(--amarillo);
+}
+
+.errorField {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--rojo);
+}
+
+.g2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Resultados de búsqueda */
+.resultados {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.resultadoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid var(--gris-borde);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+.resultadoItem:hover {
+  border-color: var(--amarillo);
+  background: var(--amarillo-light);
+}
+
+.resultadoNombre {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto);
+}
+.resultadoEmail {
+  font-size: 10px;
+  color: var(--texto-3);
+}
+
+.sinResultados {
+  font-size: 11px;
+  color: var(--texto-3);
+  text-align: center;
+  padding: 12px 0;
+}
+
+.tabsBar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.tab {
+  flex: 1;
+  padding: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 8px;
+  border: 1px solid var(--gris-borde);
+  background: none;
+  cursor: pointer;
+  color: var(--texto-3);
+  transition: all 0.15s;
+}
+.tabActivo {
+  background: var(--amarillo);
+  border-color: var(--amarillo);
+  color: var(--texto);
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+.toggleLbl {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto);
+}
+.toggle {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.togOn {
+  background: var(--verde);
+}
+.togOff {
+  background: #d8d5ce;
+}
+.tThumb {
+  position: absolute;
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  transition: left 0.2s;
+}
+.onPos {
+  left: 18px;
+}
+.offPos {
+  left: 2px;
+}
+
+.panelFooter {
+  margin-top: 14px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btnConfirmar {
+  padding: 7px 16px;
+  background: var(--amarillo);
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto);
+  cursor: pointer;
+  font-family: "Nunito", sans-serif;
+}
+.btnConfirmar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.errorPanel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--rojo);
+  background: var(--rojo-light);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+}
