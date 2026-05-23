@@ -75,3 +75,12 @@ export async function eliminarUsuario(uuid: string): Promise<void> {
         handleServiceError(error);
     }
 }
+
+export async function getUsuario(uuid: string): Promise<Usuario> {
+    try {
+        const res = await api.get<{ data: unknown }>(`/v1/users/${uuid}`);
+        return usuarioSchema.parse(res.data.data);
+    } catch (error) {
+        handleServiceError(error);
+    }
+}
