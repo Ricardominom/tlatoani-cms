@@ -1,6 +1,31 @@
-import { useState } from "react";
+import { useState, useEffect, type FormEvent } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 import { useAuth } from "../../context/AuthContext";
 import styles from "./MiCuenta.module.css";
+import {
+  usuarioUpdateFormSchema,
+  ROLES_USUARIO,
+  type UsuarioFormData,
+  type RolUsuario
+} from "../../types";
+import { getUsuarios, actualizarUsuario } from "../../services/usuariosService";
+
+const ROLE_LABEL: Record<(typeof ROLES_USUARIO)[number], string> = {
+  superadmin: "Super administrador",
+  admin: "Administrador",
+  teacher: "Maestro",
+  family: "Familia"
+};
+
+function formatFecha(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("es-MX", {
+    month: "short",
+    year: "numeric"
+  });
+}
 
 const PREFERENCIAS = [
   {
@@ -42,14 +67,94 @@ const SESIONES = [
 
 export default function MiCuenta() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const [nombre, setNombre] = useState(user?.name ?? "");
-  const [email, setEmail] = useState(user?.email ?? "");
-  const [telefono, setTelefono] = useState("222 111 0000");
+  const {
+    data: perfil,
+    isLoading,
+    isError,
+    error
+  } = useQuery({
+    queryKey: ["perfil"],
+    queryFn: async () => {
+      const res = await getUsuarios({ search: user!.email, per_page: 1 });
+      const found = res.data[0];
+      if (!found) throw new Error("No se encontró el perfil");
+      return found;
+    },
+    enabled: !!user
+  });
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors }
+  } = useForm<UsuarioFormData>({
+    resolver: zodResolver(usuarioUpdateFormSchema),
+    defaultValues: {
+      name: "",
+      last_name: "",
+      email: "",
+      phone_number: "",
+      role: "admin",
+      active: true,
+      password: "",
+      password_confirmation: ""
+    }
+  });
+
+  useEffect(() => {
+    if (perfil) {
+      reset({
+        name: perfil.name,
+        last_name: perfil.last_name,
+        email: perfil.email,
+        phone_number: perfil.phone_number ?? "",
+        role: perfil.role as RolUsuario,
+        active: perfil.active,
+        password: "",
+        password_confirmation: ""
+      });
+    }
+  }, [perfil, reset]);
+
+  const { mutate: guardarDatos, isPending: guardandoDatos } = useMutation({
+    mutationFn: (data: UsuarioFormData) =>
+      actualizarUsuario(perfil?.id ?? "", data),
+    onSuccess: () => {
+      toast.success("Perfil actualizado");
+      queryClient.invalidateQueries({ queryKey: ["perfil"] });
+    },
+    onError: (err) => {
+      setError("root", {
+        message: err instanceof Error ? err.message : "Error al guardar"
+      });
+    }
+  });
 
   const [passActual, setPassActual] = useState("");
   const [passNueva, setPassNueva] = useState("");
   const [passConfirmar, setPassConfirmar] = useState("");
+  const [passErr, setPassErr] = useState<string | null>(null);
+  const [passRootErr, setPassRootErr] = useState<string | null>(null);
+
+  const { mutate: guardarPass, isPending: guardandoPass } = useMutation({
+    mutationFn: (data: UsuarioFormData) =>
+      actualizarUsuario(perfil?.id ?? "", data),
+    onSuccess: () => {
+      toast.success("Contraseña actualizada");
+      setPassActual("");
+      setPassNueva("");
+      setPassConfirmar("");
+    },
+    onError: (err) => {
+      setPassRootErr(
+        err instanceof Error ? err.message : "Error al cambiar contraseña"
+      );
+    }
+  });
 
   const [prefs, setPrefs] = useState<Record<string, boolean>>({
     notifComunicados: true,
@@ -57,21 +162,82 @@ export default function MiCuenta() {
     notifBitacoras: false,
     resumenDiario: true
   });
-
   const togglePref = (id: string) => setPrefs((p) => ({ ...p, [id]: !p[id] }));
 
-  const inicial = nombre.charAt(0).toUpperCase() || "U";
+  if (isLoading) {
+    return (
+      <div
+        className={styles.content}
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "60px 0",
+          fontSize: 13,
+          fontWeight: 700,
+          color: "var(--texto-3)"
+        }}
+      >
+        Cargando perfil…
+      </div>
+    );
+  }
+  if (isError || !perfil) {
+    return (
+      <div
+        className={styles.content}
+        style={{
+          padding: "60px 24px",
+          fontSize: 13,
+          fontWeight: 700,
+          color: "var(--rojo)"
+        }}
+      >
+        Error:{" "}
+        {error instanceof Error ? error.message : "No se pudo cargar el perfil"}
+      </div>
+    );
+  }
+
+  const rolLabel = ROLE_LABEL[perfil.role as RolUsuario] ?? perfil.role;
+
+  function handleGuardarPass(e: FormEvent) {
+    e.preventDefault();
+    setPassErr(null);
+    setPassRootErr(null);
+    if (passNueva.length < 8) {
+      setPassErr("Mínimo 8 caracteres");
+      return;
+    }
+    if (passNueva !== passConfirmar) {
+      setPassErr("Las contraseñas no coinciden");
+      return;
+    }
+    guardarPass({
+      name: perfil.name,
+      last_name: perfil.last_name,
+      email: perfil.email,
+      phone_number: perfil.phone_number ?? "",
+      role: perfil.role as RolUsuario,
+      active: perfil.active,
+      password: passNueva,
+      password_confirmation: passConfirmar
+    });
+  }
 
   return (
     <div className={styles.content}>
       {/* ── HERO ── */}
       <div className={styles.hero}>
         <div className={styles.heroAvWrap}>
-          <div className={styles.heroAv}>{inicial}</div>
+          <div className={styles.heroAv}>
+            {perfil.name.charAt(0).toUpperCase()}
+          </div>
           <div className={styles.heroDot} />
         </div>
         <div className={styles.heroDatos}>
-          <div className={styles.heroNombre}>{nombre || "Usuario"}</div>
+          <div className={styles.heroNombre}>
+            {perfil.name} {perfil.last_name}
+          </div>
           <div className={styles.heroChips}>
             <span
               className={styles.hc}
@@ -81,10 +247,12 @@ export default function MiCuenta() {
                 border: "1px solid var(--amarillo)"
               }}
             >
-              Administrativa
+              {rolLabel}
             </span>
             <span className={styles.hc}>● En línea</span>
-            <span className={styles.hc}>📅 Desde ago 2024</span>
+            <span className={styles.hc}>
+              📅 Desde {formatFecha(perfil.created_at)}
+            </span>
           </div>
         </div>
         <div className={styles.heroRight}>
@@ -104,48 +272,84 @@ export default function MiCuenta() {
               </div>
             </div>
           </div>
-          <div className={styles.cardB}>
+          <form
+            className={styles.cardB}
+            onSubmit={handleSubmit((data) => guardarDatos(data))}
+          >
+            {errors.root && (
+              <div className={styles.errorMsg}>{errors.root.message}</div>
+            )}
             <div className={styles.campo}>
-              <span className={styles.campoLbl}>Nombre completo</span>
-              <input
-                className={styles.campoInput}
-                value={nombre}
-                onChange={(e) => setNombre(e.target.value)}
-              />
+              <span className={styles.campoLbl}>Nombre</span>
+              <input className={styles.campoInput} {...register("name")} />
+              {errors.name && (
+                <span className={styles.campoErr}>{errors.name.message}</span>
+              )}
+            </div>
+            <div className={styles.campo}>
+              <span className={styles.campoLbl}>Apellidos</span>
+              <input className={styles.campoInput} {...register("last_name")} />
+              {errors.last_name && (
+                <span className={styles.campoErr}>
+                  {errors.last_name.message}
+                </span>
+              )}
             </div>
             <div className={styles.campo}>
               <span className={styles.campoLbl}>Correo electrónico</span>
               <input
                 className={styles.campoInput}
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                {...register("email")}
               />
+              {errors.email && (
+                <span className={styles.campoErr}>{errors.email.message}</span>
+              )}
             </div>
             <div className={styles.campo}>
               <span className={styles.campoLbl}>Teléfono</span>
               <input
                 className={styles.campoInput}
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
+                type="tel"
+                maxLength={13}
+                {...register("phone_number")}
               />
             </div>
             <div className={styles.campo}>
               <span className={styles.campoLbl}>Rol</span>
-              <input
-                className={styles.campoInput}
-                value="Administrativa"
-                disabled
-              />
+              <input className={styles.campoInput} value={rolLabel} disabled />
               <span className={styles.campoHint}>
                 El rol solo puede cambiarlo un Directivo
               </span>
             </div>
             <div className={styles.btnRow}>
-              <button className={styles.btnS}>Cancelar</button>
-              <button className={styles.btnP}>Guardar cambios</button>
+              <button
+                type="button"
+                className={styles.btnS}
+                onClick={() =>
+                  reset({
+                    name: perfil.name,
+                    last_name: perfil.last_name,
+                    email: perfil.email,
+                    phone_number: perfil.phone_number ?? "",
+                    role: perfil.role as RolUsuario,
+                    active: perfil.active,
+                    password: "",
+                    password_confirmation: ""
+                  })
+                }
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className={styles.btnP}
+                disabled={guardandoDatos}
+              >
+                {guardandoDatos ? "Guardando…" : "Guardar cambios"}
+              </button>
             </div>
-          </div>
+          </form>
         </div>
 
         {/* SEGURIDAD */}
@@ -156,7 +360,10 @@ export default function MiCuenta() {
               <div className={styles.cardSub}>Actualiza tu contraseña</div>
             </div>
           </div>
-          <div className={styles.cardB}>
+          <form className={styles.cardB} onSubmit={handleGuardarPass}>
+            {passRootErr && (
+              <div className={styles.errorMsg}>{passRootErr}</div>
+            )}
             <div className={styles.campo}>
               <span className={styles.campoLbl}>Contraseña actual</span>
               <input
@@ -186,32 +393,39 @@ export default function MiCuenta() {
                 value={passConfirmar}
                 onChange={(e) => setPassConfirmar(e.target.value)}
               />
-              {passNueva && passConfirmar && passNueva !== passConfirmar && (
-                <span
-                  className={styles.campoHint}
-                  style={{ color: "var(--rojo)" }}
-                >
-                  Las contraseñas no coinciden
-                </span>
-              )}
+              {passErr && <span className={styles.campoErr}>{passErr}</span>}
+              {!passErr &&
+                passNueva &&
+                passConfirmar &&
+                passNueva !== passConfirmar && (
+                  <span
+                    className={styles.campoHint}
+                    style={{ color: "var(--rojo)" }}
+                  >
+                    Las contraseñas no coinciden
+                  </span>
+                )}
             </div>
             <div className={styles.btnRow}>
               <button
+                type="submit"
                 className={styles.btnP}
                 disabled={
-                  !passActual || !passNueva || passNueva !== passConfirmar
+                  guardandoPass ||
+                  !passActual ||
+                  !passNueva ||
+                  passNueva !== passConfirmar
                 }
               >
-                Cambiar contraseña
+                {guardandoPass ? "Guardando…" : "Cambiar contraseña"}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       </div>
 
       {/* ── PREFERENCIAS + SESIONES ── */}
       <div className={styles.g2}>
-        {/* PREFERENCIAS */}
         <div className={styles.card}>
           <div className={styles.cardH}>
             <div>
@@ -239,7 +453,6 @@ export default function MiCuenta() {
           </div>
         </div>
 
-        {/* SESIONES */}
         <div className={styles.card}>
           <div className={styles.cardH}>
             <div>
