@@ -1,15 +1,27 @@
-import React from "react";
+import type { ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import styles from "./Dashboard.module.css";
-import { AnimalIcon } from "../../components/ui/AnimalKit";
-import { MdGroups, MdCreditCard, MdCampaign, MdChat, MdLunchDining } from "react-icons/md";
+import { AnimalIcon, GRUPOS } from "../../components/ui/AnimalKit";
+import {
+  MdGroups,
+  MdCreditCard,
+  MdCampaign,
+  MdChat,
+  MdLunchDining,
+  MdPeople,
+  MdSchool,
+  MdPeopleAlt
+} from "react-icons/md";
+import { getAlumnos } from "../../services/alumnosService";
+import { getGrupos } from "../../services/gruposService";
+import { getUsuarios } from "../../services/usuariosService";
 
 interface StatItem {
-  num: number;
+  num: number | string;
   lbl: string;
   delta: string;
-  tipo: string;
   acento: string;
-  icono: React.ReactNode;
+  icono: ReactNode;
   iconoBg: string;
   numColor?: string;
 }
@@ -18,7 +30,7 @@ interface ActividadItem {
   inicial: string;
   bg: string;
   color: string;
-  txt: React.ReactNode;
+  txt: ReactNode;
   hora: string;
   tipo: string;
   tipoBg: string;
@@ -26,7 +38,7 @@ interface ActividadItem {
 }
 
 interface AlertaItem {
-  icono: React.ReactNode;
+  icono: ReactNode;
   iconoBg: string;
   titulo: string;
   desc: string;
@@ -34,85 +46,6 @@ interface AlertaItem {
   badgeBg: string;
   badgeColor: string;
 }
-
-const STATS: StatItem[] = [
-  {
-    num: 87,
-    lbl: "Alumnos presentes",
-    delta: "85% de asistencia",
-    tipo: "up",
-    acento: "var(--verde)",
-    icono: <MdGroups size={20} color="var(--verde)" />,
-    iconoBg: "var(--verde-light)"
-  },
-  {
-    num: 12,
-    lbl: "Colegiaturas vencidas",
-    delta: "$38,400 pendiente",
-    tipo: "down",
-    acento: "var(--rojo)",
-    icono: <MdCreditCard size={20} color="var(--rojo)" />,
-    iconoBg: "var(--rojo-light)",
-    numColor: "var(--rojo)"
-  },
-  {
-    num: 23,
-    lbl: "Avisos sin confirmar",
-    delta: "3 salones pendientes",
-    tipo: "neutral",
-    acento: "var(--amarillo)",
-    icono: <MdCampaign size={20} color="#B89600" />,
-    iconoBg: "var(--amarillo-light)"
-  },
-  {
-    num: 3,
-    lbl: "Mensajes sin leer",
-    delta: "de 2 maestros",
-    tipo: "neutral",
-    acento: "var(--turquesa)",
-    icono: <MdChat size={20} color="var(--turquesa)" />,
-    iconoBg: "var(--turquesa-light)"
-  }
-];
-
-const SALONES = [
-  {
-    nombre: "Abejas",
-    nivel: "Casa de niños · Mtra. Sandra",
-    pct: 0.86,
-    num: "19/22",
-    color: "var(--verde)",
-    bg: "var(--amarillo-light)",
-    border: "var(--amarillo)"
-  },
-  {
-    nombre: "Hormigas",
-    nivel: "Casa de niños · Mtra. Lupita",
-    pct: 0.88,
-    num: "21/24",
-    color: "var(--verde)",
-    bg: "var(--verde-light)",
-    border: "var(--verde)"
-  },
-  {
-    nombre: "Halcones",
-    nivel: "Taller 1 · Mtro. Roberto",
-    pct: 0.83,
-    num: "24/29",
-    color: "var(--turquesa)",
-    bg: "var(--turquesa-light)",
-    border: "var(--turquesa)"
-  },
-  {
-    nombre: "Lobos",
-    nivel: "Taller 2 · Mtra. Carmen",
-    pct: 0.85,
-    num: "23/27",
-    color: "var(--rosa)",
-    bg: "var(--rosa-light)",
-    border: "var(--rosa)"
-  }
-];
 
 const ACTIVIDAD: ActividadItem[] = [
   {
@@ -266,15 +199,71 @@ const EVENTOS = [
   }
 ];
 
-const RESUMEN = [
-  { lbl: "Alumnos inscritos", val: "102", color: "var(--texto)" },
-  { lbl: "Cobrado este ciclo", val: "$326,400", color: "var(--verde)" },
-  { lbl: "Pendiente de cobro", val: "$38,400", color: "var(--rojo)" },
-  { lbl: "Bitácoras escritas", val: "486", color: "var(--texto)" },
-  { lbl: "Avisos publicados", val: "134", color: "var(--texto)" }
-];
-
 export default function Dashboard() {
+  const { data: alumnosRes } = useQuery({
+    queryKey: ["alumnos"],
+    queryFn: () => getAlumnos({ per_page: 100 })
+  });
+
+  const { data: gruposRes } = useQuery({
+    queryKey: ["grupos"],
+    queryFn: () => getGrupos({ per_page: 100 })
+  });
+
+  const { data: maestrosRes } = useQuery({
+    queryKey: ["dashboard-maestros"],
+    queryFn: () => getUsuarios({ role: "teacher", per_page: 1 })
+  });
+
+  const { data: familiasRes } = useQuery({
+    queryKey: ["dashboard-familias"],
+    queryFn: () => getUsuarios({ role: "family", per_page: 1 })
+  });
+
+  const alumnos = alumnosRes?.data ?? [];
+  const grupos = gruposRes?.data ?? [];
+  const gruposActivos = grupos.filter((g) => g.active);
+
+  const totalAlumnos: number | string = alumnosRes?.meta.total ?? "—";
+  const totalGrupos: number | string = gruposRes ? gruposActivos.length : "—";
+  const totalMaestros: number | string = maestrosRes?.meta.total ?? "—";
+  const totalFamilias: number | string = familiasRes?.meta.total ?? "—";
+
+  const STATS: StatItem[] = [
+    {
+      num: totalAlumnos,
+      lbl: "Alumnos inscritos",
+      delta: "en este ciclo",
+      acento: "var(--verde)",
+      icono: <MdPeople size={20} color="var(--verde)" />,
+      iconoBg: "var(--verde-light)"
+    },
+    {
+      num: totalGrupos,
+      lbl: "Grupos activos",
+      delta: gruposRes ? `${grupos.length} en total` : "en total",
+      acento: "var(--turquesa)",
+      icono: <MdGroups size={20} color="var(--turquesa)" />,
+      iconoBg: "var(--turquesa-light)"
+    },
+    {
+      num: totalMaestros,
+      lbl: "Maestros",
+      delta: "staff docente",
+      acento: "var(--amarillo)",
+      icono: <MdSchool size={20} color="#B89600" />,
+      iconoBg: "var(--amarillo-light)"
+    },
+    {
+      num: totalFamilias,
+      lbl: "Familias",
+      delta: "padres y tutores",
+      acento: "var(--rosa)",
+      icono: <MdPeopleAlt size={20} color="var(--rosa)" />,
+      iconoBg: "var(--rosa-light)"
+    }
+  ];
+
   return (
     <>
       {/* STATS */}
@@ -295,39 +284,7 @@ export default function Dashboard() {
               {s.num}
             </div>
             <div className={styles.statLbl}>{s.lbl}</div>
-            <div
-              className={`${styles.statDelta} ${s.tipo === "up" ? styles.deltaUp : s.tipo === "down" ? styles.deltaDown : styles.deltaNeutral}`}
-            >
-              {s.tipo === "up" && (
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <polyline
-                    points="18 15 12 9 6
-  15"
-                  />
-                </svg>
-              )}
-              {s.tipo === "down" && (
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                >
-                  <polyline
-                    points="6 9 12 15 18
-  9"
-                  />
-                </svg>
-              )}
+            <div className={`${styles.statDelta} ${styles.deltaNeutral}`}>
               {s.delta}
             </div>
           </div>
@@ -337,42 +294,69 @@ export default function Dashboard() {
       {/* MAIN GRID */}
       <div className={styles.mainGrid}>
         <div className={styles.colLeft}>
-          {/* Asistencia */}
+          {/* Grupos y capacidad */}
           <div className={styles.card}>
             <div className={styles.cardHeader}>
               <div>
-                <div className={styles.cardTitulo}>
-                  Asistencia de hoy por salón
+                <div className={styles.cardTitulo}>Grupos y capacidad</div>
+                <div className={styles.cardSub}>
+                  {totalAlumnos !== "—"
+                    ? `${totalAlumnos} alumnos inscritos`
+                    : "Cargando…"}
                 </div>
-                <div className={styles.cardSub}>102 alumnos inscritos</div>
               </div>
-              <span className={styles.cardLink}>Ver detalle →</span>
             </div>
             <div className={styles.cardBody}>
-              {SALONES.map((s) => (
-                <div key={s.nombre} className={styles.salonRow}>
-                  <div
-                    className={styles.salonIcono}
-                    style={{
-                      background: s.bg,
-                      border: `1.5px solid ${s.border}`
-                    }}
-                  >
-                    <AnimalIcon salon={s.nombre} size={22} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div className={styles.salonNombre}>{s.nombre}</div>
-                    <div className={styles.salonNivel}>{s.nivel}</div>
-                  </div>
-                  <div className={styles.barraWrap}>
-                    <div
-                      className={styles.barra}
-                      style={{ width: `${s.pct * 100}%`, background: s.color }}
-                    />
-                  </div>
-                  <div className={styles.salonNum}>{s.num}</div>
+              {gruposActivos.length === 0 ? (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "var(--texto-3)",
+                    fontWeight: 600
+                  }}
+                >
+                  {gruposRes ? "Sin grupos activos" : "Cargando…"}
                 </div>
-              ))}
+              ) : (
+                gruposActivos.map((g) => {
+                  const kit = GRUPOS.find((k) => k.name === g.icon_path);
+                  const inscritos = alumnos.filter(
+                    (a) => a.group?.id === g.id
+                  ).length;
+                  const pct = g.capacity > 0 ? inscritos / g.capacity : 0;
+                  return (
+                    <div key={g.id} className={styles.salonRow}>
+                      <div
+                        className={styles.salonIcono}
+                        style={{
+                          background: kit?.light ?? g.color + "22",
+                          border: `1.5px solid ${g.color}`
+                        }}
+                      >
+                        <AnimalIcon salon={g.icon_path ?? ""} size={22} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div className={styles.salonNombre}>{g.name}</div>
+                        <div className={styles.salonNivel}>
+                          {g.level?.name ?? "Sin nivel"}
+                        </div>
+                      </div>
+                      <div className={styles.barraWrap}>
+                        <div
+                          className={styles.barra}
+                          style={{
+                            width: `${Math.min(pct * 100, 100)}%`,
+                            background: g.color
+                          }}
+                        />
+                      </div>
+                      <div className={styles.salonNum}>
+                        {inscritos}/{g.capacity}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -594,7 +578,29 @@ export default function Dashboard() {
             </div>
           </div>
           <div className={styles.cardBody}>
-            {RESUMEN.map((r) => (
+            {[
+              {
+                lbl: "Alumnos inscritos",
+                val: String(totalAlumnos),
+                color: "var(--texto)"
+              },
+              {
+                lbl: "Grupos activos",
+                val: String(totalGrupos),
+                color: "var(--texto)"
+              },
+              {
+                lbl: "Cobrado este ciclo",
+                val: "$326,400",
+                color: "var(--verde)"
+              },
+              {
+                lbl: "Pendiente de cobro",
+                val: "$38,400",
+                color: "var(--rojo)"
+              },
+              { lbl: "Avisos publicados", val: "134", color: "var(--texto)" }
+            ].map((r) => (
               <div key={r.lbl} className={styles.resumenRow}>
                 <span className={styles.resumenLbl}>{r.lbl}</span>
                 <span className={styles.resumenVal} style={{ color: r.color }}>
