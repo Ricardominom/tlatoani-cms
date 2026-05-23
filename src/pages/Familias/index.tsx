@@ -1,152 +1,111 @@
-import { useState, useEffect } from "react";
-import {
-  MdSearch,
-  MdAdd,
-  MdEdit,
-  MdMessage,
-  MdNotifications
-} from "react-icons/md";
-import { AnimalAvatar, getGrupo } from "../../components/ui/AnimalKit";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { MdSearch, MdEdit, MdPhone, MdEmail } from "react-icons/md";
 import styles from "./Familias.module.css";
-import { FAMILIAS } from "./familias.mock";
+import type { Usuario } from "../../types";
+import { getUsuarios } from "../../services/usuariosService";
+import ModalUsuario from "../Usuarios/ModalUsuario";
 
-type Filtro = "todas" | "vencidas" | "semana" | "corriente";
+type Filtro = "todos" | "activos" | "baja";
 
-const PAGO_STYLE = {
-  "Al corriente": {
-    av: {
-      bg: "var(--verde-light)",
-      color: "var(--verde-s)",
-      border: "var(--verde)"
-    },
-    badge: { bg: "var(--verde-light)", color: "var(--verde-s)" },
-    monto: "var(--verde)"
-  },
-  Vencido: {
-    av: { bg: "var(--rojo-light)", color: "var(--rojo)", border: "#F5C8C8" },
-    badge: { bg: "var(--rojo-light)", color: "var(--rojo)" },
-    monto: "var(--rojo)"
-  },
-  Proximo: {
-    av: {
-      bg: "var(--amarillo-light)",
-      color: "#7A6200",
-      border: "var(--amarillo)"
-    },
-    badge: { bg: "var(--amarillo-light)", color: "#B89600" },
-    monto: "#B89600"
-  }
-};
+function formatFecha(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  });
+}
 
-const MES_STYLE = {
-  pagado: {
-    barra: "var(--verde)",
-    monto: "var(--texto)",
-    bg: "var(--verde-light)",
-    color: "var(--verde-s)",
-    label: "✓ Pagado"
-  },
-  pendiente: {
-    barra: "var(--amarillo)",
-    monto: "#B89600",
-    bg: "var(--amarillo-light)",
-    color: "#B89600",
-    label: ""
-  },
-  proximo: {
-    barra: "#E0E0E0",
-    monto: "var(--texto-3)",
-    bg: "var(--gris-bg)",
-    color: "var(--texto-3)",
-    label: "Próximo"
-  }
-};
-
-const PADRE_COLORS = [
-  {
-    bg: "var(--amarillo-light)",
-    color: "#7A6200",
-    border: "var(--amarillo)",
-    rolBg: "var(--amarillo-light)",
-    rolColor: "#B89600"
-  },
-  {
-    bg: "var(--rosa-light)",
-    color: "var(--rosa-s)",
-    border: "var(--rosa)",
-    rolBg: "var(--rosa-light)",
-    rolColor: "var(--rosa-s)"
-  },
-  {
-    bg: "var(--verde-light)",
-    color: "var(--verde-s)",
-    border: "var(--verde)",
-    rolBg: "var(--verde-light)",
-    rolColor: "var(--verde-s)"
-  },
-  {
-    bg: "var(--turquesa-light)",
-    color: "var(--turquesa-s)",
-    border: "var(--turquesa)",
-    rolBg: "var(--turquesa-light)",
-    rolColor: "var(--turquesa-s)"
-  }
-];
-
-const NOTIF_CONFIG = [
-  {
-    key: "avisos" as const,
-    lbl: "Avisos importantes",
-    sub: "Comunicados del maestro"
-  },
-  { key: "colegiatura" as const, lbl: "Colegiatura", sub: "Alertas de pago" },
-  {
-    key: "comida" as const,
-    lbl: "Comida compartida",
-    sub: "Recordatorios de turno"
-  },
-  { key: "galeria" as const, lbl: "Galería", sub: "Fotos y videos nuevos" }
-];
+function formatFechaHora(dateStr: string | null): string {
+  if (!dateStr) return "Nunca";
+  return new Date(dateStr).toLocaleString("es-MX", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
 
 export default function Familias() {
-  const [selectedId, setSelectedId] = useState(1);
+  const queryClient = useQueryClient();
+  const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
-  const [filtro, setFiltro] = useState<Filtro>("todas");
+  const [filtro, setFiltro] = useState<Filtro>("todos");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [usuarioEditando, setUsuarioEditando] = useState<Usuario | null>(null);
 
-  const familia = FAMILIAS.find((f) => f.id === selectedId)!;
-  const [notif, setNotif] = useState(familia.notif);
+  const {
+    data: usuariosRes,
+    isLoading,
+    error
+  } = useQuery({
+    queryKey: ["usuarios-familia"],
+    queryFn: () =>
+      getUsuarios({
+        role: "family",
+        order_by: "last_name",
+        order_direction: "asc",
+        per_page: 100
+      })
+  });
 
-  useEffect(() => {
-    setNotif(familia.notif);
-  }, [selectedId]);
+  const familias = usuariosRes?.data ?? [];
+  const activeUuid = selectedUuid ?? familias[0]?.id ?? null;
+  const errorMsg = error instanceof Error ? error.message : null;
 
-  const familiasFiltradas = FAMILIAS.filter((f) => {
+  const familiasFiltradas = familias.filter((u) => {
+    const nombre = `${u.name} ${u.last_name}`.toLowerCase();
     const matchBusqueda =
       !busqueda ||
-      f.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      f.hijos.some((h) =>
-        h.nombre.toLowerCase().includes(busqueda.toLowerCase())
-      );
+      nombre.includes(busqueda.toLowerCase()) ||
+      u.email.toLowerCase().includes(busqueda.toLowerCase());
     const matchFiltro =
-      filtro === "vencidas"
-        ? f.pagoStatus === "Vencido"
-        : filtro === "semana"
-          ? f.pagoStatus === "Proximo"
-          : filtro === "corriente"
-            ? f.pagoStatus === "Al corriente"
-            : true;
+      filtro === "activos" ? u.active : filtro === "baja" ? !u.active : true;
     return matchBusqueda && matchFiltro;
   });
 
-  const ps = PAGO_STYLE[familia.pagoStatus];
-  const apellido = familia.nombre.replace("Familia ", "");
-  const vencidasCount = FAMILIAS.filter(
-    (f) => f.pagoStatus === "Vencido"
-  ).length;
-  const semanaCount = FAMILIAS.filter((f) => f.pagoStatus === "Proximo").length;
+  const familiaSel = familias.find((u) => u.id === activeUuid) ?? null;
 
-  const toggleNotif = (key: keyof typeof notif) =>
-    setNotif((prev) => ({ ...prev, [key]: !prev[key] }));
+  function handleGuardado(usuarioGuardado: Usuario) {
+    queryClient.invalidateQueries({ queryKey: ["usuarios-familia"] });
+    setModalOpen(false);
+    setSelectedUuid(usuarioGuardado.id);
+  }
+
+  if (isLoading)
+    return (
+      <div
+        className={styles.root}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 13,
+          fontWeight: 700,
+          color: "var(--texto-3)"
+        }}
+      >
+        Cargando familias…
+      </div>
+    );
+
+  if (errorMsg)
+    return (
+      <div
+        className={styles.root}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 13,
+          fontWeight: 700,
+          color: "var(--rojo)"
+        }}
+      >
+        {errorMsg}
+      </div>
+    );
 
   return (
     <div className={styles.root}>
@@ -155,388 +114,270 @@ export default function Familias() {
         <div className={styles.listaHeader}>
           <div className={styles.listaTop}>
             <span className={styles.listaTitulo}>Familias</span>
-            <span className={styles.listaCount}>
-              {FAMILIAS.length} familias
-            </span>
+            <span className={styles.listaCount}>{familias.length} padres</span>
           </div>
           <div className={styles.searchWrap}>
             <MdSearch size={14} color="var(--texto-3)" />
             <input
               className={styles.searchInput}
-              placeholder="Buscar familia o alumno…"
+              placeholder="Buscar padre, tutor o correo…"
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
             />
           </div>
           <div className={styles.filtros}>
             <button
-              className={`${styles.fil} ${filtro === "todas" ? styles.filOn : styles.filOff}`}
-              onClick={() => setFiltro("todas")}
+              className={`${styles.fil} ${filtro === "todos" ? styles.filOn : styles.filOff}`}
+              onClick={() => setFiltro("todos")}
             >
-              Todas
+              Todos · {familias.length}
             </button>
             <button
-              className={`${styles.fil} ${filtro === "vencidas" ? styles.filOn : styles.filRed}`}
-              onClick={() => setFiltro("vencidas")}
+              className={`${styles.fil} ${filtro === "activos" ? styles.filOn : styles.filOff}`}
+              onClick={() => setFiltro("activos")}
             >
-              Vencidas · {vencidasCount}
+              Activos · {familias.filter((u) => u.active).length}
             </button>
             <button
-              className={`${styles.fil} ${filtro === "semana" ? styles.filOn : styles.filYel}`}
-              onClick={() => setFiltro("semana")}
+              className={`${styles.fil} ${filtro === "baja" ? styles.filOn : styles.filRed}`}
+              onClick={() => setFiltro("baja")}
             >
-              Esta semana · {semanaCount}
-            </button>
-            <button
-              className={`${styles.fil} ${filtro === "corriente" ? styles.filOn : styles.filOff}`}
-              onClick={() => setFiltro("corriente")}
-            >
-              Al corriente
+              Baja · {familias.filter((u) => !u.active).length}
             </button>
           </div>
         </div>
 
         <div className={styles.lista}>
-          {familiasFiltradas.map((f) => {
-            const fp = PAGO_STYLE[f.pagoStatus];
-            return (
+          {familiasFiltradas.length === 0 && (
+            <div className={styles.sinResultados}>
+              No se encontraron familias
+            </div>
+          )}
+          {familiasFiltradas.map((u) => (
+            <div
+              key={u.id}
+              className={`${styles.famItem} ${u.id === activeUuid ? styles.famSel : ""}`}
+              onClick={() => setSelectedUuid(u.id)}
+            >
               <div
-                key={f.id}
-                className={`${styles.famItem} ${f.id === selectedId ? styles.famSel : ""}`}
-                onClick={() => setSelectedId(f.id)}
+                className={styles.famAv}
+                style={{
+                  background: u.active
+                    ? "var(--amarillo-light)"
+                    : "var(--gris-bg)",
+                  color: u.active ? "#7A6200" : "var(--texto-3)",
+                  border: `1.5px solid ${u.active ? "var(--amarillo)" : "var(--gris-borde)"}`
+                }}
               >
-                <div
-                  className={styles.famAv}
+                {u.name.charAt(0).toUpperCase()}
+              </div>
+              <div className={styles.famDatos}>
+                <div className={styles.famNombre}>
+                  {u.name} {u.last_name}
+                </div>
+                <div className={styles.famEmail}>{u.email}</div>
+                {u.phone_number && (
+                  <div className={styles.famPhone}>{u.phone_number}</div>
+                )}
+              </div>
+              {!u.active && (
+                <span
+                  className={styles.famStatus}
                   style={{
-                    background: fp.av.bg,
-                    color: fp.av.color,
-                    border: `1.5px solid ${fp.av.border}`
+                    background: "var(--rojo-light)",
+                    color: "var(--rojo)"
                   }}
                 >
-                  {f.inicial}
-                </div>
-                <div className={styles.famDatos}>
-                  <div className={styles.famNombre}>{f.nombre}</div>
-                  <div className={styles.famHijos}>
-                    {f.hijos.map((h) => {
-                      const g = getGrupo(h.salon);
-                      return (
-                        <span
-                          key={h.nombre}
-                          className={styles.hijoChip}
-                          style={{ background: g?.light, color: g?.dark }}
-                        >
-                          {h.nombre} · {h.salon}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-                <div className={styles.famRight}>
-                  <span className={styles.famMonto} style={{ color: fp.monto }}>
-                    ${f.monto.toLocaleString()}
-                  </span>
-                  <span
-                    className={styles.famStatus}
-                    style={{ background: fp.badge.bg, color: fp.badge.color }}
-                  >
-                    {f.pagoStatus === "Proximo"
-                      ? `${f.diasRestantes} días`
-                      : f.pagoStatus}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
+                  Baja
+                </span>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
       {/* ── DETALLE ── */}
-      <div className={styles.panelDet}>
-        <div className={styles.detTopbar}>
-          <div>
-            <div className={styles.detTitulo}>{familia.nombre}</div>
-            <div className={styles.detSub}>
-              {familia.contacto} · {familia.hijos.length}{" "}
-              {familia.hijos.length === 1 ? "hijo inscrito" : "hijos inscritos"}{" "}
-              · desde {familia.desde}
-            </div>
-          </div>
-          <div className={styles.detActions}>
-            <button className={styles.btnS}>
-              <MdMessage size={13} /> Mensaje
-            </button>
-            <button className={styles.btnS}>
-              <MdEdit size={13} /> Editar
-            </button>
-            <button className={styles.btnP}>
-              <MdNotifications size={13} color="#5A4800" /> Recordar pago
-            </button>
-          </div>
-        </div>
-
-        <div className={styles.detContent}>
-          {/* HERO */}
-          <div className={styles.famHero}>
-            <div
-              className={styles.heroAv}
-              style={{
-                background: ps.av.bg,
-                color: ps.av.color,
-                border: `2px solid ${ps.av.border}`,
-                boxShadow: `0 3px 0 ${ps.av.border}`
-              }}
-            >
-              {familia.inicial}
-            </div>
-            <div className={styles.heroDatos}>
-              <div className={styles.heroNombre}>{familia.nombre}</div>
-              <div className={styles.heroMeta}>
-                <span className={styles.metaChip}>{familia.contacto}</span>
-                <span className={styles.metaChip}>{familia.telefono}</span>
-                <span className={styles.metaChip}>{familia.email}</span>
-                <span className={styles.metaChip}>
-                  {familia.hijos.length}{" "}
-                  {familia.hijos.length === 1 ? "hijo" : "hijos"}
-                </span>
-                <span className={styles.metaChip}>Desde {familia.desde}</span>
+      {familiaSel ? (
+        <div className={styles.panelDet}>
+          <div className={styles.detTopbar}>
+            <div>
+              <div className={styles.detTitulo}>
+                {familiaSel.name} {familiaSel.last_name}
+              </div>
+              <div className={styles.detSub}>
+                Padre / Tutor · {familiaSel.email}
               </div>
             </div>
-            <div className={styles.heroRight}>
-              <span
-                className={styles.estadoBadge}
-                style={{
-                  background: ps.badge.bg,
-                  color: ps.badge.color,
-                  border: `1px solid 
-  ${ps.av.border}`
+            <div className={styles.detActions}>
+              <button
+                className={styles.btnP}
+                onClick={() => {
+                  setUsuarioEditando(familiaSel);
+                  setModalOpen(true);
                 }}
               >
-                {familia.pagoStatus === "Proximo"
-                  ? `Pago próximo · ${familia.diasRestantes} días`
-                  : familia.pagoStatus}
-              </span>
-              <div className={styles.heroMonto} style={{ color: ps.monto }}>
-                ${familia.monto.toLocaleString()}
-              </div>
-              <div className={styles.heroMontoLbl}>pendiente</div>
+                <MdEdit size={13} /> Editar
+              </button>
             </div>
           </div>
 
-          {/* RESUMEN */}
-          <div className={styles.resumenChips}>
-            <div className={styles.rchip}>
-              <span
-                className={styles.rchipNum}
-                style={{ color: "var(--verde)" }}
+          <div className={styles.detContent}>
+            {/* HERO */}
+            <div className={styles.famHero}>
+              <div
+                className={styles.heroAv}
+                style={{
+                  background: familiaSel.active
+                    ? "var(--amarillo-light)"
+                    : "var(--gris-bg)",
+                  color: familiaSel.active ? "#7A6200" : "var(--texto-3)",
+                  border: `2px solid ${familiaSel.active ? "var(--amarillo)" : "var(--gris-borde)"}`,
+                  boxShadow: familiaSel.active
+                    ? "0 3px 0 var(--amarillo)"
+                    : "none"
+                }}
               >
-                {familia.mesesPagados}
-              </span>
-              <span className={styles.rchipLbl}>Meses pagados</span>
-            </div>
-            <div className={styles.rchip}>
-              <span className={styles.rchipNum} style={{ color: "#B89600" }}>
-                {familia.mesesPendientes}
-              </span>
-              <span className={styles.rchipLbl}>Meses pendientes</span>
-            </div>
-            <div className={styles.rchip}>
-              <span className={styles.rchipNum}>{familia.totalPagado}</span>
-              <span className={styles.rchipLbl}>Total pagado</span>
-            </div>
-            <div className={styles.rchip}>
-              <span
-                className={styles.rchipNum}
-                style={{ color: "var(--turquesa)" }}
-              >
-                {familia.avisosConfirmados}
-              </span>
-              <span className={styles.rchipLbl}>Avisos confirmados</span>
-            </div>
-            <div className={styles.rchip}>
-              <span
-                className={styles.rchipNum}
-                style={{ color: "var(--rosa)" }}
-              >
-                {familia.bitacorasRecibidas}
-              </span>
-              <span className={styles.rchipLbl}>Bitácoras recibidas</span>
-            </div>
-          </div>
-
-          {/* HIJOS + PADRES */}
-          <div className={styles.g2}>
-            <div className={styles.dc}>
-              <div className={styles.dch}>
-                <span className={styles.dct}>Hijos inscritos</span>
-                <span className={styles.dcl}>+ Agregar hijo</span>
+                {familiaSel.name.charAt(0).toUpperCase()}
               </div>
-              <div className={styles.dcb}>
-                {familia.hijos.map((h) => {
-                  const g = getGrupo(h.salon);
-                  return (
-                    <div key={h.nombre} className={styles.hijoCard}>
-                      <AnimalAvatar group={h.salon} size="sm" />
-                      <div className={styles.hijoDatos}>
-                        <div className={styles.hijoNombre}>
-                          {h.nombre} {apellido}
-                        </div>
-                        <div className={styles.hijoNivel}>{h.salon}</div>
-                      </div>
-                      <span
-                        className={styles.hijoTag}
-                        style={{ background: g?.light, color: g?.dark }}
-                      >
-                        {h.salon}
-                      </span>
-                    </div>
-                  );
-                })}
+              <div className={styles.heroDatos}>
+                <div className={styles.heroNombre}>
+                  {familiaSel.name} {familiaSel.last_name}
+                </div>
+                <div className={styles.heroMeta}>
+                  <span className={styles.metaChip}>
+                    <MdEmail size={10} style={{ marginRight: 3 }} />
+                    {familiaSel.email}
+                  </span>
+                  {familiaSel.phone_number && (
+                    <span className={styles.metaChip}>
+                      <MdPhone size={10} style={{ marginRight: 3 }} />
+                      {familiaSel.phone_number}
+                    </span>
+                  )}
+                  <span className={styles.metaChip}>
+                    📅 Desde {formatFecha(familiaSel.created_at)}
+                  </span>
+                  <span className={styles.metaChip}>
+                    Últ. acceso: {formatFechaHora(familiaSel.last_access)}
+                  </span>
+                </div>
+              </div>
+              <div className={styles.heroRight}>
+                <span
+                  className={styles.estadoBadge}
+                  style={{
+                    background: familiaSel.active
+                      ? "var(--verde-light)"
+                      : "var(--rojo-light)",
+                    color: familiaSel.active ? "var(--verde-s)" : "var(--rojo)",
+                    border: `1px solid ${familiaSel.active ? "var(--verde)" : "#F5C8C8"}`
+                  }}
+                >
+                  {familiaSel.active ? "✓ Activo" : "Baja"}
+                </span>
               </div>
             </div>
 
-            <div className={styles.dc}>
-              <div className={styles.dch}>
-                <span className={styles.dct}>Padres / tutores</span>
-                <span className={styles.dcl}>+ Agregar</span>
-              </div>
-              <div className={styles.dcb}>
-                {familia.padres.map((p, i) => {
-                  const c = PADRE_COLORS[i % PADRE_COLORS.length];
-                  return (
-                    <div key={p.nombre} className={styles.padreRow}>
-                      <div
-                        className={styles.padreAv}
-                        style={{
-                          background: c.bg,
-                          color: c.color,
-                          border: `1.5px solid ${c.border}`
-                        }}
-                      >
-                        {p.inicial}
-                      </div>
-                      <div className={styles.padreDatos}>
-                        <div className={styles.padreNombre}>{p.nombre}</div>
-                        <div className={styles.padreInfo}>
-                          {p.telefono} · {p.email}
-                        </div>
-                      </div>
+            <div className={styles.g2}>
+              {/* DATOS DE CONTACTO */}
+              <div className={styles.dc}>
+                <div className={styles.dch}>
+                  <span className={styles.dct}>Datos de contacto</span>
+                  <span
+                    className={styles.dcl}
+                    onClick={() => {
+                      setUsuarioEditando(familiaSel);
+                      setModalOpen(true);
+                    }}
+                  >
+                    Editar
+                  </span>
+                </div>
+                <div className={styles.dcb}>
+                  {[
+                    {
+                      lbl: "Nombre completo",
+                      val: `${familiaSel.name} ${familiaSel.last_name}`
+                    },
+                    { lbl: "Correo", val: familiaSel.email },
+                    {
+                      lbl: "Teléfono",
+                      val: familiaSel.phone_number ?? "No registrado"
+                    },
+                    {
+                      lbl: "Estado",
+                      val: familiaSel.active ? "Activo" : "Baja",
+                      color: familiaSel.active
+                        ? "var(--verde-s)"
+                        : "var(--rojo)"
+                    },
+                    {
+                      lbl: "Registrado",
+                      val: formatFecha(familiaSel.created_at)
+                    },
+                    {
+                      lbl: "Último acceso",
+                      val: formatFechaHora(familiaSel.last_access)
+                    }
+                  ].map((d) => (
+                    <div key={d.lbl} className={styles.datoRow}>
+                      <span className={styles.datoLbl}>{d.lbl}</span>
                       <span
-                        className={styles.padreRol}
-                        style={{ background: c.rolBg, color: c.rolColor }}
+                        className={styles.datoVal}
+                        style={{ color: d.color }}
                       >
-                        {p.rol}
+                        {d.val}
                       </span>
                     </div>
-                  );
-                })}
-                <button className={styles.btnAgregar}>
-                  <MdAdd size={13} /> Agregar persona autorizada
-                </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* COLEGIATURA + ACTIVIDAD */}
-          <div className={styles.g2}>
-            <div className={styles.dc}>
-              <div className={styles.dch}>
-                <span className={styles.dct}>Historial de colegiatura</span>
-                <span className={styles.dcl}>Registrar pago</span>
-              </div>
-              <div className={styles.dcb}>
-                {familia.colegiatura.map((m) => {
-                  const ms = MES_STYLE[m.status];
-                  const label =
-                    m.status === "pendiente"
-                      ? `${m.diasRestantes} días`
-                      : ms.label;
-                  return (
-                    <div key={m.mes} className={styles.mesRow}>
-                      <span className={styles.mesLbl}>{m.mes}</span>
-                      <div className={styles.mesBarraW}>
-                        <div
-                          className={styles.mesBarra}
-                          style={{
-                            width: `${m.pct * 100}%`,
-                            background: ms.barra
-                          }}
-                        />
-                      </div>
-                      <span
-                        className={styles.mesMonto}
-                        style={{ color: ms.monto }}
-                      >
-                        ${m.monto.toLocaleString()}
-                      </span>
-                      <span
-                        className={styles.mesStatus}
-                        style={{ background: ms.bg, color: ms.color }}
-                      >
-                        {label}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className={styles.dc}>
-              <div className={styles.dch}>
-                <span className={styles.dct}>Actividad reciente</span>
-                <span className={styles.dcl}>Ver todo</span>
-              </div>
-              <div className={styles.dcb}>
-                {familia.actividad.map((a, i) => (
-                  <div key={i} className={styles.actItem}>
-                    <div
-                      className={styles.actDot}
-                      style={{ background: a.color }}
-                    />
-                    <div>
-                      <div className={styles.actTexto}>
-                        <span className={styles.actBold}>{a.bold}</span>
-                        {a.texto}
-                      </div>
-                      <div className={styles.actFecha}>{a.fecha}</div>
-                    </div>
+              {/* ALUMNOS VINCULADOS */}
+              <div className={styles.dc}>
+                <div className={styles.dch}>
+                  <div>
+                    <span className={styles.dct}>Alumnos vinculados</span>
+                    <div className={styles.dcSub}>Próximamente</div>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* NOTIFICACIONES */}
-          <div className={styles.dc}>
-            <div className={styles.dch}>
-              <span className={styles.dct}>
-                Configuración de notificaciones
-              </span>
-              <span className={styles.dcl}>Vista de la app →</span>
-            </div>
-            <div className={styles.dcb}>
-              <div className={styles.notifGrid}>
-                {NOTIF_CONFIG.map((n) => (
-                  <div key={n.key} className={styles.notifRow}>
-                    <div>
-                      <div className={styles.notifLbl}>{n.lbl}</div>
-                      <div className={styles.notifSub}>{n.sub}</div>
-                    </div>
-                    <div
-                      className={`${styles.toggle} ${notif[n.key] ? styles.toggleOn : styles.toggleOff}`}
-                      onClick={() => toggleNotif(n.key)}
-                    >
-                      <div
-                        className={`${styles.toggleThumb} ${notif[n.key] ? styles.thumbOn : styles.thumbOff}`}
-                      />
-                    </div>
+                </div>
+                <div className={styles.dcb}>
+                  <div className={styles.placeholder}>
+                    <span className={styles.placeholderTxt}>
+                      Disponible cuando el backend exponga
+                    </span>
+                    <code className={styles.placeholderCode}>
+                      GET /v1/users/{"{uuid}"}/students
+                    </code>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        <div
+          className={styles.panelDet}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 13,
+            fontWeight: 700,
+            color: "var(--texto-3)"
+          }}
+        >
+          Selecciona un padre o tutor para ver el detalle
+        </div>
+      )}
+
+      <ModalUsuario
+        key={usuarioEditando?.id ?? "editar-familia"}
+        open={modalOpen}
+        usuario={usuarioEditando}
+        onClose={() => setModalOpen(false)}
+        onSuccess={handleGuardado}
+      />
     </div>
   );
 }
