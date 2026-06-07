@@ -51,6 +51,9 @@ api.interceptors.response.use(
             localStorage.removeItem(USER_KEY);
             window.location.href = "/login";
         }
+        if (status === 404) {
+            window.location.href = "/verify-email";
+        }
 
         const message = data?.message ?? STATUS_MESSAGES[status] ?? "Ocurrió un error inesperado.";
 

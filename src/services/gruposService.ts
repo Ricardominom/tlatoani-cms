@@ -10,6 +10,7 @@ type FiltrosNivel = {
 }
 
 type FiltrosGrupos = {
+    include?: string;
     search?: string;
     active?: boolean;
     per_page?: number;
@@ -20,7 +21,7 @@ function toTimeApi(t: string): string {
 }
 
 function handleServiceError(error: unknown): never {
-    if(isAxiosError(error)) {
+    if (isAxiosError(error)) {
         const message = (error.response?.data as { message?: string })?.message ?? error.message;
         throw new Error(message, { cause: error });
     }
@@ -28,7 +29,7 @@ function handleServiceError(error: unknown): never {
 }
 
 // NIVELES
-export async function getNiveles(params? : FiltrosNivel) {
+export async function getNiveles(params?: FiltrosNivel) {
     try {
         const res = await api.get<unknown>("/v1/levels", { params });
         const parsed = paginatedResponseSchema(nivelSchema).parse(res.data);
@@ -51,7 +52,7 @@ export async function crearNivel(data: NivelFormData) {
 export async function actualizarNivel(uuid: string, data: Partial<NivelFormData>) {
     try {
         const res = await api.put<unknown>(`/v1/levels/${uuid}`, data);
-        const body = res.data as { data: unknown}
+        const body = res.data as { data: unknown }
         return nivelSchema.parse(body.data);
     } catch (error) {
         handleServiceError(error);
@@ -68,9 +69,12 @@ export async function eliminarNivel(uuid: string) {
 
 // GRUPOS
 
-export async function getGrupos(params? : FiltrosGrupos) {
+export async function getGrupos(params?: FiltrosGrupos) {
     try {
-        const res = await api.get<unknown>("/v1/groups", { params });
+        const normalized = params
+            ? { ...params, ...(params.active !== undefined && { active: params.active ? 1 : 0 }) }
+            : undefined;
+        const res = await api.get<unknown>("/v1/groups", { params: normalized });
         const parsed = paginatedResponseSchema(grupoSchema).parse(res.data);
         return parsed;
     } catch (error) {
@@ -86,7 +90,7 @@ export async function crearGrupo(data: GrupoFormData) {
         const res = await api.post<unknown>("/v1/groups", payload);
         const body = res.data as { data: unknown }
         return grupoSchema.parse(body.data);
-        
+
     } catch (error) {
         handleServiceError(error);
     }
@@ -100,7 +104,7 @@ export async function actualizarGrupo(uuid: string, data: Partial<GrupoFormData>
         const res = await api.put<unknown>(`/v1/groups/${uuid}`, payload);
         const body = res.data as { data: unknown };
         return grupoSchema.parse(body.data);
-        
+
     } catch (error) {
         handleServiceError(error);
     }

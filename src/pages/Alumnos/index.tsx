@@ -21,7 +21,6 @@ import type {
   AlumnosPaginados,
   EmergencyContact,
   DoctorInformation,
-  FamilyMember
 } from "../../types";
 import { getAlumnos, eliminarAlumno } from "../../services/alumnosService";
 import { getGrupos } from "../../services/gruposService";
@@ -100,6 +99,7 @@ export default function Alumnos() {
     queryKey: ["alumnos"],
     queryFn: () =>
       getAlumnos({
+        include: "group",
         order_by: "last_name",
         order_direction: "asc",
         per_page: 100

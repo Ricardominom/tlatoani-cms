@@ -15,8 +15,7 @@ import {
 import { crearAlumno, actualizarAlumno } from "../../services/alumnosService";
 import SeccionPadres from "./SeccionPadres";
 import { crearUsuario } from "../../services/usuariosService";
-import { vincularFamilyMember } from "../../services/familyMembersService";
-import { getFamilyMembers } from "../../services/familyMembersService";
+import { vincularFamilyMember, getFamilyMembers } from "../../services/familyMembersService";
 
 interface Props {
   open: boolean;
@@ -142,6 +141,7 @@ export default function ModalAlumno({
   const active = useWatch({ control, name: "active" });
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPadresPendientes([]);
     if (alumno) {
       reset({
@@ -251,7 +251,7 @@ export default function ModalAlumno({
           type="text"
           placeholder="ej. O+, A-, AB+"
           {...register("blood_type")}
-          maxLength={3}
+          maxLength={5}
         />
       </div>
 

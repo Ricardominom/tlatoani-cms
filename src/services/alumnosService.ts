@@ -3,10 +3,11 @@ import { alumnoSchema, paginatedResponseSchema, type Alumno, type AlumnoFormData
 import api from "./api";
 
 type FiltrosAlumno = {
+    include?: string;
     search?: string;
     group_uuid?: string;
     active?: boolean;
-    order_by?: "name" | "last_name" | "birth_date" | "curp" | "active";
+    order_by?: "name" | "last_name" | "curp" | "active";
     order_direction?: "asc" | "desc";
     per_page?: number;
 }
@@ -28,8 +29,8 @@ function toPayload(form: AlumnoFormData): Record<string, unknown> {
 }
 
 function handleServiceError(error: unknown): never {
-    if(isAxiosError(error)) {
-        const message = (error.response?.data as { message?: string})?.message ?? error.message;
+    if (isAxiosError(error)) {
+        const message = (error.response?.data as { message?: string })?.message ?? error.message;
         throw new Error(message, { cause: error });
     }
     throw error;
@@ -37,7 +38,10 @@ function handleServiceError(error: unknown): never {
 
 export async function getAlumnos(params?: FiltrosAlumno): Promise<AlumnosPaginados> {
     try {
-        const res = await api.get("/v1/students", { params });
+        const normalized = params
+            ? { ...params, ...(params.active !== undefined && { active: params.active ? 1 : 0 }) }
+            : undefined;
+        const res = await api.get("/v1/students", { params: normalized });
         const parse = alumnosPaginadosSchema.parse(res.data);
         return parse;
     } catch (error) {

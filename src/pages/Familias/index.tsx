@@ -4,6 +4,7 @@ import { MdSearch, MdEdit, MdPhone, MdEmail } from "react-icons/md";
 import styles from "./Familias.module.css";
 import type { Usuario } from "../../types";
 import { getUsuarios } from "../../services/usuariosService";
+import { getStudentsByUser } from "../../services/familyMembersService";
 import ModalUsuario from "../Usuarios/ModalUsuario";
 
 type Filtro = "todos" | "activos" | "baja";
@@ -66,6 +67,14 @@ export default function Familias() {
   });
 
   const familiaSel = familias.find((u) => u.id === activeUuid) ?? null;
+
+  const { data: alumnosVinculados = [], isLoading: cargandoAlumnos } = useQuery(
+    {
+      queryKey: ["user-students", activeUuid],
+      queryFn: () => getStudentsByUser(activeUuid!),
+      enabled: !!activeUuid
+    }
+  );
 
   function handleGuardado(usuarioGuardado: Usuario) {
     queryClient.invalidateQueries({ queryKey: ["usuarios-familia"] });
@@ -336,20 +345,27 @@ export default function Familias() {
               {/* ALUMNOS VINCULADOS */}
               <div className={styles.dc}>
                 <div className={styles.dch}>
-                  <div>
-                    <span className={styles.dct}>Alumnos vinculados</span>
-                    <div className={styles.dcSub}>Próximamente</div>
-                  </div>
+                  <span className={styles.dct}>Alumnos vinculados</span>
                 </div>
                 <div className={styles.dcb}>
-                  <div className={styles.placeholder}>
-                    <span className={styles.placeholderTxt}>
-                      Disponible cuando el backend exponga
+                  {cargandoAlumnos ? (
+                    <span className={styles.datoLbl}>Cargando…</span>
+                  ) : alumnosVinculados.length === 0 ? (
+                    <span className={styles.datoLbl}>
+                      Sin alumnos vinculados
                     </span>
-                    <code className={styles.placeholderCode}>
-                      GET /v1/users/{"{uuid}"}/students
-                    </code>
-                  </div>
+                  ) : (
+                    alumnosVinculados.map((alumno) => (
+                      <div key={alumno.id} className={styles.datoRow}>
+                        <span className={styles.datoVal}>
+                          {alumno.name} {alumno.last_name}
+                        </span>
+                        <span className={styles.datoLbl}>
+                          {alumno.group?.name ?? "Sin grupo"}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>

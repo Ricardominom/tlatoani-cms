@@ -11,7 +11,7 @@ import {
   type UsuarioFormData,
   type RolUsuario
 } from "../../types";
-import { getUsuarios, actualizarUsuario } from "../../services/usuariosService";
+import { getUsuario, actualizarUsuario } from "../../services/usuariosService";
 
 const ROLE_LABEL: Record<(typeof ROLES_USUARIO)[number], string> = {
   superadmin: "Super administrador",
@@ -76,13 +76,7 @@ export default function MiCuenta() {
     error
   } = useQuery({
     queryKey: ["perfil"],
-    queryFn: async () => {
-      const res = await getUsuarios({ search: user!.email, per_page: 1 });
-      const found = res.data[0];
-      if (!found) throw new Error("No se encontró el perfil");
-      return found;
-    },
-    enabled: !!user
+    queryFn: () => getUsuario(user!.id),
   });
 
   const {
@@ -202,6 +196,7 @@ export default function MiCuenta() {
 
   function handleGuardarPass(e: FormEvent) {
     e.preventDefault();
+    if (!perfil) return;
     setPassErr(null);
     setPassRootErr(null);
     if (passNueva.length < 8) {

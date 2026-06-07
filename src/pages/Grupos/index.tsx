@@ -32,7 +32,7 @@ function formatCuota(fee: string) {
 
 function calcularEdad(birthDate: string): string {
   const hoy = new Date();
-  const nac = new Date(birthDate + "T00:00:00");
+  const nac = new Date(birthDate.split("T")[0] + "T00:00:00");
   let años = hoy.getFullYear() - nac.getFullYear();
   const m = hoy.getMonth() - nac.getMonth();
   if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) años--;
@@ -60,7 +60,7 @@ export default function Grupos() {
 
   const { data: gruposRes, isLoading: cargandoGrupos, error: gruposError } = useQuery({
     queryKey: ["grupos"],
-    queryFn: () => getGrupos({ active: true, per_page: 50 }),
+    queryFn: () => getGrupos({ include: "level", active: true, per_page: 50 }),
   });
 
   const grupos = gruposRes?.data ?? [];
@@ -69,7 +69,7 @@ export default function Grupos() {
   // Alumnos del grupo seleccionado 
   const { data: alumnosRes, isLoading: cargandoAlumnos } = useQuery({
     queryKey: ["alumnos-grupo", activeUuid],
-    queryFn: () => getAlumnos({ group_uuid: activeUuid!, per_page: 100 }),
+    queryFn: () => getAlumnos({ include: "group", group_uuid: activeUuid!, per_page: 100 }),
     enabled: !!activeUuid,
   });
 

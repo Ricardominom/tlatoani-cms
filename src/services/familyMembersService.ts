@@ -1,10 +1,13 @@
+import { z } from 'zod';
 import { isAxiosError } from "axios";
 import {
     familyMembersResponseSchema,
     familyMemberResponseSchema,
+    alumnoSchema,
     type FamilyMember,
     type FamilyMemberAttachFormData,
     type FamilyMemberUpdateFormData,
+    type Alumno,
 } from "../types";
 import api from "./api";
 
@@ -28,7 +31,7 @@ export async function getFamilyMembers(studentUuid: string): Promise<FamilyMembe
 export async function vincularFamilyMember(
     studentUuid: string,
     data: FamilyMemberAttachFormData
-): Promise<FamilyMember[]> {
+): Promise<FamilyMember> {
     try {
         const res = await api.post<unknown>(
             `/v1/students/${studentUuid}/family-members`,
@@ -38,7 +41,7 @@ export async function vincularFamilyMember(
                 primary_contact: data.primary_contact,
             }
         );
-        return familyMembersResponseSchema.parse(res.data).data;
+        return familyMemberResponseSchema.parse(res.data).data;
     } catch (error) {
         handleServiceError(error);
     }
@@ -69,6 +72,15 @@ export async function desvincularFamilyMember(
 ): Promise<void> {
     try {
         await api.delete(`/v1/students/${studentUuid}/family-members/${userUuid}`);
+    } catch (error) {
+        handleServiceError(error);
+    }
+}
+
+export async function getStudentsByUser(userUuid: string): Promise<Alumno[]> {
+    try {
+        const res = await api.get<unknown>(`/v1/users/${userUuid}/students`);
+        return z.object({ data: z.array(alumnoSchema) }).parse(res.data).data;
     } catch (error) {
         handleServiceError(error);
     }

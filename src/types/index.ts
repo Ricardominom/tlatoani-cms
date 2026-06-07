@@ -19,7 +19,6 @@ export const nivelFormSchema = z.object({
 export const grupoSchema = z.object({
     id: z.string().uuid(),
     name: z.string(),
-    teacher_id: z.number().optional(),
     color: z.string(),
     icon_path: z.string().nullable(),
     entry_time: z.string().nullable(),
@@ -27,7 +26,7 @@ export const grupoSchema = z.object({
     monthly_fee: z.string(),
     capacity: z.number(),
     active: z.boolean(),
-    level: nivelSchema.optional(),
+    level: nivelSchema.optional().nullable(),
     created_at: z.string(),
     updated_at: z.string(),
 })

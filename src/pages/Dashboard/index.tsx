@@ -202,12 +202,12 @@ const EVENTOS = [
 export default function Dashboard() {
   const { data: alumnosRes } = useQuery({
     queryKey: ["alumnos"],
-    queryFn: () => getAlumnos({ per_page: 100 })
+    queryFn: () => getAlumnos({ include: "group", per_page: 100 })
   });
 
   const { data: gruposRes } = useQuery({
     queryKey: ["grupos"],
-    queryFn: () => getGrupos({ per_page: 100 })
+    queryFn: () => getGrupos({ include: "level", per_page: 100 })
   });
 
   const { data: maestrosRes } = useQuery({

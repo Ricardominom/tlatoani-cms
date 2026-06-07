@@ -13,7 +13,7 @@ type FiltrosUsuario = {
     search?: string;
     role?: RolUsuario;
     active?: boolean;
-    order_by?: "name" | "last_name" | "email" | "role" | "last_access";
+    order_by?: "name" | "last_name" | "email" | "active" | "created_at" | "updated_at";
     order_direction?: "asc" | "desc";
     per_page?: number;
 }

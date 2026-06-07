@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import styles from "./Login.module.css";
 
@@ -98,6 +98,9 @@ export default function Login() {
           <button className={styles.btn} type="submit" disabled={loading}>
             {loading ? "Entrando..." : "Entrar al panel"}
           </button>
+          <Link to="/forgot-password" className={styles.forgotLink}>
+            ¿Olvidaste tu contraseña?
+          </Link>
         </form>
       </div>
     </div>

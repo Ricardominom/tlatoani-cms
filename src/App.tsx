@@ -15,6 +15,9 @@ import Galeria from "./pages/Galeria";
 import Calendario from "./pages/Calendario";
 import Usuarios from "./pages/Usuarios";
 import MiCuenta from "./pages/MiCuenta";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import VerifyEmail from "./pages/VerifyEmail";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +35,9 @@ export default function App() {
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             <Route
               element={
                 <ProtectedRoute>

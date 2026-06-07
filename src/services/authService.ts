@@ -12,9 +12,10 @@ export async function login(email: string, password: string) {
         throw new ApiError("La respuesta del servidor no tiene el formato esperado.", 500);
     }
 
+    const normalizedUser = { ...user, id: user.uuid };
     localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-    return { user, token };
+    localStorage.setItem(USER_KEY, JSON.stringify(normalizedUser));
+    return { user: normalizedUser, token };
 }
 
 export async function logout() {
@@ -32,4 +33,20 @@ export function getStoredToken(): string | null {
 export function getStoredUser() {
     const raw = localStorage.getItem(USER_KEY);
     return raw ? JSON.parse(raw) : null;
+}
+export async function forgotPassword(email: string): Promise<void> {
+    await api.post("/v1/auth/password/forgot", {email});
+}
+
+export async function resetPassword(data: {
+    token: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+}): Promise<void> {
+    await api.post("/v1/auth/password/reset", data);
+}
+
+export async function resendVerificationEmail(): Promise<void> {
+    await api.post("/v1/auth/email/resend");
 }
