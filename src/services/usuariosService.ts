@@ -43,7 +43,10 @@ function handleServiceError(error: unknown): never {
 
 export async function getUsuarios(params?: FiltrosUsuario): Promise<UsuariosPaginados> {
     try {
-        const res = await api.get("/v1/users", { params });
+        const normalized = params
+            ? { ...params, ...(params.active !== undefined && { active: params.active ? 1 : 0 }) }
+            : undefined;
+        const res = await api.get("/v1/users", { params: normalized });
         return usuariosPaginadosSchema.parse(res.data);
     } catch (error) {
         handleServiceError(error);

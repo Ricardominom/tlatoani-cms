@@ -1,17 +1,18 @@
-import { useState, useEffect } from "react";
-import { MdClose, MdEdit, MdDelete, MdAdd } from "react-icons/md";
+import { useState, useEffect, useRef } from "react";
+import { MdClose, MdEdit, MdDelete, MdAdd, MdDragHandle } from "react-icons/md";
 import styles from "./ModalGestionNiveles.module.css";
 import {
   crearNivel,
   actualizarNivel,
-  eliminarNivel
+  eliminarNivel,
+  reorderNiveles,
 } from "../../services/gruposService";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { nivelFormSchema, type Nivel, type NivelFormData } from "../../types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 interface Props {
   open: boolean;
@@ -20,29 +21,51 @@ interface Props {
   onSuccess: () => void;
 }
 
-const initialValues : NivelFormData = {
-    name: "",
-    description: "",
-    order: 1
-}
+const initialValues: NivelFormData = {
+  name: "",
+  description: "",
+};
 
-export default function ModalGestionNiveles({ open, niveles, onClose, onSuccess }: Props) {
-
+export default function ModalGestionNiveles({
+  open,
+  niveles,
+  onClose,
+  onSuccess,
+}: Props) {
   const [editando, setEditando] = useState<Nivel | "nuevo" | null>(null);
   const [nivelAEliminar, setNivelAEliminar] = useState<Nivel | null>(null);
   const [eliminarError, setEliminarError] = useState<string | null>(null);
+  const [localNiveles, setLocalNiveles] = useState<Nivel[]>([]);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const dragIndex = useRef<number | null>(null);
 
-  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm({ resolver: zodResolver(nivelFormSchema), defaultValues: initialValues });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(nivelFormSchema),
+    defaultValues: initialValues,
+  });
 
   const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setLocalNiveles([...niveles].sort((a, b) => a.order - b.order));
+  }, [niveles]);
+
   const { mutate, isPending } = useMutation({
     mutationFn: (formData: NivelFormData) => {
-      if (editando === 'nuevo') return crearNivel(formData);
+      if (editando === "nuevo") return crearNivel(formData);
       if (editando !== null) return actualizarNivel(editando.id, formData);
       return Promise.reject(new Error("Estado inválido"));
     },
     onSuccess: () => {
-      toast.success(editando === 'nuevo' ? "Nivel creado" : "Nivel actualizado");
+      toast.success(
+        editando === "nuevo" ? "Nivel creado" : "Nivel actualizado",
+      );
       queryClient.invalidateQueries({ queryKey: ["niveles"] });
       queryClient.invalidateQueries({ queryKey: ["grupos"] });
       setEditando(null);
@@ -50,11 +73,19 @@ export default function ModalGestionNiveles({ open, niveles, onClose, onSuccess 
     },
     onError: (error) => {
       setError("root", {
-        message: error instanceof Error ? error.message : "Ocurrió un error inesperado."
+        message:
+          error instanceof Error
+            ? error.message
+            : "Ocurrió un error inesperado.",
       });
-    }
+    },
   });
-  const { mutate: mutateEliminar, isPending: eliminandoPending, variables: eliminandoId } = useMutation({
+
+  const {
+    mutate: mutateEliminar,
+    isPending: eliminandoPending,
+    variables: eliminandoId,
+  } = useMutation({
     mutationFn: (uuid: string) => eliminarNivel(uuid),
     onSuccess: () => {
       toast.success("Nivel eliminado");
@@ -64,27 +95,62 @@ export default function ModalGestionNiveles({ open, niveles, onClose, onSuccess 
     },
     onError: (error) => {
       setEliminarError(
-        error instanceof Error ? error.message : "No se pudo eliminar el nivel."
+        error instanceof Error
+          ? error.message
+          : "No se pudo eliminar el nivel.",
       );
-    }
+    },
+  });
+
+  const { mutate: mutateReorder } = useMutation({
+    mutationFn: (uuids: string[]) => reorderNiveles(uuids),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["niveles"] });
+      queryClient.invalidateQueries({ queryKey: ["grupos"] });
+    },
+    onError: () => {
+      setLocalNiveles([...niveles].sort((a, b) => a.order - b.order));
+      toast.error("No se pudo reordenar los niveles");
+    },
   });
 
   useEffect(() => {
-    if(editando === 'nuevo') {
-      reset({ ...initialValues, order: niveles.length + 1 });
-    } else if(editando !== null) {
+    if (editando === "nuevo") {
+      reset(initialValues);
+    } else if (editando !== null) {
       reset({
         name: editando.name,
         description: editando.description ?? "",
-        order: editando.order
-      })
+      });
     }
-  }, [editando, niveles.length, reset]);
+  }, [editando, reset]);
 
-  const handleGuardar = (formData: NivelFormData) => mutate(formData); 
+  function handleDragStart(index: number) {
+    dragIndex.current = index;
+    setDraggingIndex(index);
+  }
+
+  function handleDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    if (dragIndex.current === null || dragIndex.current === index) return;
+    const reordered = [...localNiveles];
+    const [moved] = reordered.splice(dragIndex.current, 1);
+    reordered.splice(index, 0, moved);
+    dragIndex.current = index;
+    setDraggingIndex(index);
+    setLocalNiveles(reordered);
+  }
+
+  function handleDragEnd() {
+    mutateReorder(localNiveles.map((n) => n.id));
+    dragIndex.current = null;
+    setDraggingIndex(null);
+  }
+
+  const handleGuardar = (formData: NivelFormData) => mutate(formData);
 
   function handleEliminar() {
-    if(!nivelAEliminar) return;
+    if (!nivelAEliminar) return;
     mutateEliminar(nivelAEliminar.id);
     setNivelAEliminar(null);
   }
@@ -107,27 +173,41 @@ export default function ModalGestionNiveles({ open, niveles, onClose, onSuccess 
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.header}>
           <span className={styles.titulo}>Gestionar niveles</span>
-          <button className={styles.closeBtn} type="button" onClick={handleCerrar}>
+          <button
+            className={styles.closeBtn}
+            type="button"
+            onClick={handleCerrar}
+          >
             <MdClose size={16} />
           </button>
         </div>
 
         <div className={styles.body}>
-          {eliminarError && (
-            <div className={styles.error}>{eliminarError}</div>
-          )}
-          {niveles.length === 0 ? (
+          {eliminarError && <div className={styles.error}>{eliminarError}</div>}
+
+          {localNiveles.length === 0 ? (
             <div className={styles.empty}>No hay niveles creados aún</div>
           ) : (
-            niveles.map((n) => {
+            localNiveles.map((n, index) => {
               const isEditing =
                 editando !== "nuevo" &&
                 editando !== null &&
                 editando.id === n.id;
               return (
-                <div key={n.id}>
-                  <div className={styles.nivelRow}>
-                    <div className={styles.nivelOrden}>{n.order}</div>
+                <div
+                  key={n.id}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
+                >
+                  <div
+                    className={`${styles.nivelRow} ${draggingIndex === index ? styles.dragging : ""}`}
+                  >
+                    <button className={styles.dragHandle} type="button">
+                      <MdDragHandle size={16} />
+                    </button>
+                    <div className={styles.nivelOrden}>{index + 1}</div>
                     <div className={styles.nivelInfo}>
                       <span className={styles.nivelNombre}>{n.name}</span>
                       {n.description && (
@@ -161,13 +241,15 @@ export default function ModalGestionNiveles({ open, niveles, onClose, onSuccess 
                       onSubmit={handleSubmit(handleGuardar)}
                     >
                       {errors.root && (
-                        <div className={styles.error}>{errors.root.message}</div>
+                        <div className={styles.error}>
+                          {errors.root.message}
+                        </div>
                       )}
                       <div className={styles.campo}>
                         <span className={styles.label}>Nombre *</span>
                         <input
                           className={styles.input}
-                          {...register('name')}
+                          {...register("name")}
                           autoFocus
                           required
                         />
@@ -176,16 +258,7 @@ export default function ModalGestionNiveles({ open, niveles, onClose, onSuccess 
                         <span className={styles.label}>Descripción</span>
                         <input
                           className={styles.input}
-                          {...register('description')}
-                        />
-                      </div>
-                      <div className={styles.campo}>
-                        <span className={styles.label}>Orden</span>
-                        <input
-                          className={styles.input}
-                          type="number"
-                          min={1}
-                          {...register('order', { valueAsNumber: true })}
+                          {...register("description")}
                         />
                       </div>
                       <div className={styles.inlineFooter}>
@@ -212,14 +285,19 @@ export default function ModalGestionNiveles({ open, niveles, onClose, onSuccess 
           )}
 
           {editando === "nuevo" && (
-            <form className={styles.inlineForm} onSubmit={handleSubmit(handleGuardar)}>
-              {errors.root && <div className={styles.error}>{errors.root.message}</div>}
+            <form
+              className={styles.inlineForm}
+              onSubmit={handleSubmit(handleGuardar)}
+            >
+              {errors.root && (
+                <div className={styles.error}>{errors.root.message}</div>
+              )}
               <div className={styles.campo}>
                 <span className={styles.label}>Nombre *</span>
                 <input
                   className={styles.input}
                   placeholder="ej. Preescolar"
-                  {...register('name')}
+                  {...register("name")}
                   autoFocus
                   required
                 />
@@ -229,16 +307,7 @@ export default function ModalGestionNiveles({ open, niveles, onClose, onSuccess 
                 <input
                   className={styles.input}
                   placeholder="Descripción breve…"
-                  {...register('description')}
-                />
-              </div>
-              <div className={styles.campo}>
-                <span className={styles.label}>Orden</span>
-                <input
-                  className={styles.input}
-                  type="number"
-                  min={1}
-                  {...register('order', { valueAsNumber: true })}
+                  {...register("description")}
                 />
               </div>
               <div className={styles.inlineFooter}>
@@ -272,9 +341,13 @@ export default function ModalGestionNiveles({ open, niveles, onClose, onSuccess 
           </button>
         </div>
       </div>
+
       <ConfirmDialog
         open={nivelAEliminar !== null}
         titulo="Eliminar nivel"
+        mensaje={`¿Seguro que quieres eliminar "${nivelAEliminar?.name}"? Los grupos de este nivel quedarán 
+  sin nivel asignado.`}
+        onConfirm={handleEliminar}
         mensaje={`¿Seguro que quieres eliminar "${nivelAEliminar?.name}"? Los grupos de este nivel quedarán sin nivel asignado.`}
         onConfirm={handleEliminar}
         onCancel={() => setNivelAEliminar(null)}

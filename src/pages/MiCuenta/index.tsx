@@ -9,7 +9,7 @@ import {
   usuarioUpdateFormSchema,
   ROLES_USUARIO,
   type UsuarioFormData,
-  type RolUsuario
+  type RolUsuario,
 } from "../../types";
 import { getUsuario, actualizarUsuario } from "../../services/usuariosService";
 
@@ -17,13 +17,13 @@ const ROLE_LABEL: Record<(typeof ROLES_USUARIO)[number], string> = {
   superadmin: "Super administrador",
   admin: "Administrador",
   teacher: "Maestro",
-  family: "Familia"
+  family: "Familia",
 };
 
 function formatFecha(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("es-MX", {
     month: "short",
-    year: "numeric"
+    year: "numeric",
   });
 }
 
@@ -31,23 +31,23 @@ const PREFERENCIAS = [
   {
     id: "notifComunicados",
     lbl: "Notificaciones de comunicados",
-    desc: "Recibe alertas cuando se publique un aviso nuevo"
+    desc: "Recibe alertas cuando se publique un aviso nuevo",
   },
   {
     id: "notifPagos",
     lbl: "Recordatorios de colegiaturas",
-    desc: "Aviso cuando una familia tiene pagos pendientes"
+    desc: "Aviso cuando una familia tiene pagos pendientes",
   },
   {
     id: "notifBitacoras",
     lbl: "Actualizaciones de bitácoras",
-    desc: "Notificación cuando se registre una observación nueva"
+    desc: "Notificación cuando se registre una observación nueva",
   },
   {
     id: "resumenDiario",
     lbl: "Resumen diario por correo",
-    desc: "Recibe un resumen al inicio del día escolar"
-  }
+    desc: "Recibe un resumen al inicio del día escolar",
+  },
 ];
 
 const SESIONES = [
@@ -55,14 +55,14 @@ const SESIONES = [
     icono: "🖥️",
     nombre: "Chrome · Windows 11",
     meta: "Ciudad de México · Ahora mismo",
-    actual: true
+    actual: true,
   },
   {
     icono: "📱",
     nombre: "Safari · iPhone",
     meta: "Ciudad de México · Hace 2 días",
-    actual: false
-  }
+    actual: false,
+  },
 ];
 
 export default function MiCuenta() {
@@ -73,7 +73,7 @@ export default function MiCuenta() {
     data: perfil,
     isLoading,
     isError,
-    error
+    error,
   } = useQuery({
     queryKey: ["perfil"],
     queryFn: () => getUsuario(user!.id),
@@ -84,7 +84,7 @@ export default function MiCuenta() {
     handleSubmit,
     reset,
     setError,
-    formState: { errors }
+    formState: { errors },
   } = useForm<UsuarioFormData>({
     resolver: zodResolver(usuarioUpdateFormSchema),
     defaultValues: {
@@ -95,8 +95,8 @@ export default function MiCuenta() {
       role: "admin",
       active: true,
       password: "",
-      password_confirmation: ""
-    }
+      password_confirmation: "",
+    },
   });
 
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function MiCuenta() {
         role: perfil.role as RolUsuario,
         active: perfil.active,
         password: "",
-        password_confirmation: ""
+        password_confirmation: "",
       });
     }
   }, [perfil, reset]);
@@ -123,9 +123,9 @@ export default function MiCuenta() {
     },
     onError: (err) => {
       setError("root", {
-        message: err instanceof Error ? err.message : "Error al guardar"
+        message: err instanceof Error ? err.message : "Error al guardar",
       });
-    }
+    },
   });
 
   const [passActual, setPassActual] = useState("");
@@ -145,16 +145,16 @@ export default function MiCuenta() {
     },
     onError: (err) => {
       setPassRootErr(
-        err instanceof Error ? err.message : "Error al cambiar contraseña"
+        err instanceof Error ? err.message : "Error al cambiar contraseña",
       );
-    }
+    },
   });
 
   const [prefs, setPrefs] = useState<Record<string, boolean>>({
     notifComunicados: true,
     notifPagos: true,
     notifBitacoras: false,
-    resumenDiario: true
+    resumenDiario: true,
   });
   const togglePref = (id: string) => setPrefs((p) => ({ ...p, [id]: !p[id] }));
 
@@ -168,7 +168,7 @@ export default function MiCuenta() {
           padding: "60px 0",
           fontSize: 13,
           fontWeight: 700,
-          color: "var(--texto-3)"
+          color: "var(--texto-3)",
         }}
       >
         Cargando perfil…
@@ -183,7 +183,7 @@ export default function MiCuenta() {
           padding: "60px 24px",
           fontSize: 13,
           fontWeight: 700,
-          color: "var(--rojo)"
+          color: "var(--rojo)",
         }}
       >
         Error:{" "}
@@ -215,7 +215,7 @@ export default function MiCuenta() {
       role: perfil.role as RolUsuario,
       active: perfil.active,
       password: passNueva,
-      password_confirmation: passConfirmar
+      password_confirmation: passConfirmar,
     });
   }
 
@@ -225,7 +225,20 @@ export default function MiCuenta() {
       <div className={styles.hero}>
         <div className={styles.heroAvWrap}>
           <div className={styles.heroAv}>
-            {perfil.name.charAt(0).toUpperCase()}
+            {perfil.profile_picture_url ? (
+              <img
+                src={perfil.profile_picture_url}
+                alt={`${perfil.name} ${perfil.last_name}`}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  borderRadius: "inherit",
+                }}
+              />
+            ) : (
+              perfil.name.charAt(0).toUpperCase()
+            )}
           </div>
           <div className={styles.heroDot} />
         </div>
@@ -239,7 +252,7 @@ export default function MiCuenta() {
               style={{
                 background: "var(--amarillo-light)",
                 color: "#7A6200",
-                border: "1px solid var(--amarillo)"
+                border: "1px solid var(--amarillo)",
               }}
             >
               {rolLabel}
@@ -330,7 +343,7 @@ export default function MiCuenta() {
                     role: perfil.role as RolUsuario,
                     active: perfil.active,
                     password: "",
-                    password_confirmation: ""
+                    password_confirmation: "",
                   })
                 }
               >

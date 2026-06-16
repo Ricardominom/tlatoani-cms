@@ -8,6 +8,7 @@ import {
   getNiveles,
   eliminarGrupo
 } from "../../services/gruposService";
+import { getUsuarios } from "../../services/usuariosService";
 import ModalGrupo from "./ModalGrupo";
 import ModalGestionNiveles from "./ModalGestionNiveles";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
@@ -60,9 +61,14 @@ export default function Grupos() {
 
   const { data: gruposRes, isLoading: cargandoGrupos, error: gruposError } = useQuery({
     queryKey: ["grupos"],
-    queryFn: () => getGrupos({ include: "level", active: true, per_page: 50 }),
+    queryFn: () => getGrupos({ include: "level,teacher", active: true, per_page: 50 }),
   });
 
+  const { data: maestrosRes } = useQuery({
+    queryKey: ["usuarios-maestros"],
+    queryFn: () => getUsuarios({ role: "teacher", active: true, per_page: 100 }),
+  });
+  const maestros = maestrosRes?.data ?? [];
   const grupos = gruposRes?.data ?? [];
   const activeUuid = selectedUuid ?? grupos[0]?.id ?? null;
 
@@ -441,6 +447,7 @@ export default function Grupos() {
         open={modalGrupoOpen}
         grupo={grupoEditando}
         niveles={niveles}
+        maestros={maestros}
         onClose={() => setModalGrupoOpen(false)}
         onSuccess={(grupoId) => {
           setModalGrupoOpen(false);

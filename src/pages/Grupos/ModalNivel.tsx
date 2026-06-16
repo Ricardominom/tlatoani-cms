@@ -18,7 +18,6 @@ interface Props {
 const initialValues: NivelFormData = {
   name: "",
   description: "",
-  order: 1
 };
 
 export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
@@ -55,7 +54,6 @@ export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
       reset({
         name: nivel.name,
         description: nivel.description ?? "",
-        order: nivel.order
       });
     } else {
       reset(initialValues);
@@ -91,17 +89,6 @@ export default function ModalNivel({ open, nivel, onClose, onSuccess }: Props) {
           className={styles.textarea}
           placeholder="Descripción breve del nivel educativo…"
           {...register("description")}
-        />
-      </div>
-
-      <div className={styles.campo}>
-        <span className={styles.label}>Orden de aparición *</span>
-        <input
-          className={styles.input}
-          type="number"
-          min={1}
-          {...register("order", { valueAsNumber: true })}
-          required
         />
       </div>
     </ModalBase>

@@ -51,7 +51,7 @@ api.interceptors.response.use(
             localStorage.removeItem(USER_KEY);
             window.location.href = "/login";
         }
-        if (status === 404) {
+        if (status === 403 && data?.message?.toLowerCase().includes("verified")) {
             window.location.href = "/verify-email";
         }
 

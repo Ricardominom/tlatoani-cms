@@ -46,6 +46,7 @@
   justify-content: center;
   color: var(--texto-2);
 }
+
 .closeBtn:hover {
   background: var(--gris-borde);
 }
@@ -74,6 +75,7 @@
   padding: 10px 22px;
   transition: background 0.1s;
 }
+
 .nivelRow:hover {
   background: var(--gris-bg);
 }
@@ -134,9 +136,11 @@
   justify-content: center;
   color: var(--texto-2);
 }
+
 .btnAcc:hover {
   background: var(--gris-borde);
 }
+
 .btnAcc:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -147,6 +151,7 @@
   border-color: var(--rojo-light);
   background: var(--rojo-light);
 }
+
 .btnDel:hover {
   background: var(--rojo-light);
   opacity: 0.8;
@@ -196,6 +201,7 @@
   font-family: "Nunito", sans-serif;
   transition: border-color 0.15s;
 }
+
 .input:focus {
   border-color: var(--amarillo);
 }
@@ -220,6 +226,7 @@
   color: var(--texto-2);
   font-family: "Nunito", sans-serif;
 }
+
 .btnCancel:hover {
   background: var(--gris-borde);
 }
@@ -236,6 +243,7 @@
   box-shadow: 0 2px 0 var(--amarillo-s);
   font-family: "Nunito", sans-serif;
 }
+
 .btnSubmit:disabled {
   opacity: 0.5;
   cursor: not-allowed;
@@ -265,6 +273,28 @@
   justify-content: center;
   transition: background 0.1s;
 }
+
 .btnAgregar:hover {
+  background: var(--gris-bg);
+}
+
+/* ── DRAG AND DROP ── */
+.dragHandle {
+  cursor: grab;
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  color: var(--texto-3);
+  flex-shrink: 0;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
+
+.dragging {
+  opacity: 0.35;
   background: var(--gris-bg);
 }

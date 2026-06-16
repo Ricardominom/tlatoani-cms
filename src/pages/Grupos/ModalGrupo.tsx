@@ -7,7 +7,8 @@ import {
   grupoFormSchema,
   type Grupo,
   type GrupoFormData,
-  type Nivel
+  type Nivel,
+  type Usuario,
 } from "../../types";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,12 +20,14 @@ interface Props {
   open: boolean;
   grupo?: Grupo | null;
   niveles: Nivel[];
+  maestros: Usuario[];
   onClose: () => void;
   onSuccess: (grupoId: string) => void;
 }
 
 const initialValues: GrupoFormData = {
   level_uuid: "",
+  teacher_uuid: null,
   name: "",
   color: "#F5C800",
   icon_path: null,
@@ -39,6 +42,7 @@ export default function ModalGrupo({
   open,
   grupo,
   niveles,
+  maestros,
   onClose,
   onSuccess
 }: Props) {
@@ -83,6 +87,7 @@ export default function ModalGrupo({
       reset({
         level_uuid: grupo.level?.id ?? "",
         name: grupo.name,
+        teacher_uuid: grupo.teacher?.id ?? null,
         color: grupo.color,
         icon_path: grupo.icon_path,
         entry_time: grupo.entry_time?.slice(0, 5) ?? "08:00",
@@ -131,6 +136,18 @@ export default function ModalGrupo({
           ))}
         </select>
       </div>
+
+      <div className={styles.campo}>
+    <span className={styles.label}>Maestro</span>
+    <select className={styles.input} {...register("teacher_uuid")}>
+      <option value="">Sin maestro asignado</option>
+      {maestros.map((m) => (
+        <option key={m.id} value={m.id}>
+          {m.name} {m.last_name}
+        </option>
+      ))}
+    </select>
+  </div>
 
       <div className={styles.campo}>
         <span className={styles.label}>Animal del grupo *</span>

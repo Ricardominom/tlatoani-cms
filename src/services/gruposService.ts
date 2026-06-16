@@ -67,6 +67,14 @@ export async function eliminarNivel(uuid: string) {
     }
 }
 
+export async function reorderNiveles(uuids: string[]): Promise<void> {
+    try {
+        await api.put("/v1/levels/reorder", { levels: uuids });
+    } catch (error) {
+        handleServiceError(error);
+    }
+}
+
 // GRUPOS
 
 export async function getGrupos(params?: FiltrosGrupos) {
