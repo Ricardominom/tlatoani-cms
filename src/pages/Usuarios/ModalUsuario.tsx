@@ -1,3 +1,4 @@
+import { useAuth } from "../../context/AuthContext";
 import { useEffect } from "react";
 import styles from "./ModalUsuario.module.css";
 import ModalBase from "../../components/ui/ModalBase";
@@ -10,11 +11,11 @@ import {
   usuarioUpdateFormSchema,
   ROLES_USUARIO,
   type Usuario,
-  type UsuarioFormData
+  type UsuarioFormData,
 } from "../../types";
 import {
   crearUsuario,
-  actualizarUsuario
+  actualizarUsuario,
 } from "../../services/usuariosService";
 
 interface Props {
@@ -28,7 +29,7 @@ const ROLE_LABEL: Record<(typeof ROLES_USUARIO)[number], string> = {
   superadmin: "Super administrador",
   admin: "Administrador",
   teacher: "Maestro",
-  family: "Familia"
+  family: "Familia",
 };
 
 const initialValues: UsuarioFormData = {
@@ -39,16 +40,33 @@ const initialValues: UsuarioFormData = {
   password_confirmation: "",
   phone_number: "",
   role: "admin",
-  active: true
+  active: true,
 };
 
 export default function ModalUsuario({
   open,
   usuario,
   onClose,
-  onSuccess
+  onSuccess,
 }: Props) {
   const esEdicion = !!usuario;
+
+  const { user: currentUser } = useAuth();
+  const esSuperAdmin = currentUser?.role === "superadmin";
+
+  const rolesDisponibles: (typeof ROLES_USUARIO)[number][] = esSuperAdmin
+    ? [...ROLES_USUARIO]
+    : esEdicion
+      ? ["teacher", "family"]
+      : ["admin", "teacher", "family"];
+
+  // Si se está editando un usuario cuyo rol actual ya no es asignable
+  // (ej. un admin no-superadmin abre la edición de otro admin),
+  // lo incluimos igual para que el select no quede vacío.
+  const rolesParaMostrar =
+    usuario && !rolesDisponibles.includes(usuario.role)
+      ? [usuario.role, ...rolesDisponibles]
+      : rolesDisponibles;
 
   const {
     register,
@@ -57,12 +75,12 @@ export default function ModalUsuario({
     setError,
     setValue,
     control,
-    formState: { errors }
+    formState: { errors },
   } = useForm<UsuarioFormData>({
     resolver: zodResolver(
-      esEdicion ? usuarioUpdateFormSchema : usuarioCreateFormSchema
+      esEdicion ? usuarioUpdateFormSchema : usuarioCreateFormSchema,
     ),
-    defaultValues: initialValues
+    defaultValues: initialValues,
   });
 
   const queryClient = useQueryClient();
@@ -81,9 +99,9 @@ export default function ModalUsuario({
         message:
           error instanceof Error
             ? error.message
-            : "Ocurrió un error inesperado."
+            : "Ocurrió un error inesperado.",
       });
-    }
+    },
   });
 
   const active = useWatch({ control, name: "active" });
@@ -98,7 +116,7 @@ export default function ModalUsuario({
         password_confirmation: "",
         phone_number: usuario.phone_number ?? "",
         role: usuario.role,
-        active: usuario.active
+        active: usuario.active,
       });
     } else {
       reset(initialValues);
@@ -213,7 +231,7 @@ export default function ModalUsuario({
       <div className={styles.campo}>
         <span className={styles.label}>Rol *</span>
         <select className={styles.input} {...register("role")}>
-          {ROLES_USUARIO.map((r) => (
+          {rolesParaMostrar.map((r) => (
             <option key={r} value={r}>
               {ROLE_LABEL[r]}
             </option>
