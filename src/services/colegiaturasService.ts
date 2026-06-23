@@ -1,15 +1,16 @@
-import { colegiaturasSchema, type ColegiaturasFormData } from "../types";
+import { colegiaturasSchema, colegiaturasPaginadasSchema, type ColegiaturasFormData } from "../types";
 import api from "./api";
 import { isAxiosError } from "axios";
-import { z } from "zod";
 
 type FiltrosColegiaturas = {
-    student_uuid?: string;
+    search?: string;
     status?: 'paid' | 'pending' | 'overdue';
-    period?: string;
+    period?: string; // "YYYY-MM"
+    payment_method?: string;
     per_page?: number;
-    order_by?: string;
+    order_by?: 'period' | 'amount' | 'status' | 'payment_date' | 'payment_method' | 'created_at' | 'updated_at';
     order_direction?: 'asc' | 'desc';
+    include?: string; // "student,paidBy"
 }
 
 function handleServiceError(error: unknown): never {
@@ -20,22 +21,27 @@ function handleServiceError(error: unknown): never {
     throw error;
 }
 
-const colegiaturasResponseSchema = z.object({
-    data: z.array(colegiaturasSchema),
-})
-
 export async function getColegiaturas(params?: FiltrosColegiaturas) {
     try {
         const res = await api.get<unknown>('/v1/tuition-records', { params });
-        return colegiaturasResponseSchema.parse(res.data);
+        return colegiaturasPaginadasSchema.parse(res.data);
     } catch (error) {
         handleServiceError(error);
     }
 }
 
-export async function crearColegiatura(data: ColegiaturasFormData) {
+export async function getColegiaturasPorAlumno(studentUuid: string, params?: FiltrosColegiaturas) {
     try {
-        const res = await api.post<unknown>('/v1/tuition-records', data);
+        const res = await api.get<unknown>(`/v1/students/${studentUuid}/tuition-records`, { params });
+        return colegiaturasPaginadasSchema.parse(res.data);
+    } catch (error) {
+        handleServiceError(error);
+    }
+}
+
+export async function crearColegiatura(studentUuid: string, data: ColegiaturasFormData) {
+    try {
+        const res = await api.post<unknown>(`/v1/students/${studentUuid}/tuition-records`, data);
         const body = res.data as { data: unknown };
         return colegiaturasSchema.parse(body.data);
     } catch (error) {
@@ -48,6 +54,23 @@ export async function actualizarColegiatura(uuid: string, data: Partial<Colegiat
         const res = await api.put<unknown>(`/v1/tuition-records/${uuid}`, data);
         const body = res.data as { data: unknown };
         return colegiaturasSchema.parse(body.data);
+    } catch (error) {
+        handleServiceError(error);
+    }
+}
+
+export async function eliminarColegiatura(uuid: string) {
+    try {
+        await api.delete(`/v1/tuition-records/${uuid}`);
+    } catch (error) {
+        handleServiceError(error);
+    }
+}
+
+export async function generarColegiaturasDelMes(period?: string) {
+    try {
+        const res = await api.post<unknown>('/v1/tuition-records/generate', period ? { period } : {});
+        return res.data;
     } catch (error) {
         handleServiceError(error);
     }

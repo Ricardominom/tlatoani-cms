@@ -56,9 +56,7 @@ export default function ModalUsuario({
 
   const rolesDisponibles: (typeof ROLES_USUARIO)[number][] = esSuperAdmin
     ? [...ROLES_USUARIO]
-    : esEdicion
-      ? ["teacher", "family"]
-      : ["admin", "teacher", "family"];
+    : ["teacher", "family"];
 
   // Si se está editando un usuario cuyo rol actual ya no es asignable
   // (ej. un admin no-superadmin abre la edición de otro admin),

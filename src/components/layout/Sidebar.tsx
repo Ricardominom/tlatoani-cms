@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import styles from "./Sidebar.module.css";
 import { MdGridView, MdGroups, MdPerson, MdHomeWork, MdCreditCard, MdCampaign, MdChat, MdLunchDining, MdPhotoLibrary, MdCalendarMonth, MdManageAccounts } from "react-icons/md";
+import { useAuth } from "../../context/AuthContext";
 
 const NAV = [
     {
@@ -42,6 +43,16 @@ const NAV = [
   ];
 
 export default function Sidebar() {
+
+  const { user } = useAuth();
+  const esAdmin = user?.role === "superadmin" || user?.role === "admin";
+
+  const navFiltrado = NAV.map((grupo) => ({
+    ...grupo,
+    items: grupo.items.filter((item) =>
+      item.path === "/usuarios" ? esAdmin : true
+    ),
+  })).filter((grupo) => grupo.items.length > 0);
 
   return (
     <aside className={styles.sidebar}>
@@ -95,7 +106,7 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {NAV.map((grupo) => (
+      {navFiltrado.map((grupo) => (
         <div key={grupo.seccion} className={styles.section}>
           <div className={styles.sectionLbl}>{grupo.seccion}</div>
           {grupo.items.map((item) => (

@@ -216,8 +216,12 @@ export const alumnoFormSchema = z.object({
     group_uuid: z.string(),
     name: z.string().min(1, 'El nombre es requerido'),
     last_name: z.string().min(1, 'Los apellidos son requeridos'),
-    birth_date: z.string().min(1, 'La fecha de nacimiento es requerida'),
-    curp: z.string().length(18, 'El CURP debe tener 18 caracteres'),
+    birth_date: z.string()
+        .min(1, 'La fecha de nacimiento es requerida')
+        .refine((d) => new Date(d) < new Date(), 'La fecha de nacimiento debe ser anterior a hoy'),
+    curp: z.string()
+        .length(18, 'El CURP debe tener 18 caracteres')
+        .regex(/^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]{2}$/, 'El formato del CURP no es válido'),
     blood_type: z.string(),
     allergies: z.string(),
     medicines: z.string(),
@@ -293,8 +297,8 @@ export const ESTADOS_COLEGIATURA = ['paid', 'pending', 'overdue'] as const;
 
 export const colegiaturasSchema = z.object({
     id: z.string().uuid(),
-    student_id: z.string().uuid(),
-    paid_by: z.string().uuid().nullable(),
+    student: alumnoSchema.nullable().optional(),
+    paid_by: usuarioSchema.nullable().optional(),
     period: z.string(),
     amount: z.string(),
     status: z.enum(ESTADOS_COLEGIATURA),
@@ -306,17 +310,19 @@ export const colegiaturasSchema = z.object({
 })
 
 export const colegiaturasFormSchema = z.object({
-    student_uuid: z.string().min(1, 'El alumno es requerido'),
     period: z.string().min(1, 'El periodo es requerido'),
     amount: z.string().min(1, 'El monto es requerido'),
-    status: z.enum(ESTADOS_COLEGIATURA),
-    payment_date: z.string().nullable(),
-    payment_method: z.string().nullable(),
-    reference: z.string().nullable(),
+    status: z.enum(ESTADOS_COLEGIATURA).optional(),
+    payment_date: z.string().nullable().optional(),
+    payment_method: z.string().nullable().optional(),
+    reference: z.string().nullable().optional(),
+    paid_by_uuid: z.string().uuid().nullable().optional(),
 })
 
 export type Colegiatura = z.infer<typeof colegiaturasSchema>
 export type ColegiaturasFormData = z.infer<typeof colegiaturasFormSchema>
+export const colegiaturasPaginadasSchema = paginatedResponseSchema(colegiaturasSchema)
+export type ColegiaturasPaginadas = z.infer<typeof colegiaturasPaginadasSchema>
 
 // Comida
 export const ESTADOS_TURNO = ['pending', 'confirmed', 'served', 'cancelled'] as const;
