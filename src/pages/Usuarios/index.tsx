@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { MdSearch, MdEdit, MdAdd, MdDelete } from "react-icons/md";
+import { MdSearch, MdEdit, MdAdd } from "react-icons/md";
 import styles from "./Usuarios.module.css";
 import type { Usuario, UsuariosPaginados, RolUsuario } from "../../types";
 import { ROLES_USUARIO } from "../../types";
@@ -8,6 +8,7 @@ import { getUsuarios, eliminarUsuario } from "../../services/usuariosService";
 import ModalUsuario from "./ModalUsuario";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { PERMISOS, PERMISOS_DEFAULT, ACTIVIDAD } from "./usuarios.mock";
+import { getStudentsByUser } from "../../services/familyMembersService";
 
 type PermisoEstado = "on" | "mid" | "off";
 
@@ -15,7 +16,7 @@ const ROLE_LABEL: Record<RolUsuario, string> = {
   superadmin: "Super admin",
   admin: "Administrador",
   teacher: "Maestro",
-  family: "Familia"
+  family: "Familia",
 };
 
 const ROLE_STYLE: Record<
@@ -25,39 +26,39 @@ const ROLE_STYLE: Record<
   superadmin: {
     bg: "#1E1E1E",
     color: "var(--amarillo)",
-    border: "rgba(245,200,0,0.3)"
+    border: "rgba(245,200,0,0.3)",
   },
   admin: {
     bg: "var(--amarillo-light)",
     color: "#7A6200",
-    border: "var(--amarillo)"
+    border: "var(--amarillo)",
   },
   teacher: {
     bg: "var(--turquesa-light)",
     color: "var(--turquesa-s)",
-    border: "var(--turquesa)"
+    border: "var(--turquesa)",
   },
   family: {
     bg: "var(--verde-light)",
     color: "var(--verde-s)",
-    border: "var(--verde)"
-  }
+    border: "var(--verde)",
+  },
 };
 
 const TOG_NEXT: Record<PermisoEstado, PermisoEstado> = {
   on: "mid",
   mid: "off",
-  off: "on"
+  off: "on",
 };
 const TOG_BG: Record<PermisoEstado, string> = {
   on: styles.togOn,
   mid: styles.togMid,
-  off: styles.togOff
+  off: styles.togOff,
 };
 const TOG_POS: Record<PermisoEstado, string> = {
   on: styles.onPos,
   mid: styles.midPos,
-  off: styles.offPos
+  off: styles.offPos,
 };
 
 function formatFechaHora(dateStr: string | null): string {
@@ -67,7 +68,7 @@ function formatFechaHora(dateStr: string | null): string {
     month: "short",
     year: "numeric",
     hour: "2-digit",
-    minute: "2-digit"
+    minute: "2-digit",
   });
 }
 
@@ -75,7 +76,7 @@ function formatDesde(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("es-MX", {
     day: "numeric",
     month: "short",
-    year: "numeric"
+    year: "numeric",
   });
 }
 
@@ -95,15 +96,15 @@ export default function Usuarios() {
   const {
     data: usuariosRes,
     isLoading,
-    error
+    error,
   } = useQuery({
     queryKey: ["usuarios"],
     queryFn: () =>
       getUsuarios({
         order_by: "last_name",
         order_direction: "asc",
-        per_page: 100
-      })
+        per_page: 100,
+      }),
   });
 
   const usuarios = usuariosRes?.data ?? [];
@@ -116,7 +117,7 @@ export default function Usuarios() {
       await queryClient.cancelQueries({ queryKey: ["usuarios"] });
       const prevData = queryClient.getQueryData(["usuarios"]);
       queryClient.setQueryData<UsuariosPaginados>(["usuarios"], (old) =>
-        old ? { ...old, data: old.data.filter((u) => u.id !== uuid) } : old
+        old ? { ...old, data: old.data.filter((u) => u.id !== uuid) } : old,
       );
       setSelectedUuid(null);
       setConfirmEliminarOpen(false);
@@ -126,12 +127,12 @@ export default function Usuarios() {
       queryClient.setQueryData(["usuarios"], context?.prevData);
       setSelectedUuid(uuid);
       setErrorEliminar(
-        err instanceof Error ? err.message : "No se pudo eliminar el usuario."
+        err instanceof Error ? err.message : "No se pudo eliminar el usuario.",
       );
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["usuarios"] });
-    }
+    },
   });
 
   const togglePermiso = (key: string) =>
@@ -155,6 +156,14 @@ export default function Usuarios() {
   const usuarioSel = usuarios.find((u) => u.id === activeUuid) ?? null;
   const rolSt = usuarioSel ? ROLE_STYLE[usuarioSel.role] : null;
 
+  const { data: alumnosVinculados = [], isLoading: cargandoAlumnos } = useQuery(
+    {
+      queryKey: ["user-students", usuarioSel?.id],
+      queryFn: () => getStudentsByUser(usuarioSel!.id),
+      enabled: !!usuarioSel && usuarioSel.role === "family",
+    },
+  );
+
   if (isLoading)
     return (
       <div
@@ -165,7 +174,7 @@ export default function Usuarios() {
           justifyContent: "center",
           fontSize: 13,
           fontWeight: 700,
-          color: "var(--texto-3)"
+          color: "var(--texto-3)",
         }}
       >
         Cargando usuarios…
@@ -182,7 +191,7 @@ export default function Usuarios() {
           justifyContent: "center",
           fontSize: 13,
           fontWeight: 700,
-          color: "var(--rojo)"
+          color: "var(--rojo)",
         }}
       >
         {errorMsg}
@@ -247,7 +256,7 @@ export default function Usuarios() {
                 textAlign: "center",
                 fontSize: 12,
                 fontWeight: 700,
-                color: "var(--texto-3)"
+                color: "var(--texto-3)",
               }}
             >
               No se encontraron usuarios
@@ -267,7 +276,7 @@ export default function Usuarios() {
                     style={{
                       background: rs.bg,
                       color: rs.color,
-                      borderColor: rs.border
+                      borderColor: rs.border,
                     }}
                   >
                     {u.name.charAt(0).toUpperCase()}
@@ -292,7 +301,7 @@ export default function Usuarios() {
                     className={styles.uiBadge}
                     style={{
                       background: "var(--rojo-light)",
-                      color: "var(--rojo)"
+                      color: "var(--rojo)",
                     }}
                   >
                     Baja
@@ -344,7 +353,7 @@ export default function Usuarios() {
                 background: "var(--rojo-light)",
                 borderRadius: 8,
                 padding: "8px 14px",
-                margin: "16px 24px 0"
+                margin: "16px 24px 0",
               }}
             >
               {errorEliminar}
@@ -360,7 +369,7 @@ export default function Usuarios() {
                   style={{
                     background: rolSt.bg,
                     color: rolSt.color,
-                    borderColor: rolSt.border
+                    borderColor: rolSt.border,
                   }}
                 >
                   {usuarioSel.name.charAt(0).toUpperCase()}
@@ -388,7 +397,7 @@ export default function Usuarios() {
                   {[
                     { num: "—", lbl: "Accesos", color: "var(--turquesa)" },
                     { num: "—", lbl: "Comunicados", color: "var(--rosa)" },
-                    { num: "—", lbl: "Reportes", color: "var(--verde)" }
+                    { num: "—", lbl: "Reportes", color: "var(--verde)" },
                   ].map((sc) => (
                     <div key={sc.lbl} className={styles.hStat}>
                       <div
@@ -428,19 +437,19 @@ export default function Usuarios() {
                   {[
                     {
                       lbl: "Nombre completo",
-                      val: `${usuarioSel.name} ${usuarioSel.last_name}`
+                      val: `${usuarioSel.name} ${usuarioSel.last_name}`,
                     },
                     { lbl: "Correo", val: usuarioSel.email },
                     {
                       lbl: "Teléfono",
-                      val: usuarioSel.phone_number ?? "No registrado"
+                      val: usuarioSel.phone_number ?? "No registrado",
                     },
                     { lbl: "Rol", val: ROLE_LABEL[usuarioSel.role] },
                     { lbl: "Desde", val: formatDesde(usuarioSel.created_at) },
                     {
                       lbl: "Último acceso",
-                      val: formatFechaHora(usuarioSel.last_access)
-                    }
+                      val: formatFechaHora(usuarioSel.last_access),
+                    },
                   ].map((d) => (
                     <div key={d.lbl} className={styles.datoRow}>
                       <span className={styles.datoLbl}>{d.lbl}</span>
@@ -472,11 +481,11 @@ export default function Usuarios() {
                           usuarioSel.active
                             ? {
                                 background: "var(--verde-light)",
-                                color: "var(--verde-s)"
+                                color: "var(--verde-s)",
                               }
                             : {
                                 background: "var(--rojo-light)",
-                                color: "var(--rojo)"
+                                color: "var(--rojo)",
                               }
                         }
                       >
@@ -491,7 +500,7 @@ export default function Usuarios() {
                         className={styles.credBadge}
                         style={{
                           background: "var(--amarillo-light)",
-                          color: "#7A6200"
+                          color: "#7A6200",
                         }}
                       >
                         No activo
@@ -544,6 +553,34 @@ export default function Usuarios() {
               </div>
             </div>
 
+            {usuarioSel.role === "family" && (
+              <div className={styles.card}>
+                <div className={styles.cardH}>
+                  <div className={styles.cardT}>Alumnos vinculados</div>
+                </div>
+                <div className={styles.cardB}>
+                  {cargandoAlumnos ? (
+                    <span className={styles.datoLbl}>Cargando…</span>
+                  ) : alumnosVinculados.length === 0 ? (
+                    <span className={styles.datoLbl}>
+                      Sin alumnos vinculados
+                    </span>
+                  ) : (
+                    alumnosVinculados.map((alumno) => (
+                      <div key={alumno.id} className={styles.datoRow}>
+                        <span className={styles.datoVal}>
+                          {alumno.name} {alumno.last_name}
+                        </span>
+                        <span className={styles.datoLbl}>
+                          {alumno.group?.name ?? "Sin grupo"}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* ACTIVIDAD */}
             <div className={styles.card}>
               <div className={styles.cardH}>
@@ -581,7 +618,7 @@ export default function Usuarios() {
             justifyContent: "center",
             fontSize: 13,
             fontWeight: 700,
-            color: "var(--texto-3)"
+            color: "var(--texto-3)",
           }}
         >
           Selecciona un usuario para ver el detalle
