@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   MdAdd,
   MdSearch,
   MdSend,
-  MdContentCopy,
   MdDelete,
   MdAttachFile,
   MdNotifications,
@@ -13,14 +15,31 @@ import {
   MdLunchDining,
   MdCampaign,
   MdAccessTime,
-  MdEditNote
+  MdEditNote,
 } from "react-icons/md";
 import styles from "./Comunicados.module.css";
-import type { Tipo, Filtro } from "./types";
-import { COMUNICADOS, CONFIRMACIONES } from "./comunicados.mock";
+import {
+  type Comunicado,
+  type ComunicadoFormData,
+  type TIPOS_COMUNICADO,
+  comunicadoFormSchema,
+} from "../../types";
+import {
+  getComunicados,
+  getComunicado,
+  crearComunicado,
+  eliminarComunicado,
+  publicarComunicado,
+  marcarComunicadoLeido,
+} from "../../services/comunicadosService";
+import { getGrupos } from "../../services/gruposService";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
+
+type TipoComunicado = (typeof TIPOS_COMUNICADO)[number];
+type FiltroEstado = "todos" | "draft" | "published";
 
 const TIPO_STYLE: Record<
-  Tipo,
+  TipoComunicado,
   {
     itemBg: string;
     itemBorder: string;
@@ -32,7 +51,7 @@ const TIPO_STYLE: Record<
     badgeColor: string;
   }
 > = {
-  General: {
+  general: {
     itemBg: "var(--turquesa-light)",
     itemBorder: "var(--turquesa)",
     iconColor: "var(--turquesa)",
@@ -40,9 +59,9 @@ const TIPO_STYLE: Record<
     tagColor: "var(--turquesa-s)",
     bannerBg: "var(--turquesa-light)",
     badgeBg: "var(--turquesa)",
-    badgeColor: "#fff"
+    badgeColor: "#fff",
   },
-  Urgente: {
+  urgent: {
     itemBg: "var(--rojo-light)",
     itemBorder: "#F5C8C8",
     iconColor: "var(--rojo)",
@@ -50,9 +69,19 @@ const TIPO_STYLE: Record<
     tagColor: "var(--rojo)",
     bannerBg: "var(--rojo-light)",
     badgeBg: "var(--rojo)",
-    badgeColor: "#fff"
+    badgeColor: "#fff",
   },
-  Festival: {
+  announcement: {
+    itemBg: "var(--turquesa-light)",
+    itemBorder: "var(--turquesa)",
+    iconColor: "var(--turquesa)",
+    tagBg: "var(--turquesa-light)",
+    tagColor: "var(--turquesa-s)",
+    bannerBg: "var(--turquesa-light)",
+    badgeBg: "var(--turquesa)",
+    badgeColor: "#fff",
+  },
+  festival: {
     itemBg: "var(--rosa-light)",
     itemBorder: "var(--rosa)",
     iconColor: "var(--rosa)",
@@ -60,9 +89,9 @@ const TIPO_STYLE: Record<
     tagColor: "var(--rosa-s)",
     bannerBg: "var(--rosa-light)",
     badgeBg: "var(--rosa)",
-    badgeColor: "#fff"
+    badgeColor: "#fff",
   },
-  Junta: {
+  meeting: {
     itemBg: "var(--amarillo-light)",
     itemBorder: "var(--amarillo)",
     iconColor: "#B89600",
@@ -70,9 +99,9 @@ const TIPO_STYLE: Record<
     tagColor: "#7A6200",
     bannerBg: "var(--amarillo-light)",
     badgeBg: "var(--amarillo)",
-    badgeColor: "#5A4800"
+    badgeColor: "#5A4800",
   },
-  Comida: {
+  food: {
     itemBg: "var(--verde-light)",
     itemBorder: "var(--verde)",
     iconColor: "var(--verde)",
@@ -80,9 +109,9 @@ const TIPO_STYLE: Record<
     tagColor: "var(--verde-s)",
     bannerBg: "var(--verde-light)",
     badgeBg: "var(--verde)",
-    badgeColor: "#fff"
+    badgeColor: "#fff",
   },
-  Recordatorio: {
+  reminder: {
     itemBg: "var(--gris-bg)",
     itemBorder: "var(--gris-borde)",
     iconColor: "var(--texto-3)",
@@ -90,85 +119,170 @@ const TIPO_STYLE: Record<
     tagColor: "var(--texto-2)",
     bannerBg: "var(--gris-bg)",
     badgeBg: "#888",
-    badgeColor: "#fff"
-  }
+    badgeColor: "#fff",
+  },
 };
 
-const TIPO_PILL: Record<Tipo, { bg: string; color: string }> = {
-  General: { bg: "var(--turquesa)", color: "#fff" },
-  Urgente: { bg: "var(--rojo)", color: "#fff" },
-  Festival: { bg: "var(--rosa)", color: "#fff" },
-  Junta: { bg: "var(--amarillo)", color: "#5A4800" },
-  Comida: { bg: "var(--verde)", color: "#fff" },
-  Recordatorio: { bg: "#888", color: "#fff" }
+const TIPO_LABEL: Record<TipoComunicado, string> = {
+  general: "General",
+  urgent: "Urgente",
+  announcement: "Anuncio",
+  festival: "Festival",
+  meeting: "Junta",
+  food: "Comida",
+  reminder: "Recordatorio",
 };
 
-const TIPOS: Tipo[] = [
-  "General",
-  "Urgente",
-  "Festival",
-  "Junta",
-  "Comida",
-  "Recordatorio"
-];
-const DESTINOS = [
-  "Toda la escuela",
-  "Abejas",
-  "Halcones",
-  "Hormigas",
-  "Lobos",
-  "Familia específica"
+const TIPOS_LISTA: TipoComunicado[] = [
+  "general",
+  "urgent",
+  "announcement",
+  "festival",
+  "meeting",
+  "food",
+  "reminder",
 ];
 
-function TipoIcon({ tipo, color }: { tipo: Tipo; color: string }) {
+function TipoIcon({ tipo, color }: { tipo: TipoComunicado; color: string }) {
   const p = { size: 18, color };
   switch (tipo) {
-    case "Urgente":
+    case "urgent":
       return <MdWarning {...p} />;
-    case "Festival":
+    case "festival":
       return <MdStar {...p} />;
-    case "Junta":
+    case "meeting":
       return <MdGroups {...p} />;
-    case "Comida":
+    case "food":
       return <MdLunchDining {...p} />;
-    case "Recordatorio":
+    case "reminder":
       return <MdAccessTime {...p} />;
     default:
       return <MdCampaign {...p} />;
   }
 }
 
+function formatFecha(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("es-MX", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+const FORM_DEFAULT: ComunicadoFormData = {
+  title: "",
+  content: "",
+  type: "general",
+  is_global: true,
+  group_uuids: [],
+  student_uuids: [],
+  status: "draft",
+  attachment: null,
+};
+
 export default function Comunicados() {
-  const [selectedId, setSelectedId] = useState(1);
+  const queryClient = useQueryClient();
+
+  const [selectedUuid, setSelectedUuid] = useState<string | null>(null);
   const [modoNuevo, setModoNuevo] = useState(false);
   const [busqueda, setBusqueda] = useState("");
-  const [filtro, setFiltro] = useState<Filtro>("todos");
-  const [nuevoTipo, setNuevoTipo] = useState<Tipo>("General");
-  const [destinos, setDestinos] = useState<string[]>([]);
-  const [confTab, setConfTab] = useState<"leyo" | "pendiente">("leyo");
+  const [filtro, setFiltro] = useState<FiltroEstado>("todos");
+  const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
 
-  const comunicadosFiltrados = COMUNICADOS.filter((c) => {
-    const matchBusqueda =
-      !busqueda || c.titulo.toLowerCase().includes(busqueda.toLowerCase());
-    const matchFiltro = filtro === "todos" || c.status === filtro;
-    return matchBusqueda && matchFiltro;
+  const { data: comunicadosRes, isLoading } = useQuery({
+    queryKey: ["comunicados", filtro, busqueda],
+    queryFn: () =>
+      getComunicados({
+        status: filtro !== "todos" ? filtro : undefined,
+        search: busqueda || undefined,
+        per_page: 50,
+        order_by: "created_at",
+        order_direction: "desc",
+      }),
   });
 
-  const aviso = COMUNICADOS.find((c) => c.id === selectedId) ?? COMUNICADOS[0];
-  const ts = TIPO_STYLE[aviso.tipo];
-  const pct =
-    aviso.confirmados && aviso.totalFamilias
-      ? Math.round((aviso.confirmados / aviso.totalFamilias) * 100)
-      : 0;
-  const pendientes = (aviso.totalFamilias ?? 0) - (aviso.confirmados ?? 0);
-  const confFiltradas = CONFIRMACIONES.filter((c) =>
-    confTab === "leyo" ? c.leyo : !c.leyo
-  );
+  const comunicados = comunicadosRes?.data ?? [];
+  const activeUuid = selectedUuid ?? comunicados[0]?.id ?? null;
 
-  const toggleDestino = (d: string) =>
-    setDestinos((prev) =>
-      prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]
-    );
+  const { data: comunicadoDetalle } = useQuery({
+    queryKey: ["comunicado", activeUuid],
+    queryFn: () => getComunicado(activeUuid!),
+    enabled: !!activeUuid && !modoNuevo,
+  });
+
+  const { data: gruposRes } = useQuery({
+    queryKey: ["grupos"],
+    queryFn: () => getGrupos({ per_page: 100 }),
+    enabled: modoNuevo,
+  });
+  const grupos = gruposRes?.data ?? [];
+
+  const aviso: Comunicado | null =
+    comunicadoDetalle ?? comunicados.find((c) => c.id === activeUuid) ?? null;
+  const ts = aviso ? TIPO_STYLE[aviso.type] : TIPO_STYLE["general"];
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<ComunicadoFormData>({
+    resolver: zodResolver(comunicadoFormSchema),
+    defaultValues: FORM_DEFAULT,
+  });
+
+  const isGlobal = watch("is_global");
+
+  const crearMutation = useMutation({
+    mutationFn: (data: ComunicadoFormData) => crearComunicado(data),
+    onSuccess: (nuevo) => {
+      queryClient.invalidateQueries({ queryKey: ["comunicados"] });
+      setModoNuevo(false);
+      setSelectedUuid(nuevo?.id ?? null);
+      reset(FORM_DEFAULT);
+    },
+  });
+
+  const eliminarMutation = useMutation({
+    mutationFn: (uuid: string) => eliminarComunicado(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comunicados"] });
+      setSelectedUuid(null);
+      setConfirmEliminarOpen(false);
+    },
+  });
+
+  const publicarMutation = useMutation({
+    mutationFn: (uuid: string) => publicarComunicado(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comunicados"] });
+      queryClient.invalidateQueries({ queryKey: ["comunicado", activeUuid] });
+    },
+  });
+
+  const marcarLeidoMutation = useMutation({
+    mutationFn: (uuid: string) => marcarComunicadoLeido(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["comunicado", activeUuid] });
+      queryClient.invalidateQueries({ queryKey: ["comunicados"] });
+    },
+  });
+
+  const draftCount = comunicados.filter((c) => c.status === "draft").length;
+
+  function handleGuardarBorrador() {
+    setValue("status", "draft");
+    handleSubmit((data) => crearMutation.mutate(data))();
+  }
+
+  function handlePublicarNuevo() {
+    setValue("status", "published");
+    handleSubmit((data) => crearMutation.mutate(data))();
+  }
 
   return (
     <div className={styles.root}>
@@ -181,8 +295,8 @@ export default function Comunicados() {
               className={styles.btnNuevo}
               onClick={() => {
                 setModoNuevo(true);
-                setDestinos([]);
-                setNuevoTipo("General");
+                setSelectedUuid(null);
+                reset(FORM_DEFAULT);
               }}
             >
               <MdAdd size={11} /> Nuevo aviso
@@ -205,14 +319,14 @@ export default function Comunicados() {
               Todos
             </button>
             <button
-              className={`${styles.ft} ${styles.ftBor}`}
-              onClick={() => setFiltro("borrador")}
+              className={`${styles.ft} ${filtro === "draft" ? styles.ftOn : styles.ftBor}`}
+              onClick={() => setFiltro("draft")}
             >
-              Borrador · 0
+              Borrador · {draftCount}
             </button>
             <button
-              className={`${styles.ft} ${filtro === "publicado" ? styles.ftOn : styles.ftOff}`}
-              onClick={() => setFiltro("publicado")}
+              className={`${styles.ft} ${filtro === "published" ? styles.ftOn : styles.ftOff}`}
+              onClick={() => setFiltro("published")}
             >
               Publicados
             </button>
@@ -220,13 +334,26 @@ export default function Comunicados() {
         </div>
 
         <div className={styles.lista}>
+          {isLoading && (
+            <div
+              style={{
+                padding: "24px 16px",
+                fontSize: 12,
+                color: "var(--texto-3)",
+                fontWeight: 700,
+              }}
+            >
+              Cargando comunicados…
+            </div>
+          )}
+
           {modoNuevo && (
             <div className={`${styles.avItem} ${styles.avItemSel}`}>
               <div
                 className={styles.avIcono}
                 style={{
                   background: "var(--amarillo-light)",
-                  border: "1.5px solid var(--amarillo)"
+                  border: "1.5px solid var(--amarillo)",
                 }}
               >
                 <MdEditNote size={18} color="#B89600" />
@@ -241,7 +368,7 @@ export default function Comunicados() {
                     className={styles.avTag}
                     style={{
                       background: "var(--amarillo-light)",
-                      color: "#B89600"
+                      color: "#B89600",
                     }}
                   >
                     Borrador
@@ -252,19 +379,15 @@ export default function Comunicados() {
             </div>
           )}
 
-          {comunicadosFiltrados.map((c) => {
-            const st = TIPO_STYLE[c.tipo];
-            const sel = !modoNuevo && c.id === selectedId;
-            const confPct =
-              c.confirmados && c.totalFamilias
-                ? `${Math.round((c.confirmados / c.totalFamilias) * 100)}%`
-                : null;
+          {comunicados.map((c) => {
+            const st = TIPO_STYLE[c.type];
+            const sel = !modoNuevo && c.id === activeUuid;
             return (
               <div
                 key={c.id}
                 className={`${styles.avItem} ${sel ? styles.avItemSel : ""}`}
                 onClick={() => {
-                  setSelectedId(c.id);
+                  setSelectedUuid(c.id);
                   setModoNuevo(false);
                 }}
               >
@@ -272,48 +395,44 @@ export default function Comunicados() {
                   className={styles.avIcono}
                   style={{
                     background: st.itemBg,
-                    border: `1.5px solid ${st.itemBorder}`
+                    border: `1.5px solid ${st.itemBorder}`,
                   }}
                 >
-                  <TipoIcon tipo={c.tipo} color={st.iconColor} />
+                  <TipoIcon tipo={c.type} color={st.iconColor} />
                 </div>
                 <div className={styles.avDatos}>
-                  <div className={styles.avTituloTxt}>{c.titulo}</div>
-                  <div className={styles.avPreview}>{c.preview}</div>
+                  <div className={styles.avTituloTxt}>{c.title}</div>
+                  <div className={styles.avPreview}>
+                    {c.content.slice(0, 60)}…
+                  </div>
                   <div className={styles.avMeta}>
                     <span
                       className={styles.avTag}
                       style={{ background: st.tagBg, color: st.tagColor }}
                     >
-                      {c.tipo}
+                      {TIPO_LABEL[c.type]}
                     </span>
                     <span
                       className={styles.avTag}
                       style={{
                         background: "var(--gris-bg)",
-                        color: "var(--texto-2)"
+                        color: "var(--texto-2)",
                       }}
                     >
-                      {c.destinos.includes("Toda la escuela")
-                        ? "Escuela"
-                        : c.destinos[0]}
+                      {c.is_global ? "Escuela" : "Grupos"}
                     </span>
-                    <span className={styles.avFecha}>{c.fecha}</span>
+                    <span className={styles.avFecha}>
+                      {formatFecha(c.published_at ?? c.created_at)}
+                    </span>
                   </div>
                 </div>
-                {c.status === "publicado" && confPct && (
+                {c.status === "published" && (
                   <div className={styles.avRight}>
-                    <span
-                      className={styles.avConf}
-                      style={{ color: "var(--verde)" }}
-                    >
-                      {confPct}
-                    </span>
                     <span
                       className={styles.avSt}
                       style={{
                         background: "var(--verde-light)",
-                        color: "var(--verde-s)"
+                        color: "var(--verde-s)",
                       }}
                     >
                       ✓ Pub.
@@ -328,404 +447,476 @@ export default function Comunicados() {
 
       {/* ── DETALLE ── */}
       <div className={styles.panelDet}>
-        <div className={styles.detTopbar}>
-          <div>
-            <div className={styles.detTitulo}>
-              {modoNuevo ? "Nuevo comunicado" : aviso.titulo}
-            </div>
-            <div className={styles.detSub}>
-              {modoNuevo
-                ? "Borrador · sin publicar"
-                : `${aviso.tipo} · ${aviso.fecha}`}
-            </div>
-          </div>
-          <div className={styles.detActions}>
-            <button className={styles.btnS}>
-              <MdContentCopy size={12} /> Duplicar
-            </button>
-            <button className={`${styles.btnS} ${styles.btnSDanger}`}>
-              <MdDelete size={12} /> Eliminar
-            </button>
-            <button className={styles.btnP}>
-              <MdSend size={12} color="#5A4800" /> Publicar ahora
-            </button>
-          </div>
-        </div>
-
-        <div className={styles.detContent}>
-          {/* COLUMNA AVISO */}
-          <div className={styles.colAviso}>
-            {/* Preview del aviso seleccionado */}
-            <div className={styles.avisoPrev}>
-              <div
-                className={styles.apBanner}
-                style={{ background: ts.bannerBg }}
-              >
-                <div className={styles.apTipoRow}>
-                  <span
-                    className={styles.apTipoBadge}
-                    style={{ background: ts.badgeBg, color: ts.badgeColor }}
-                  >
-                    {aviso.tipo}
-                  </span>
-                  {aviso.tipo === "Urgente" && (
-                    <span className={styles.apUrgente}>
-                      Requiere confirmación
-                    </span>
-                  )}
-                </div>
-                <div className={styles.apTituloBig}>{aviso.titulo}</div>
-                <div className={styles.apDestino}>
-                  {aviso.destinos.map((d) => (
-                    <span
-                      key={d}
-                      className={styles.apDestChip}
-                      style={
-                        d === "Toda la escuela"
-                          ? {
-                              background: ts.bannerBg,
-                              borderColor: ts.itemBorder,
-                              color: ts.iconColor
-                            }
-                          : {}
-                      }
-                    >
-                      {d === "Toda la escuela" && (
-                        <svg
-                          width="10"
-                          height="10"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                        >
-                          <path
-                            d="M3 9l9-7
-  9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-                          />
-                        </svg>
-                      )}
-                      {d}
-                    </span>
-                  ))}
-                  {aviso.totalFamilias && (
-                    <span className={styles.apDestChip}>
-                      {aviso.totalFamilias} familias
-                    </span>
-                  )}
-                </div>
+        {modoNuevo ? (
+          <>
+            <div className={styles.detTopbar}>
+              <div>
+                <div className={styles.detTitulo}>Nuevo comunicado</div>
+                <div className={styles.detSub}>Borrador · sin publicar</div>
               </div>
-              <div className={styles.apBody}>
-                <div className={styles.apTexto}>
-                  {aviso.body.split("\n").map((line, i) =>
-                    line === "" ? (
-                      <br key={i} />
-                    ) : (
-                      <span key={i}>
-                        {line}
-                        <br />
-                      </span>
-                    )
-                  )}
-                </div>
-                {aviso.adjunto && (
-                  <div className={styles.apAdjunto}>
-                    <div className={styles.apAdjIcon}>
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="var(--turquesa)"
-                        strokeWidth="2"
-                      >
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className={styles.apAdjNombre}>
-                        {aviso.adjunto.nombre}
-                      </div>
-                      <div className={styles.apAdjSize}>
-                        {aviso.adjunto.size}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className={styles.apFooter}>
-                <div className={styles.apPubInfo}>
-                  Publicado {aviso.fecha} por Ana Martínez
-                </div>
-                {aviso.confirmados !== undefined && (
-                  <div className={styles.apConfRow}>
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 900,
-                        color: "var(--verde)"
-                      }}
-                    >
-                      {aviso.confirmados} leyeron
-                    </span>
-                    <span style={{ color: "var(--texto-3)" }}>·</span>
-                    <span
-                      style={{
-                        fontSize: 13,
-                        fontWeight: 900,
-                        color: "var(--rojo)"
-                      }}
-                    >
-                      {pendientes} sin leer
-                    </span>
-                  </div>
-                )}
+              <div className={styles.detActions}>
+                <button
+                  className={styles.btnS}
+                  onClick={() => {
+                    setModoNuevo(false);
+                    reset(FORM_DEFAULT);
+                  }}
+                >
+                  Cancelar
+                </button>
               </div>
             </div>
-
-            {/* Editor (solo en modo nuevo) */}
-            {modoNuevo && (
-              <div className={styles.editorCard}>
-                <div className={styles.ecHeader}>
-                  <span className={styles.ecTitulo}>
-                    ✏️ Redactar nuevo comunicado
-                  </span>
-                  <span className={styles.ecEstado}>
-                    Borrador · sin publicar
-                  </span>
-                </div>
-                <div className={styles.ecBody}>
-                  <div className={styles.field}>
-                    <label className={styles.fieldLbl}>Tipo de aviso</label>
-                    <div className={styles.tipoPills}>
-                      {TIPOS.map((t) => {
-                        const ps = TIPO_PILL[t];
-                        const on = nuevoTipo === t;
-                        return (
-                          <button
-                            key={t}
-                            className={`${styles.tipoPill} ${on ? styles.tpOn : styles.tpOff}`}
-                            style={
-                              on ? { background: ps.bg, color: ps.color } : {}
-                            }
-                            onClick={() => setNuevoTipo(t)}
-                          >
-                            {t}
-                          </button>
-                        );
-                      })}
-                    </div>
+            <div className={styles.detContent}>
+              <div className={styles.colAviso}>
+                <div className={styles.editorCard}>
+                  <div className={styles.ecHeader}>
+                    <span className={styles.ecTitulo}>
+                      ✏️ Redactar nuevo comunicado
+                    </span>
+                    <span className={styles.ecEstado}>
+                      Borrador · sin publicar
+                    </span>
                   </div>
-
-                  <div className={styles.field}>
-                    <label className={styles.fieldLbl}>Título del aviso</label>
-                    <input
-                      className={styles.fieldInput}
-                      type="text"
-                      placeholder="Ej: Junta de padres — Abejas · 28 oct"
-                    />
-                  </div>
-
-                  <div className={styles.field}>
-                    <label className={styles.fieldLbl}>Mensaje</label>
-                    <textarea
-                      className={`${styles.fieldInput} ${styles.fieldTextarea}`}
-                      placeholder="Escribe el mensaje para las familias…"
-                    />
-                  </div>
-
-                  <div className={styles.field}>
-                    <label className={styles.fieldLbl}>Destino</label>
-                    <div className={styles.destinoGrid}>
-                      {DESTINOS.map((d) => {
-                        const on = destinos.includes(d);
-                        return (
-                          <div
-                            key={d}
-                            className={`${styles.destCheck} ${on ? styles.destCheckOn : ""}`}
-                            onClick={() => toggleDestino(d)}
-                          >
-                            <div
-                              className={`${styles.destBox} ${on ? styles.destBoxOn : ""}`}
-                            >
-                              {on && (
-                                <svg
-                                  width="9"
-                                  height="9"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                  stroke="#5A4800"
-                                  strokeWidth="3"
+                  <div className={styles.ecBody}>
+                    <div className={styles.field}>
+                      <label className={styles.fieldLbl}>Tipo de aviso</label>
+                      <Controller
+                        name="type"
+                        control={control}
+                        render={({ field }) => (
+                          <div className={styles.tipoPills}>
+                            {TIPOS_LISTA.map((t) => {
+                              const st = TIPO_STYLE[t];
+                              const on = field.value === t;
+                              return (
+                                <button
+                                  key={t}
+                                  type="button"
+                                  className={`${styles.tipoPill} ${on ? styles.tpOn : styles.tpOff}`}
+                                  style={
+                                    on
+                                      ? {
+                                          background: st.badgeBg,
+                                          color: st.badgeColor,
+                                        }
+                                      : {}
+                                  }
+                                  onClick={() => field.onChange(t)}
                                 >
-                                  <polyline points="20 6 9 17 4 12" />
-                                </svg>
-                              )}
-                            </div>
-                            <span className={styles.destLbl}>{d}</span>
+                                  {TIPO_LABEL[t]}
+                                </button>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
+                        )}
+                      />
+                    </div>
+
+                    <div className={styles.field}>
+                      <label className={styles.fieldLbl}>
+                        Título del aviso
+                      </label>
+                      <input
+                        className={styles.fieldInput}
+                        placeholder="Ej: Junta de padres — Abejas · 28 oct"
+                        {...register("title")}
+                      />
+                      {errors.title && (
+                        <span style={{ fontSize: 11, color: "var(--rojo)" }}>
+                          {errors.title.message}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={styles.field}>
+                      <label className={styles.fieldLbl}>Mensaje</label>
+                      <textarea
+                        className={`${styles.fieldInput} ${styles.fieldTextarea}`}
+                        placeholder="Escribe el mensaje para las familias…"
+                        {...register("content")}
+                      />
+                      {errors.content && (
+                        <span style={{ fontSize: 11, color: "var(--rojo)" }}>
+                          {errors.content.message}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={styles.field}>
+                      <label className={styles.fieldLbl}>Destino</label>
+                      <Controller
+                        name="is_global"
+                        control={control}
+                        render={({ field }) => (
+                          <div className={styles.destinoGrid}>
+                            <div
+                              className={`${styles.destCheck} ${isGlobal ? styles.destCheckOn : ""}`}
+                              onClick={() => {
+                                field.onChange(true);
+                                setValue("group_uuids", []);
+                              }}
+                            >
+                              <div
+                                className={`${styles.destBox} ${isGlobal ? styles.destBoxOn : ""}`}
+                              >
+                                {isGlobal && (
+                                  <svg
+                                    width="9"
+                                    height="9"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="#5A4800"
+                                    strokeWidth="3"
+                                  >
+                                    <polyline points="20 6 9 17 4 12" />
+                                  </svg>
+                                )}
+                              </div>
+                              <span className={styles.destLbl}>
+                                Toda la escuela
+                              </span>
+                            </div>
+                            {grupos.map((g) => (
+                              <Controller
+                                key={g.id}
+                                name="group_uuids"
+                                control={control}
+                                render={({ field: gField }) => {
+                                  const checked = gField.value.includes(g.id);
+                                  return (
+                                    <div
+                                      className={`${styles.destCheck} ${checked ? styles.destCheckOn : ""}`}
+                                      onClick={() => {
+                                        field.onChange(false);
+                                        gField.onChange(
+                                          checked
+                                            ? gField.value.filter(
+                                                (id) => id !== g.id,
+                                              )
+                                            : [...gField.value, g.id],
+                                        );
+                                      }}
+                                    >
+                                      <div
+                                        className={`${styles.destBox} ${checked ? styles.destBoxOn : ""}`}
+                                      >
+                                        {checked && (
+                                          <svg
+                                            width="9"
+                                            height="9"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="#5A4800"
+                                            strokeWidth="3"
+                                          >
+                                            <polyline points="20 6 9 17 4 12" />
+                                          </svg>
+                                        )}
+                                      </div>
+                                      <span className={styles.destLbl}>
+                                        {g.name}
+                                      </span>
+                                    </div>
+                                  );
+                                }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      />
+                    </div>
+
+                    <div className={styles.field}>
+                      <label className={styles.fieldLbl}>
+                        Adjunto (opcional)
+                      </label>
+                      <Controller
+                        name="attachment"
+                        control={control}
+                        render={({ field }) => (
+                          <div className={styles.adjUpload}>
+                            <MdAttachFile size={16} color="var(--texto-3)" />
+                            <input
+                              type="file"
+                              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                              style={{ display: "none" }}
+                              id="adjunto-input"
+                              onChange={(e) =>
+                                field.onChange(e.target.files?.[0] ?? null)
+                              }
+                            />
+                            <label
+                              htmlFor="adjunto-input"
+                              className={styles.adjTxt}
+                              style={{ cursor: "pointer" }}
+                            >
+                              {field.value instanceof File
+                                ? field.value.name
+                                : "Adjuntar PDF, imagen o documento…"}
+                            </label>
+                          </div>
+                        )}
+                      />
                     </div>
                   </div>
-
-                  <div className={styles.field}>
-                    <label className={styles.fieldLbl}>
-                      Adjunto (opcional)
-                    </label>
-                    <div className={styles.adjUpload}>
-                      <MdAttachFile size={16} color="var(--texto-3)" />
-                      <span className={styles.adjTxt}>
-                        Adjuntar PDF, imagen o documento…
-                      </span>
-                    </div>
+                  <div className={styles.ecFooter}>
+                    <button
+                      type="button"
+                      className={styles.btnBorrador}
+                      disabled={crearMutation.isPending}
+                      onClick={handleGuardarBorrador}
+                    >
+                      Guardar borrador
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.btnPublicar}
+                      disabled={crearMutation.isPending}
+                      onClick={handlePublicarNuevo}
+                    >
+                      <MdSend size={14} color="#5A4800" />
+                      {crearMutation.isPending
+                        ? "Publicando…"
+                        : "Publicar y notificar"}
+                    </button>
                   </div>
-                </div>
-                <div className={styles.ecFooter}>
-                  <button className={styles.btnBorrador}>
-                    Guardar borrador
-                  </button>
-                  <button className={styles.btnPublicar}>
-                    <MdSend size={14} color="#5A4800" />
-                    Publicar y notificar —{" "}
-                    {destinos.length > 0 ? "seleccionados" : "29 familias"}
-                  </button>
+                  {crearMutation.isError && (
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "var(--rojo)",
+                        padding: "8px 16px",
+                      }}
+                    >
+                      {crearMutation.error instanceof Error
+                        ? crearMutation.error.message
+                        : "Error al crear el comunicado"}
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
-
-          {/* COLUMNA CONFIRMACIONES */}
-          <div className={styles.colConf}>
-            <div className={styles.confProg}>
-              <div className={styles.cpTitulo}>
-                Confirmaciones —{" "}
-                {aviso.titulo.length > 28
-                  ? aviso.titulo.slice(0, 28) + "…"
-                  : aviso.titulo}
+              <div className={styles.colConf} />
+            </div>
+          </>
+        ) : aviso ? (
+          <>
+            <div className={styles.detTopbar}>
+              <div>
+                <div className={styles.detTitulo}>{aviso.title}</div>
+                <div className={styles.detSub}>
+                  {TIPO_LABEL[aviso.type]} ·{" "}
+                  {formatFecha(aviso.published_at ?? aviso.created_at)}
+                </div>
               </div>
-              <div className={styles.cpNums}>
-                <span
-                  className={styles.cpTotal}
-                  style={{ color: "var(--verde)" }}
+              <div className={styles.detActions}>
+                {aviso.status === "draft" && (
+                  <button
+                    className={styles.btnP}
+                    disabled={publicarMutation.isPending}
+                    onClick={() => publicarMutation.mutate(aviso.id)}
+                  >
+                    <MdSend size={12} color="#5A4800" />
+                    {publicarMutation.isPending
+                      ? "Publicando…"
+                      : "Publicar ahora"}
+                  </button>
+                )}
+                <button
+                  className={`${styles.btnS} ${styles.btnSDanger}`}
+                  onClick={() => setConfirmEliminarOpen(true)}
                 >
-                  {aviso.confirmados ?? 0}
-                </span>
-                <span className={styles.cpDe}>
-                  de {aviso.totalFamilias ?? 0} familias
-                </span>
+                  <MdDelete size={12} /> Eliminar
+                </button>
               </div>
-              <div className={styles.cpBarraWrap}>
-                <div className={styles.cpBarra} style={{ width: `${pct}%` }} />
-              </div>
-              <div className={styles.cpStats}>
-                <div className={styles.cpStat}>
-                  <span
-                    className={styles.cpNum}
-                    style={{ color: "var(--verde)" }}
-                  >
-                    {aviso.confirmados ?? 0}
-                  </span>
-                  <span className={styles.cpLbl}>Confirmaron</span>
-                </div>
-                <div className={styles.cpStat}>
-                  <span
-                    className={styles.cpNum}
-                    style={{ color: "var(--rojo)" }}
-                  >
-                    {pendientes}
-                  </span>
-                  <span className={styles.cpLbl}>Sin leer</span>
-                </div>
-                <div className={styles.cpStat}>
-                  <span
-                    className={styles.cpNum}
-                    style={{ color: "var(--texto-3)" }}
-                  >
-                    {pct}%
-                  </span>
-                  <span className={styles.cpLbl}>Tasa</span>
-                </div>
-              </div>
-              <button className={styles.btnRecordar}>
-                <MdNotifications size={12} />
-                Recordar a los {pendientes} pendientes
-              </button>
             </div>
 
-            <div className={styles.confLista}>
-              <div className={styles.clTabs}>
-                <button
-                  className={`${styles.clTab} ${confTab === "leyo" ? styles.clTabOn : styles.clTabOff}`}
-                  onClick={() => setConfTab("leyo")}
-                >
-                  ✓ Leyeron · {CONFIRMACIONES.filter((c) => c.leyo).length}
-                </button>
-                <button
-                  className={`${styles.clTab} ${confTab === "pendiente" ? styles.clTabPend : styles.clTabOff}`}
-                  onClick={() => setConfTab("pendiente")}
-                >
-                  Sin leer · {CONFIRMACIONES.filter((c) => !c.leyo).length}
-                </button>
-              </div>
-              <div className={styles.clScroll}>
-                {confFiltradas.map((c, i) => (
-                  <div key={i} className={styles.confRow}>
-                    <div
-                      className={styles.confAv}
-                      style={{
-                        background: c.bg,
-                        color: c.color,
-                        border: `1px solid ${c.border}`
-                      }}
-                    >
-                      {c.inicial}
+            <div className={styles.detContent}>
+              <div className={styles.colAviso}>
+                <div className={styles.avisoPrev}>
+                  <div
+                    className={styles.apBanner}
+                    style={{ background: ts.bannerBg }}
+                  >
+                    <div className={styles.apTipoRow}>
+                      <span
+                        className={styles.apTipoBadge}
+                        style={{ background: ts.badgeBg, color: ts.badgeColor }}
+                      >
+                        {TIPO_LABEL[aviso.type]}
+                      </span>
+                      {aviso.type === "urgent" && (
+                        <span className={styles.apUrgente}>
+                          Requiere confirmación
+                        </span>
+                      )}
                     </div>
-                    <div className={styles.confDatos}>
-                      <div className={styles.confNombre}>{c.nombre}</div>
-                      <div className={styles.confHijo}>{c.hijos}</div>
-                      <div className={styles.confHora}>{c.hora}</div>
-                    </div>
-                    <div
-                      className={styles.confSt}
-                      style={{
-                        background: c.leyo
-                          ? "var(--verde-light)"
-                          : "var(--rojo-light)"
-                      }}
-                    >
-                      {c.leyo ? (
-                        <svg
-                          width="10"
-                          height="10"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="var(--verde-s)"
-                          strokeWidth="3"
+                    <div className={styles.apTituloBig}>{aviso.title}</div>
+                    <div className={styles.apDestino}>
+                      {aviso.is_global ? (
+                        <span
+                          className={styles.apDestChip}
+                          style={{
+                            background: ts.bannerBg,
+                            borderColor: ts.itemBorder,
+                            color: ts.iconColor,
+                          }}
                         >
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
+                          <svg
+                            width="10"
+                            height="10"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                          </svg>{" "}
+                          Toda la escuela
+                        </span>
                       ) : (
-                        <svg
-                          width="10"
-                          height="10"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="var(--rojo)"
-                          strokeWidth="3"
-                        >
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
+                        aviso.groups?.map((g) => (
+                          <span key={g.id} className={styles.apDestChip}>
+                            {g.name}
+                          </span>
+                        ))
                       )}
                     </div>
                   </div>
-                ))}
+                  <div className={styles.apBody}>
+                    <div className={styles.apTexto}>
+                      {aviso.content.split("\n").map((line, i) =>
+                        line === "" ? (
+                          <br key={i} />
+                        ) : (
+                          <span key={i}>
+                            {line}
+                            <br />
+                          </span>
+                        ),
+                      )}
+                    </div>
+                    {aviso.attachment && (
+                      <div className={styles.apAdjunto}>
+                        <div className={styles.apAdjIcon}>
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--turquesa)"
+                            strokeWidth="2"
+                          >
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                          </svg>
+                        </div>
+                        <div>
+                          <a
+                            href={aviso.attachment}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.apAdjNombre}
+                          >
+                            Ver adjunto
+                          </a>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.apFooter}>
+                    <div className={styles.apPubInfo}>
+                      {aviso.status === "published"
+                        ? `Publicado ${formatFecha(aviso.published_at)}`
+                        : "Borrador · sin publicar"}
+                      {aviso.author &&
+                        ` por ${aviso.author.name} ${aviso.author.last_name}`}
+                    </div>
+                    <div className={styles.apConfRow}>
+                      {aviso.is_read ? (
+                        <span
+                          style={{
+                            fontSize: 13,
+                            fontWeight: 900,
+                            color: "var(--verde)",
+                          }}
+                        >
+                          ✓ Leído{" "}
+                          {aviso.read_at ? formatFecha(aviso.read_at) : ""}
+                        </span>
+                      ) : aviso.status === "published" ? (
+                        <button
+                          className={styles.btnBorrador}
+                          disabled={marcarLeidoMutation.isPending}
+                          onClick={() => marcarLeidoMutation.mutate(aviso.id)}
+                        >
+                          <MdNotifications size={12} /> Marcar como leído
+                        </button>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className={styles.colConf}>
+                <div className={styles.confProg}>
+                  <div className={styles.cpTitulo}>
+                    Estado —{" "}
+                    {aviso.title.length > 28
+                      ? aviso.title.slice(0, 28) + "…"
+                      : aviso.title}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 12,
+                      fontSize: 12,
+                      color: "var(--texto-2)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {aviso.status === "draft"
+                      ? "Borrador · aún no publicado"
+                      : aviso.is_read
+                        ? `Leído el ${aviso.read_at ? formatFecha(aviso.read_at) : "—"}`
+                        : "Sin leer por el usuario actual"}
+                  </div>
+                  <div
+                    style={{
+                      marginTop: 8,
+                      fontSize: 11,
+                      color: "var(--texto-3)",
+                    }}
+                  >
+                    El desglose por familia estará disponible cuando el backend
+                    exponga el endpoint de lecturas.
+                  </div>
+                </div>
               </div>
             </div>
+          </>
+        ) : (
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              fontSize: 13,
+              fontWeight: 700,
+              color: "var(--texto-3)",
+            }}
+          >
+            Selecciona un comunicado o crea uno nuevo
           </div>
-        </div>
+        )}
       </div>
+
+      <ConfirmDialog
+        open={confirmEliminarOpen}
+        titulo="Eliminar comunicado"
+        mensaje={`¿Seguro que quieres eliminar "${aviso?.title}"? Esta acción no se puede deshacer.`}
+        onConfirm={() => aviso && eliminarMutation.mutate(aviso.id)}
+        onCancel={() => setConfirmEliminarOpen(false)}
+      />
     </div>
   );
 }
