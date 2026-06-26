@@ -10,11 +10,12 @@ import {
   MdLunchDining,
   MdPeople,
   MdSchool,
-  MdPeopleAlt
+  MdPeopleAlt,
 } from "react-icons/md";
 import { getAlumnos } from "../../services/alumnosService";
 import { getGrupos } from "../../services/gruposService";
 import { getUsuarios } from "../../services/usuariosService";
+import { getColegiaturas } from "../../services/colegiaturasService";
 
 interface StatItem {
   num: number | string;
@@ -60,7 +61,7 @@ const ACTIVIDAD: ActividadItem[] = [
     hora: "Hace 12 min",
     tipo: "Aviso",
     tipoBg: "var(--turquesa-light)",
-    tipoColor: "var(--turquesa)"
+    tipoColor: "var(--turquesa)",
   },
   {
     inicial: "R",
@@ -74,7 +75,7 @@ const ACTIVIDAD: ActividadItem[] = [
     hora: "Hace 28min",
     tipo: "Confirmación",
     tipoBg: "var(--verde-light)",
-    tipoColor: "var(--verde)"
+    tipoColor: "var(--verde)",
   },
   {
     inicial: "L",
@@ -88,7 +89,7 @@ const ACTIVIDAD: ActividadItem[] = [
     hora: "Hace 1h",
     tipo: "Alerta pago",
     tipoBg: "var(--rojo-light)",
-    tipoColor: "var(--rojo)"
+    tipoColor: "var(--rojo)",
   },
   {
     inicial: "C",
@@ -102,8 +103,8 @@ const ACTIVIDAD: ActividadItem[] = [
     hora: "Hace 2h",
     tipo: "Galería",
     tipoBg: "var(--amarillo-light)",
-    tipoColor: "#B89600"
-  }
+    tipoColor: "#B89600",
+  },
 ];
 
 const ALERTAS: AlertaItem[] = [
@@ -114,7 +115,7 @@ const ALERTAS: AlertaItem[] = [
     desc: "$38,400 pendiente de cobro",
     badge: "Urgente",
     badgeBg: "var(--rojo-light)",
-    badgeColor: "var(--rojo)"
+    badgeColor: "var(--rojo)",
   },
   {
     icono: <MdCampaign size={18} color="#B89600" />,
@@ -123,7 +124,7 @@ const ALERTAS: AlertaItem[] = [
     desc: "Abejas, Halcones y Lobos",
     badge: "Pendiente",
     badgeBg: "var(--amarillo-light)",
-    badgeColor: "#B89600"
+    badgeColor: "#B89600",
   },
   {
     icono: <MdChat size={18} color="var(--turquesa)" />,
@@ -132,44 +133,8 @@ const ALERTAS: AlertaItem[] = [
     desc: "Mtra. Sandra · Mtro. Roberto",
     badge: "Nuevo",
     badgeBg: "var(--turquesa-light)",
-    badgeColor: "var(--turquesa)"
-  }
-];
-
-const PAGOS = [
-  {
-    inicial: "L",
-    bg: "var(--rojo-light)",
-    color: "var(--rojo)",
-    familia: "Familia López",
-    desc: "Mateo · Abejas · 2 meses",
-    monto: "$6,400",
-    status: "Vencido",
-    statusBg: "var(--rojo-light)",
-    statusColor: "var(--rojo)"
+    badgeColor: "var(--turquesa)",
   },
-  {
-    inicial: "T",
-    bg: "var(--rojo-light)",
-    color: "var(--rojo)",
-    familia: "Familia Torres",
-    desc: "Valeria · Abejas",
-    monto: "$3,200",
-    status: "Vencido",
-    statusBg: "var(--rojo-light)",
-    statusColor: "var(--rojo)"
-  },
-  {
-    inicial: "R",
-    bg: "var(--amarillo-light)",
-    color: "#B89600",
-    familia: "Familia Ramírez",
-    desc: "Sofía · Diego · 2 hijos",
-    monto: "$6,400",
-    status: "3 días",
-    statusBg: "var(--amarillo-light)",
-    statusColor: "#B89600"
-  }
 ];
 
 const EVENTOS = [
@@ -179,7 +144,7 @@ const EVENTOS = [
     nombre: "Suspensión de clases",
     salon: "Toda la escuela · día del maestro",
     bg: "var(--turquesa-light)",
-    color: "var(--turquesa)"
+    color: "var(--turquesa)",
   },
   {
     dia: 28,
@@ -187,7 +152,7 @@ const EVENTOS = [
     nombre: "Junta de ambiente",
     salon: "Abejas · 1:15pm",
     bg: "var(--amarillo-light)",
-    color: "#B89600"
+    color: "#B89600",
   },
   {
     dia: 31,
@@ -195,30 +160,46 @@ const EVENTOS = [
     nombre: "Festival de Halloween",
     salon: "Toda la escuela · 10am",
     bg: "var(--rosa-light)",
-    color: "var(--rosa)"
-  }
+    color: "var(--rosa)",
+  },
 ];
 
 export default function Dashboard() {
   const { data: alumnosRes } = useQuery({
     queryKey: ["alumnos"],
-    queryFn: () => getAlumnos({ include: "group", per_page: 100 })
+    queryFn: () => getAlumnos({ include: "group", per_page: 100 }),
   });
 
   const { data: gruposRes } = useQuery({
     queryKey: ["grupos"],
-    queryFn: () => getGrupos({ include: "level", per_page: 100 })
+    queryFn: () => getGrupos({ include: "level", per_page: 100 }),
   });
 
   const { data: maestrosRes } = useQuery({
     queryKey: ["dashboard-maestros"],
-    queryFn: () => getUsuarios({ role: "teacher", per_page: 1 })
+    queryFn: () => getUsuarios({ role: "teacher", per_page: 1 }),
   });
 
   const { data: familiasRes } = useQuery({
     queryKey: ["dashboard-familias"],
-    queryFn: () => getUsuarios({ role: "family", per_page: 1 })
+    queryFn: () => getUsuarios({ role: "family", per_page: 1 }),
   });
+
+  const { data: pagosVencidosRes } = useQuery({
+    queryKey: ["dashboard-pagos-vencidos"],
+    queryFn: () => getColegiaturas({ per_page: 100, include: "student" }),
+  });
+  const pagosVencidos = (pagosVencidosRes?.data ?? [])
+    .filter((p) => p.status !== "paid")
+    .sort((a, b) =>
+      a.status === "overdue" && b.status !== "overdue" ? -1 : 1,
+    );
+  const totalVencidos = (pagosVencidosRes?.data ?? []).filter(
+    (p) => p.status === "overdue",
+  ).length;
+  const montoVencido = (pagosVencidosRes?.data ?? [])
+    .filter((p) => p.status === "overdue")
+    .reduce((sum, p) => sum + Number(p.amount), 0);
 
   const alumnos = alumnosRes?.data ?? [];
   const grupos = gruposRes?.data ?? [];
@@ -236,7 +217,7 @@ export default function Dashboard() {
       delta: "en este ciclo",
       acento: "var(--verde)",
       icono: <MdPeople size={20} color="var(--verde)" />,
-      iconoBg: "var(--verde-light)"
+      iconoBg: "var(--verde-light)",
     },
     {
       num: totalGrupos,
@@ -244,7 +225,7 @@ export default function Dashboard() {
       delta: gruposRes ? `${grupos.length} en total` : "en total",
       acento: "var(--turquesa)",
       icono: <MdGroups size={20} color="var(--turquesa)" />,
-      iconoBg: "var(--turquesa-light)"
+      iconoBg: "var(--turquesa-light)",
     },
     {
       num: totalMaestros,
@@ -252,7 +233,7 @@ export default function Dashboard() {
       delta: "staff docente",
       acento: "var(--amarillo)",
       icono: <MdSchool size={20} color="#B89600" />,
-      iconoBg: "var(--amarillo-light)"
+      iconoBg: "var(--amarillo-light)",
     },
     {
       num: totalFamilias,
@@ -260,9 +241,25 @@ export default function Dashboard() {
       delta: "padres y tutores",
       acento: "var(--rosa)",
       icono: <MdPeopleAlt size={20} color="var(--rosa)" />,
-      iconoBg: "var(--rosa-light)"
-    }
+      iconoBg: "var(--rosa-light)",
+    },
   ];
+
+  const alertaPagos: AlertaItem = {
+    icono: <MdCreditCard size={18} color="var(--rojo)" />,
+    iconoBg: "var(--rojo-light)",
+    titulo:
+      totalVencidos > 0
+        ? `${totalVencidos} pago${totalVencidos !== 1 ? "s" : ""} vencido${totalVencidos !== 1 ? "s" : ""}`
+        : "Sin pagos vencidos",
+    desc:
+      totalVencidos > 0
+        ? `$${montoVencido.toLocaleString("es-MX")} pendiente de cobro`
+        : "Todas las colegiaturas al día",
+    badge: totalVencidos > 0 ? "Urgente" : "OK",
+    badgeBg: totalVencidos > 0 ? "var(--rojo-light)" : "var(--verde-light)",
+    badgeColor: totalVencidos > 0 ? "var(--rojo)" : "var(--verde-s)",
+  };
 
   return (
     <>
@@ -312,7 +309,7 @@ export default function Dashboard() {
                   style={{
                     fontSize: 12,
                     color: "var(--texto-3)",
-                    fontWeight: 600
+                    fontWeight: 600,
                   }}
                 >
                   {gruposRes ? "Sin grupos activos" : "Cargando…"}
@@ -321,7 +318,7 @@ export default function Dashboard() {
                 gruposActivos.map((g) => {
                   const kit = GRUPOS.find((k) => k.name === g.icon_path);
                   const inscritos = alumnos.filter(
-                    (a) => a.group?.id === g.id
+                    (a) => a.group?.id === g.id,
                   ).length;
                   const pct = g.capacity > 0 ? inscritos / g.capacity : 0;
                   return (
@@ -330,7 +327,7 @@ export default function Dashboard() {
                         className={styles.salonIcono}
                         style={{
                           background: kit?.light ?? g.color + "22",
-                          border: `1.5px solid ${g.color}`
+                          border: `1.5px solid ${g.color}`,
                         }}
                       >
                         <AnimalIcon salon={g.icon_path ?? ""} size={22} />
@@ -346,7 +343,7 @@ export default function Dashboard() {
                           className={styles.barra}
                           style={{
                             width: `${Math.min(pct * 100, 100)}%`,
-                            background: g.color
+                            background: g.color,
                           }}
                         />
                       </div>
@@ -406,7 +403,7 @@ export default function Dashboard() {
               </div>
             </div>
             <div className={styles.cardBody}>
-              {ALERTAS.map((a) => (
+              {[alertaPagos, ...ALERTAS.slice(1)].map((a) => (
                 <div key={a.titulo} className={styles.alertaItem}>
                   <div
                     className={styles.alertaIcono}
@@ -439,29 +436,67 @@ export default function Dashboard() {
               <span className={styles.cardLink}>Ver todas →</span>
             </div>
             <div className={styles.cardBody}>
-              {PAGOS.map((p) => (
-                <div key={p.familia} className={styles.pagoItem}>
-                  <div
-                    className={styles.pagoAv}
-                    style={{ background: p.bg, color: p.color }}
-                  >
-                    {p.inicial}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div className={styles.pagoFamilia}>{p.familia}</div>
-                    <div className={styles.pagoDesc}>{p.desc}</div>
-                  </div>
-                  <div>
-                    <div className={styles.pagoMonto}>{p.monto}</div>
-                    <span
-                      className={styles.pagoStatus}
-                      style={{ background: p.statusBg, color: p.statusColor }}
-                    >
-                      {p.status}
-                    </span>
-                  </div>
+              {!pagosVencidosRes ? (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "var(--texto-3)",
+                    fontWeight: 600,
+                  }}
+                >
+                  Cargando…
                 </div>
-              ))}
+              ) : pagosVencidos.length === 0 ? (
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "var(--texto-3)",
+                    fontWeight: 600,
+                  }}
+                >
+                  Sin colegiaturas vencidas
+                </div>
+              ) : (
+                pagosVencidos.slice(0, 5).map((p) => (
+                  <div key={p.id} className={styles.pagoItem}>
+                    <div
+                      className={styles.pagoAv}
+                      style={{
+                        background: "var(--rojo-light)",
+                        color: "var(--rojo)",
+                      }}
+                    >
+                      {p.student?.name?.charAt(0).toUpperCase() ?? "?"}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div className={styles.pagoFamilia}>
+                        {p.student
+                          ? `${p.student.name} ${p.student.last_name}`
+                          : "Alumno"}
+                      </div>
+                      <div className={styles.pagoDesc}>{p.period}</div>
+                    </div>
+                    <div>
+                      <div className={styles.pagoMonto}>
+                        ${Number(p.amount).toLocaleString("es-MX")}
+                      </div>
+                      <span
+                        className={styles.pagoStatus}
+                        style={{
+                          background:
+                            p.status === "overdue"
+                              ? "var(--rojo-light)"
+                              : "var(--amarillo-light)",
+                          color:
+                            p.status === "overdue" ? "var(--rojo)" : "#7A6200",
+                        }}
+                      >
+                        {p.status === "overdue" ? "Vencido" : "Pendiente"}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -495,7 +530,7 @@ export default function Dashboard() {
                 fontSize: 11,
                 fontWeight: 700,
                 color: "var(--texto-2)",
-                marginBottom: 6
+                marginBottom: 6,
               }}
             >
               Próximos turnos
@@ -504,14 +539,14 @@ export default function Dashboard() {
               {
                 nombre: "Valeria Torres",
                 fecha: "Mié 23 · Abejas",
-                alerta: false
+                alerta: false,
               },
               {
                 nombre: "Lucas Hernández",
                 fecha: "Jue 24 · Abejas",
-                alerta: false
+                alerta: false,
               },
-              { nombre: "Sin asignar", fecha: "Vie 25 · Abejas", alerta: true }
+              { nombre: "Sin asignar", fecha: "Vie 25 · Abejas", alerta: true },
             ].map((t) => (
               <div
                 key={t.fecha}
@@ -520,13 +555,13 @@ export default function Dashboard() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   fontSize: 11,
-                  marginBottom: 5
+                  marginBottom: 5,
                 }}
               >
                 <span
                   style={{
                     fontWeight: 700,
-                    color: t.alerta ? "var(--rojo)" : "var(--texto)"
+                    color: t.alerta ? "var(--rojo)" : "var(--texto)",
                   }}
                 >
                   {t.nombre}
@@ -582,24 +617,24 @@ export default function Dashboard() {
               {
                 lbl: "Alumnos inscritos",
                 val: String(totalAlumnos),
-                color: "var(--texto)"
+                color: "var(--texto)",
               },
               {
                 lbl: "Grupos activos",
                 val: String(totalGrupos),
-                color: "var(--texto)"
+                color: "var(--texto)",
               },
               {
                 lbl: "Cobrado este ciclo",
                 val: "$326,400",
-                color: "var(--verde)"
+                color: "var(--verde)",
               },
               {
                 lbl: "Pendiente de cobro",
                 val: "$38,400",
-                color: "var(--rojo)"
+                color: "var(--rojo)",
               },
-              { lbl: "Avisos publicados", val: "134", color: "var(--texto)" }
+              { lbl: "Avisos publicados", val: "134", color: "var(--texto)" },
             ].map((r) => (
               <div key={r.lbl} className={styles.resumenRow}>
                 <span className={styles.resumenLbl}>{r.lbl}</span>

@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import styles from "./Sidebar.module.css";
-import { MdGridView, MdGroups, MdPerson, MdHomeWork, MdCreditCard, MdCampaign, MdChat, MdLunchDining, MdPhotoLibrary, MdCalendarMonth, MdManageAccounts } from "react-icons/md";
+import { MdGridView, MdPerson, MdHomeWork, MdCreditCard, MdCampaign, MdChat, MdLunchDining, MdPhotoLibrary, MdCalendarMonth, MdManageAccounts } from "react-icons/md";
 import { useAuth } from "../../context/AuthContext";
 
 const NAV = [
@@ -8,7 +8,6 @@ const NAV = [
       seccion: "Principal",
       items: [
         { label: "Dashboard",   path: "/dashboard",   icon: <MdGridView size={18} /> },
-        { label: "Familias",    path: "/familias",    icon: <MdGroups size={18} /> },
         { label: "Alumnos",     path: "/alumnos",     icon: <MdPerson size={18} /> },
         { label: "Grupos",      path: "/grupos",      icon: <MdHomeWork size={18} /> },
       ]

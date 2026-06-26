@@ -7,7 +7,6 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Alumnos from "./pages/Alumnos";
 import Comunicados from "./pages/Comunicados";
-import Familias from "./pages/Familias";
 import Grupos from "./pages/Grupos";
 import Colegiaturas from "./pages/Colegiaturas";
 import Comida from "./pages/Comida";
@@ -46,7 +45,6 @@ export default function App() {
               }
             >
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/familias" element={<Familias />} />
               <Route path="/grupos" element={<Grupos />} />
               <Route path="/alumnos" element={<Alumnos />} />
               <Route path="/comunicados" element={<Comunicados />} />
