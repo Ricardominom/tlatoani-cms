@@ -263,14 +263,18 @@ export const ESTADOS_COMUNICADO = ['draft', 'published'] as const;
 
 export const comunicadoSchema = z.object({
     id: z.string().uuid(),
-    author_id: z.string().uuid().nullable(),
     title: z.string(),
     content: z.string(),
     status: z.enum(ESTADOS_COMUNICADO),
     type: z.enum(TIPOS_COMUNICADO),
     is_global: z.boolean(),
     attachment: z.string().nullable(),
+    author: usuarioSchema.nullable().optional(),
+    groups: z.array(grupoSchema).nullable().optional(),
+    students: z.array(alumnoSchema).nullable().optional(),
     published_at: z.string().nullable(),
+    is_read: z.boolean(),
+    read_at: z.string().nullable(),
     created_at: z.string(),
     updated_at: z.string(),
 })
@@ -283,7 +287,7 @@ export const comunicadoFormSchema = z.object({
     group_uuids: z.array(z.string()),
     student_uuids: z.array(z.string()),
     status: z.enum(ESTADOS_COMUNICADO),
-    attachment: z.string().nullable(),
+    attachment: z.instanceof(File).nullable().optional(),
 })
 
 export const comunicadosPaginadosSchema = paginatedResponseSchema(comunicadoSchema)
