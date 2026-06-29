@@ -397,19 +397,10 @@ export default function SeccionPadres(props: Props) {
             </button>
             <button
               type="button"
-              className={styles.btnConfirmar}
-              onClick={nuevoForm.handleSubmit(confirmarNuevo)}
+              className={`${styles.tab} ${tabPanel === "nuevo" ? styles.tabActivo : ""}`}
+              onClick={() => setTabPanel("nuevo")}
             >
-              Agregar
-            </button>
-            Cámbialo por:
-            <button
-              type="button"
-              className={styles.btnConfirmar}
-              onClick={nuevoForm.handleSubmit(confirmarNuevo)}
-              disabled={crearYVincularMutation.isPending}
-            >
-              {crearYVincularMutation.isPending ? "Creando…" : "Agregar"}
+              Crear nuevo
             </button>
           </div>
 
@@ -635,8 +626,9 @@ export default function SeccionPadres(props: Props) {
                   type="button"
                   className={styles.btnConfirmar}
                   onClick={nuevoForm.handleSubmit(confirmarNuevo)}
+                  disabled={crearYVincularMutation.isPending}
                 >
-                  Agregar
+                  {crearYVincularMutation.isPending ? "Creando…" : "Agregar"}
                 </button>
               </div>
             </div>
