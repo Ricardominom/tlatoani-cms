@@ -5,11 +5,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { MdAdd, MdClose, MdEdit, MdLinkOff } from "react-icons/md";
 import { useDebounce } from "../../hooks/useDebounce";
-import { getUsuarios } from "../../services/usuariosService";
+import { getUsuarios, crearUsuario } from "../../services/usuariosService";
 import {
   vincularFamilyMember,
   actualizarFamilyMember,
-  desvincularFamilyMember
+  desvincularFamilyMember,
 } from "../../services/familyMembersService";
 import {
   familyMemberUpdateFormSchema,
@@ -18,15 +18,15 @@ import {
   type FamilyMemberUpdateFormData,
   type PadreNuevoFormData,
   type PadrePendiente,
-  type Usuario
+  type Usuario,
 } from "../../types";
 import styles from "./SeccionPadres.module.css";
 
-// Sub-forms 
+// Sub-forms
 
 const relacionInicial: FamilyMemberUpdateFormData = {
   relationship: "",
-  primary_contact: false
+  primary_contact: false,
 };
 
 const padreNuevoInicial: PadreNuevoFormData = {
@@ -37,10 +37,10 @@ const padreNuevoInicial: PadreNuevoFormData = {
   password: "",
   password_confirmation: "",
   relationship: "",
-  primary_contact: false
+  primary_contact: false,
 };
 
-// Props 
+// Props
 
 interface PropsModoCrear {
   modo: "crear";
@@ -56,7 +56,7 @@ interface PropsModoEditar {
 
 type Props = PropsModoCrear | PropsModoEditar;
 
-// Componente 
+// Componente
 
 export default function SeccionPadres(props: Props) {
   const queryClient = useQueryClient();
@@ -68,7 +68,7 @@ export default function SeccionPadres(props: Props) {
 
   // Para modo editar: cuál padre estamos editando
   const [miembroEditando, setMiembroEditando] = useState<FamilyMember | null>(
-    null
+    null,
   );
 
   // Búsqueda de usuario existente
@@ -78,46 +78,46 @@ export default function SeccionPadres(props: Props) {
   // Usuario seleccionado de la búsqueda (antes de confirmar relación)
   const [usuarioSel, setUsuarioSel] = useState<Usuario | null>(null);
 
-  // Búsqueda de usuarios 
+  // Búsqueda de usuarios
   const { data: usuariosRes, isFetching: buscando } = useQuery({
     queryKey: ["usuarios-search", debouncedTerm],
     queryFn: () =>
       getUsuarios({ search: debouncedTerm, role: "family", per_page: 10 }),
-    enabled: debouncedTerm.length >= 2
+    enabled: debouncedTerm.length >= 2,
   });
   const usuariosEncontrados = usuariosRes?.data ?? [];
 
-  // Form: definir relación (usuario existente) 
+  // Form: definir relación (usuario existente)
   const relacionForm = useForm<FamilyMemberUpdateFormData>({
     resolver: zodResolver(familyMemberUpdateFormSchema),
-    defaultValues: relacionInicial
+    defaultValues: relacionInicial,
   });
   const relacionPrimario = useWatch({
     control: relacionForm.control,
-    name: "primary_contact"
+    name: "primary_contact",
   });
 
-  // Form: crear padre nuevo 
+  // Form: crear padre nuevo
   const nuevoForm = useForm<PadreNuevoFormData>({
     resolver: zodResolver(padreNuevoFormSchema),
-    defaultValues: padreNuevoInicial
+    defaultValues: padreNuevoInicial,
   });
   const nuevoPrimario = useWatch({
     control: nuevoForm.control,
-    name: "primary_contact"
+    name: "primary_contact",
   });
 
-  // Form: editar relación existente (modo editar) 
+  // Form: editar relación existente (modo editar)
   const editarForm = useForm<FamilyMemberUpdateFormData>({
     resolver: zodResolver(familyMemberUpdateFormSchema),
-    defaultValues: relacionInicial
+    defaultValues: relacionInicial,
   });
   const editarPrimario = useWatch({
     control: editarForm.control,
-    name: "primary_contact"
+    name: "primary_contact",
   });
 
-  // Mutations (solo modo editar) 
+  // Mutations (solo modo editar)
   const vincularMutation = useMutation({
     mutationFn: (data: {
       user_uuid: string;
@@ -127,15 +127,15 @@ export default function SeccionPadres(props: Props) {
     onSuccess: () => {
       toast.success("Padre vinculado");
       queryClient.invalidateQueries({
-        queryKey: ["family-members", (props as PropsModoEditar).studentUuid]
+        queryKey: ["family-members", (props as PropsModoEditar).studentUuid],
       });
       resetPanel();
     },
     onError: (err) => {
       relacionForm.setError("root", {
-        message: err instanceof Error ? err.message : "Error al vincular"
+        message: err instanceof Error ? err.message : "Error al vincular",
       });
-    }
+    },
   });
 
   const actualizarMutation = useMutation({
@@ -143,20 +143,20 @@ export default function SeccionPadres(props: Props) {
       actualizarFamilyMember(
         (props as PropsModoEditar).studentUuid,
         miembroEditando!.id,
-        data
+        data,
       ),
     onSuccess: () => {
       toast.success("Relación actualizada");
       queryClient.invalidateQueries({
-        queryKey: ["family-members", (props as PropsModoEditar).studentUuid]
+        queryKey: ["family-members", (props as PropsModoEditar).studentUuid],
       });
       resetPanel();
     },
     onError: (err) => {
       editarForm.setError("root", {
-        message: err instanceof Error ? err.message : "Error al actualizar"
+        message: err instanceof Error ? err.message : "Error al actualizar",
       });
-    }
+    },
   });
 
   const desvincularMutation = useMutation({
@@ -165,15 +165,47 @@ export default function SeccionPadres(props: Props) {
     onSuccess: () => {
       toast.success("Padre desvinculado");
       queryClient.invalidateQueries({
-        queryKey: ["family-members", (props as PropsModoEditar).studentUuid]
+        queryKey: ["family-members", (props as PropsModoEditar).studentUuid],
       });
     },
     onError: (err) => {
       toast.error(err instanceof Error ? err.message : "Error al desvincular");
-    }
+    },
   });
 
-  // Helpers 
+  const crearYVincularMutation = useMutation({
+    mutationFn: async (data: PadreNuevoFormData) => {
+      const usuarioCreado = await crearUsuario({
+        name: data.name,
+        last_name: data.last_name,
+        email: data.email,
+        phone_number: data.phone_number,
+        password: data.password,
+        password_confirmation: data.password_confirmation,
+        role: "family",
+        active: true,
+      });
+      await vincularFamilyMember((props as PropsModoEditar).studentUuid, {
+        user_uuid: usuarioCreado.id,
+        relationship: data.relationship,
+        primary_contact: data.primary_contact,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Padre creado y vinculado");
+      queryClient.invalidateQueries({
+        queryKey: ["family-members", (props as PropsModoEditar).studentUuid],
+      });
+      resetPanel();
+    },
+    onError: (err) => {
+      nuevoForm.setError("root", {
+        message: err instanceof Error ? err.message : "Error al crear el padre",
+      });
+    },
+  });
+
+  // Helpers
   function resetPanel() {
     setVista("lista");
     setSearchTerm("");
@@ -188,12 +220,12 @@ export default function SeccionPadres(props: Props) {
     setMiembroEditando(miembro);
     editarForm.reset({
       relationship: miembro.relationship,
-      primary_contact: miembro.primary_contact
+      primary_contact: miembro.primary_contact,
     });
     setVista("editar-relacion");
   }
 
-  // Confirmación: agregar padre existente (modo crear) 
+  // Confirmación: agregar padre existente (modo crear)
   function confirmarExistente(data: FamilyMemberUpdateFormData) {
     if (!usuarioSel) return;
     if (props.modo === "crear") {
@@ -201,7 +233,7 @@ export default function SeccionPadres(props: Props) {
         tipo: "existente",
         usuario: usuarioSel,
         relationship: data.relationship,
-        primary_contact: data.primary_contact
+        primary_contact: data.primary_contact,
       };
       props.onChangePendientes([...props.padresPendientes, nuevo]);
       resetPanel();
@@ -209,22 +241,22 @@ export default function SeccionPadres(props: Props) {
       vincularMutation.mutate({
         user_uuid: usuarioSel.id,
         relationship: data.relationship,
-        primary_contact: data.primary_contact
+        primary_contact: data.primary_contact,
       });
     }
   }
 
-  // Confirmación: crear padre nuevo (modo crear) 
   function confirmarNuevo(data: PadreNuevoFormData) {
     if (props.modo === "crear") {
       const nuevo: PadrePendiente = { tipo: "nuevo", formData: data };
       props.onChangePendientes([...props.padresPendientes, nuevo]);
       resetPanel();
+    } else {
+      crearYVincularMutation.mutate(data);
     }
-    // En modo editar: Step 6 orquestará crear usuario + vincular
   }
 
-  // Lista a renderizar 
+  // Lista a renderizar
   const lista: {
     id: string;
     nombre: string;
@@ -238,7 +270,7 @@ export default function SeccionPadres(props: Props) {
           nombre: `${m.name} ${m.last_name}`,
           email: m.email,
           relationship: m.relationship,
-          primary_contact: m.primary_contact
+          primary_contact: m.primary_contact,
         }))
       : props.padresPendientes.map((p, i) => ({
           id: String(i),
@@ -252,10 +284,10 @@ export default function SeccionPadres(props: Props) {
           primary_contact:
             p.tipo === "existente"
               ? p.primary_contact
-              : p.formData.primary_contact
+              : p.formData.primary_contact,
         }));
 
-  // Render 
+  // Render
   return (
     <div className={styles.seccion}>
       <div className={styles.seccionHeader}>
@@ -327,8 +359,8 @@ export default function SeccionPadres(props: Props) {
                       const index = Number(p.id);
                       props.onChangePendientes(
                         (props as PropsModoCrear).padresPendientes.filter(
-                          (_, i) => i !== index
-                        )
+                          (_, i) => i !== index,
+                        ),
                       );
                     }}
                   >
@@ -365,10 +397,19 @@ export default function SeccionPadres(props: Props) {
             </button>
             <button
               type="button"
-              className={`${styles.tab} ${tabPanel === "nuevo" ? styles.tabActivo : ""}`}
-              onClick={() => setTabPanel("nuevo")}
+              className={styles.btnConfirmar}
+              onClick={nuevoForm.handleSubmit(confirmarNuevo)}
             >
-              Crear nuevo
+              Agregar
+            </button>
+            Cámbialo por:
+            <button
+              type="button"
+              className={styles.btnConfirmar}
+              onClick={nuevoForm.handleSubmit(confirmarNuevo)}
+              disabled={crearYVincularMutation.isPending}
+            >
+              {crearYVincularMutation.isPending ? "Creando…" : "Agregar"}
             </button>
           </div>
 
@@ -590,7 +631,11 @@ export default function SeccionPadres(props: Props) {
                 </div>
               </div>
               <div className={styles.panelFooter}>
-                <button type="button" className={styles.btnConfirmar} onClick={nuevoForm.handleSubmit(confirmarNuevo)}>
+                <button
+                  type="button"
+                  className={styles.btnConfirmar}
+                  onClick={nuevoForm.handleSubmit(confirmarNuevo)}
+                >
                   Agregar
                 </button>
               </div>
@@ -658,7 +703,9 @@ export default function SeccionPadres(props: Props) {
             <div className={styles.panelFooter}>
               <button
                 type="button"
-                onClick={editarForm.handleSubmit((data) => actualizarMutation.mutate(data))}
+                onClick={editarForm.handleSubmit((data) =>
+                  actualizarMutation.mutate(data),
+                )}
                 className={styles.btnConfirmar}
                 disabled={actualizarMutation.isPending}
               >

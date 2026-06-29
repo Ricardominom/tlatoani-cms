@@ -7,13 +7,13 @@ import {
   MdSearch,
   MdDelete,
   MdPhone,
-  MdLocalHospital
+  MdLocalHospital,
 } from "react-icons/md";
 import {
   AnimalAvatar,
   AnimalPillLight,
   AnimalIcon,
-  getGrupo
+  getGrupo,
 } from "../../components/ui/AnimalKit";
 import styles from "./Alumnos.module.css";
 import type {
@@ -25,18 +25,19 @@ import type {
 import { getAlumnos, eliminarAlumno } from "../../services/alumnosService";
 import { getGrupos } from "../../services/gruposService";
 import ModalAlumno from "./ModalAlumno";
+import ModalPadres from "./ModalPadres";
 import ConfirmDialog from "../../components/ui/ConfirmDialog";
 import { ASISTENCIA, AREAS, BITACORAS } from "./alumnos.mock";
 import ModalContactoEmergencia from "./ModalContactoEmergencia";
 import {
   getEmergencyContacts,
-  eliminarEmergencyContact
+  eliminarEmergencyContact,
 } from "../../services/emergencyContactsService";
 import { toast } from "react-toastify";
 import ModalDoctor from "./ModalDoctor";
 import {
   getDoctors,
-  eliminarDoctor
+  eliminarDoctor,
 } from "../../services/doctorInformationService";
 import { getFamilyMembers } from "../../services/familyMembersService";
 
@@ -45,7 +46,7 @@ const ASIST_CLASS: Record<string, string> = {
   pres: styles.dPres,
   aus: styles.dAus,
   tard: styles.dTard,
-  hoy: styles.dHoy
+  hoy: styles.dHoy,
 };
 
 function calcularEdad(birthDate: string): string {
@@ -62,7 +63,7 @@ function formatFecha(dateStr: string): string {
   return fecha.toLocaleDateString("es-MX", {
     day: "numeric",
     month: "short",
-    year: "numeric"
+    year: "numeric",
   });
 }
 
@@ -87,6 +88,7 @@ export default function Alumnos() {
   const [doctorEditando, setDoctorEditando] =
     useState<DoctorInformation | null>(null);
   const [confirmDoctorOpen, setConfirmDoctorOpen] = useState(false);
+  const [modalPadresOpen, setModalPadresOpen] = useState(false);
   const [doctorAEliminar, setDoctorAEliminar] =
     useState<DoctorInformation | null>(null);
 
@@ -94,7 +96,7 @@ export default function Alumnos() {
   const {
     data: alumnosRes,
     isLoading: cargandoAlumnos,
-    error: alumnosError
+    error: alumnosError,
   } = useQuery({
     queryKey: ["alumnos"],
     queryFn: () =>
@@ -102,14 +104,14 @@ export default function Alumnos() {
         include: "group",
         order_by: "last_name",
         order_direction: "asc",
-        per_page: 100
-      })
+        per_page: 100,
+      }),
   });
 
   // Mismo queryKey que Grupos — usa el caché compartido si el usuario ya visitó esa página
   const { data: gruposRes } = useQuery({
     queryKey: ["grupos"],
-    queryFn: () => getGrupos({ active: true, per_page: 50 })
+    queryFn: () => getGrupos({ active: true, per_page: 50 }),
   });
 
   const alumnos = alumnosRes?.data ?? [];
@@ -120,19 +122,19 @@ export default function Alumnos() {
   const { data: contactosEmergencia = [] } = useQuery({
     queryKey: ["emergency-contacts", activeUuid],
     queryFn: () => getEmergencyContacts(activeUuid!),
-    enabled: !!activeUuid
+    enabled: !!activeUuid,
   });
 
   const { data: doctores = [] } = useQuery({
     queryKey: ["doctor-informations", activeUuid],
     queryFn: () => getDoctors(activeUuid!),
-    enabled: !!activeUuid
+    enabled: !!activeUuid,
   });
 
   const { data: familyMembers = [] } = useQuery({
     queryKey: ["family-members", activeUuid],
     queryFn: () => getFamilyMembers(activeUuid!),
-    enabled: !!activeUuid
+    enabled: !!activeUuid,
   });
 
   // Mutation: eliminar alumno con optimistic update
@@ -142,7 +144,7 @@ export default function Alumnos() {
       await queryClient.cancelQueries({ queryKey: ["alumnos"] });
       const prevData = queryClient.getQueryData(["alumnos"]);
       queryClient.setQueryData<AlumnosPaginados>(["alumnos"], (old) =>
-        old ? { ...old, data: old.data.filter((a) => a.id !== uuid) } : old
+        old ? { ...old, data: old.data.filter((a) => a.id !== uuid) } : old,
       );
       setSelectedUuid(null);
       setConfirmEliminarOpen(false);
@@ -152,12 +154,12 @@ export default function Alumnos() {
       queryClient.setQueryData(["alumnos"], context?.prevData);
       setSelectedUuid(uuid);
       setErrorEliminar(
-        err instanceof Error ? err.message : "No se pudo eliminar el alumno."
+        err instanceof Error ? err.message : "No se pudo eliminar el alumno.",
       );
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["alumnos"] });
-    }
+    },
   });
 
   const eliminarContactoMutation = useMutation({
@@ -166,16 +168,16 @@ export default function Alumnos() {
     onSuccess: () => {
       toast.success("Contacto eliminado");
       queryClient.invalidateQueries({
-        queryKey: ["emergency-contacts", activeUuid]
+        queryKey: ["emergency-contacts", activeUuid],
       });
       setConfirmContactoOpen(false);
       setContactoAEliminar(null);
     },
     onError: (err) => {
       toast.error(
-        err instanceof Error ? err.message : "No se pudo eliminar el contacto."
+        err instanceof Error ? err.message : "No se pudo eliminar el contacto.",
       );
-    }
+    },
   });
 
   const eliminarDoctorMutation = useMutation({
@@ -184,16 +186,16 @@ export default function Alumnos() {
     onSuccess: () => {
       toast.success("Médico eliminado");
       queryClient.invalidateQueries({
-        queryKey: ["doctor-informations", activeUuid]
+        queryKey: ["doctor-informations", activeUuid],
       });
       setConfirmDoctorOpen(false);
       setDoctorAEliminar(null);
     },
     onError: (err) => {
       toast.error(
-        err instanceof Error ? err.message : "No se pudo eliminar el médico."
+        err instanceof Error ? err.message : "No se pudo eliminar el médico.",
       );
-    }
+    },
   });
 
   // Guardar alumno (crear o editar)
@@ -204,7 +206,7 @@ export default function Alumnos() {
 
   // Derivados
   const gruposConAlumnos = grupos.filter((g) =>
-    alumnos.some((a) => a.group?.id === g.id)
+    alumnos.some((a) => a.group?.id === g.id),
   );
 
   const alumnosFiltrados = alumnos.filter((a) => {
@@ -229,7 +231,7 @@ export default function Alumnos() {
           justifyContent: "center",
           fontSize: 13,
           fontWeight: 700,
-          color: "var(--texto-3)"
+          color: "var(--texto-3)",
         }}
       >
         Cargando alumnos…
@@ -246,7 +248,7 @@ export default function Alumnos() {
           justifyContent: "center",
           fontSize: 13,
           fontWeight: 700,
-          color: "var(--rojo)"
+          color: "var(--rojo)",
         }}
       >
         {errorMsg}
@@ -312,7 +314,7 @@ export default function Alumnos() {
                 textAlign: "center",
                 fontSize: 12,
                 fontWeight: 700,
-                color: "var(--texto-3)"
+                color: "var(--texto-3)",
               }}
             >
               No se encontraron alumnos
@@ -331,7 +333,7 @@ export default function Alumnos() {
                   style={{
                     background: g?.light ?? "var(--gris-bg)",
                     color: g?.dark ?? "var(--texto-2)",
-                    border: `1.5px solid ${g?.color ?? "var(--gris-borde)"}`
+                    border: `1.5px solid ${g?.color ?? "var(--gris-borde)"}`,
                   }}
                 >
                   {a.name.charAt(0).toUpperCase()}
@@ -345,7 +347,7 @@ export default function Alumnos() {
                       className={styles.alTag}
                       style={{
                         background: g?.light ?? "var(--gris-bg)",
-                        color: g?.dark ?? "var(--texto-2)"
+                        color: g?.dark ?? "var(--texto-2)",
                       }}
                     >
                       {a.group?.name ?? "Sin grupo"}
@@ -362,7 +364,7 @@ export default function Alumnos() {
                       background: a.active
                         ? "var(--verde-light)"
                         : "var(--rojo-light)",
-                      color: a.active ? "var(--verde-s)" : "var(--rojo)"
+                      color: a.active ? "var(--verde-s)" : "var(--rojo)",
                     }}
                   >
                     {a.active ? "Activo" : "Baja"}
@@ -421,7 +423,7 @@ export default function Alumnos() {
                 background: "var(--rojo-light)",
                 borderRadius: 8,
                 padding: "8px 14px",
-                margin: "0 20px"
+                margin: "0 20px",
               }}
             >
               {errorEliminar}
@@ -460,8 +462,8 @@ export default function Alumnos() {
                     {
                       num: "—",
                       lbl: "Avisos leídos",
-                      color: "var(--amarillo-s)"
-                    }
+                      color: "var(--amarillo-s)",
+                    },
                   ].map((sc) => (
                     <div key={sc.lbl} className={styles.statChip}>
                       <div className={styles.scNum} style={{ color: sc.color }}>
@@ -481,7 +483,7 @@ export default function Alumnos() {
                     style={{
                       fontSize: 11,
                       fontWeight: 700,
-                      color: "var(--texto-3)"
+                      color: "var(--texto-3)",
                     }}
                   >
                     CURP
@@ -490,7 +492,7 @@ export default function Alumnos() {
                     style={{
                       fontSize: 11,
                       fontWeight: 800,
-                      color: "var(--texto)"
+                      color: "var(--texto)",
                     }}
                   >
                     {alumnoSel.curp}
@@ -518,26 +520,26 @@ export default function Alumnos() {
                   {[
                     {
                       lbl: "Nombre completo",
-                      val: `${alumnoSel.name} ${alumnoSel.last_name}`
+                      val: `${alumnoSel.name} ${alumnoSel.last_name}`,
                     },
                     {
                       lbl: "Fecha de nacimiento",
-                      val: `${formatFecha(alumnoSel.birth_date)} · ${calcularEdad(alumnoSel.birth_date)}`
+                      val: `${formatFecha(alumnoSel.birth_date)} · ${calcularEdad(alumnoSel.birth_date)}`,
                     },
                     { lbl: "CURP", val: alumnoSel.curp },
                     {
                       lbl: "Tipo de sangre",
-                      val: alumnoSel.blood_type ?? "No registrado"
+                      val: alumnoSel.blood_type ?? "No registrado",
                     },
                     {
                       lbl: "Alergias",
                       val: alumnoSel.allergies ?? "Ninguna",
-                      color: alumnoSel.allergies ? "var(--rojo)" : undefined
+                      color: alumnoSel.allergies ? "var(--rojo)" : undefined,
                     },
                     {
                       lbl: "Medicamentos",
-                      val: alumnoSel.medicines ?? "Ninguno"
-                    }
+                      val: alumnoSel.medicines ?? "Ninguno",
+                    },
                   ].map((d) => (
                     <div key={d.lbl} className={styles.datoRow}>
                       <span className={styles.datoLbl}>{d.lbl}</span>
@@ -562,7 +564,7 @@ export default function Alumnos() {
                     {[
                       { color: "var(--verde)", lbl: "Presente" },
                       { color: "var(--rojo)", lbl: "Ausente" },
-                      { color: "var(--amarillo)", lbl: "Retardo" }
+                      { color: "var(--amarillo)", lbl: "Retardo" },
                     ].map((l) => (
                       <div
                         key={l.lbl}
@@ -572,7 +574,7 @@ export default function Alumnos() {
                           gap: 4,
                           fontSize: 10,
                           fontWeight: 700,
-                          color: "var(--texto-2)"
+                          color: "var(--texto-2)",
                         }}
                       >
                         <div
@@ -580,7 +582,7 @@ export default function Alumnos() {
                             width: 8,
                             height: 8,
                             borderRadius: 3,
-                            background: l.color
+                            background: l.color,
                           }}
                         />
                         {l.lbl}
@@ -602,14 +604,14 @@ export default function Alumnos() {
                       display: "flex",
                       gap: 6,
                       marginTop: 10,
-                      justifyContent: "center"
+                      justifyContent: "center",
                     }}
                   >
                     <span
                       style={{
                         fontSize: 11,
                         fontWeight: 900,
-                        color: "var(--verde)"
+                        color: "var(--verde)",
                       }}
                     >
                       14 presentes
@@ -619,7 +621,7 @@ export default function Alumnos() {
                       style={{
                         fontSize: 11,
                         fontWeight: 900,
-                        color: "var(--rojo)"
+                        color: "var(--rojo)",
                       }}
                     >
                       1 ausente
@@ -629,7 +631,7 @@ export default function Alumnos() {
                       style={{
                         fontSize: 11,
                         fontWeight: 900,
-                        color: "#B89600"
+                        color: "#B89600",
                       }}
                     >
                       1 retardo
@@ -658,7 +660,7 @@ export default function Alumnos() {
                           className={styles.areaBarra}
                           style={{
                             width: `${a.pct * 100}%`,
-                            background: a.color
+                            background: a.color,
                           }}
                         />
                       </div>
@@ -683,7 +685,7 @@ export default function Alumnos() {
                         fontSize: 10,
                         fontWeight: 700,
                         color: "var(--texto-3)",
-                        marginTop: 2
+                        marginTop: 2,
                       }}
                     >
                       {familyMembers.length === 0
@@ -694,10 +696,7 @@ export default function Alumnos() {
                   <span
                     className={styles.dcl}
                     style={{ cursor: "pointer" }}
-                    onClick={() => {
-                      setAlumnoEditando(alumnoSel);
-                      setModalAlumnoOpen(true);
-                    }}
+                    onClick={() => setModalPadresOpen(true)}
                   >
                     Gestionar
                   </span>
@@ -710,7 +709,7 @@ export default function Alumnos() {
                         fontWeight: 600,
                         color: "var(--texto-3)",
                         textAlign: "center",
-                        padding: "16px 0"
+                        padding: "16px 0",
                       }}
                     >
                       Sin padres o tutores registrados
@@ -723,7 +722,7 @@ export default function Alumnos() {
                           style={{
                             background: "var(--amarillo-light)",
                             color: "var(--amarillo-s)",
-                            border: "1.5px solid var(--amarillo)"
+                            border: "1.5px solid var(--amarillo)",
                           }}
                         >
                           {m.name.charAt(0).toUpperCase()}
@@ -745,7 +744,7 @@ export default function Alumnos() {
                             className={styles.autBadge}
                             style={{
                               background: "var(--verde-light)",
-                              color: "var(--verde-s)"
+                              color: "var(--verde-s)",
                             }}
                           >
                             Principal
@@ -767,7 +766,7 @@ export default function Alumnos() {
                       fontSize: 10,
                       fontWeight: 700,
                       color: "var(--texto-3)",
-                      marginTop: 2
+                      marginTop: 2,
                     }}
                   >
                     {contactosEmergencia.length === 0
@@ -794,7 +793,7 @@ export default function Alumnos() {
                       fontWeight: 600,
                       color: "var(--texto-3)",
                       textAlign: "center",
-                      padding: "16px 0"
+                      padding: "16px 0",
                     }}
                   >
                     No hay contactos de emergencia
@@ -807,7 +806,7 @@ export default function Alumnos() {
                         style={{
                           background: "var(--rojo-light)",
                           color: "var(--rojo)",
-                          border: "1.5px solid var(--rojo)"
+                          border: "1.5px solid var(--rojo)",
                         }}
                       >
                         {c.name.charAt(0).toUpperCase()}
@@ -859,7 +858,7 @@ export default function Alumnos() {
                       fontSize: 10,
                       fontWeight: 700,
                       color: "var(--texto-3)",
-                      marginTop: 2
+                      marginTop: 2,
                     }}
                   >
                     {doctores.length === 0
@@ -886,7 +885,7 @@ export default function Alumnos() {
                       fontWeight: 600,
                       color: "var(--texto-3)",
                       textAlign: "center",
-                      padding: "16px 0"
+                      padding: "16px 0",
                     }}
                   >
                     No hay médico registrado
@@ -899,7 +898,7 @@ export default function Alumnos() {
                         style={{
                           background: "var(--turquesa-light)",
                           color: "var(--turquesa-s)",
-                          border: "1.5px solid var(--turquesa)"
+                          border: "1.5px solid var(--turquesa)",
                         }}
                       >
                         <MdLocalHospital size={16} />
@@ -950,7 +949,7 @@ export default function Alumnos() {
                       fontSize: 10,
                       fontWeight: 700,
                       color: "var(--texto-3)",
-                      marginTop: 2
+                      marginTop: 2,
                     }}
                   >
                     28 observaciones en el ciclo
@@ -963,7 +962,7 @@ export default function Alumnos() {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: "0 20px"
+                  gap: "0 20px",
                 }}
               >
                 {BITACORAS.map((b) => (
@@ -999,7 +998,7 @@ export default function Alumnos() {
             justifyContent: "center",
             fontSize: 13,
             fontWeight: 700,
-            color: "var(--texto-3)"
+            color: "var(--texto-3)",
           }}
         >
           Selecciona un alumno para ver su expediente
@@ -1012,6 +1011,13 @@ export default function Alumnos() {
         grupos={grupos}
         onClose={() => setModalAlumnoOpen(false)}
         onSuccess={handleAlumnoGuardado}
+      />
+
+      <ModalPadres
+        open={modalPadresOpen}
+        alumno={alumnoSel}
+        familyMembers={familyMembers}
+        onClose={() => setModalPadresOpen(false)}
       />
 
       <ConfirmDialog
@@ -1033,7 +1039,7 @@ export default function Alumnos() {
         }}
         onSuccess={() => {
           queryClient.invalidateQueries({
-            queryKey: ["emergency-contacts", activeUuid]
+            queryKey: ["emergency-contacts", activeUuid],
           });
           setModalContactoOpen(false);
           setContactoEditando(null);
@@ -1064,7 +1070,7 @@ export default function Alumnos() {
         }}
         onSuccess={() => {
           queryClient.invalidateQueries({
-            queryKey: ["doctor-informations", activeUuid]
+            queryKey: ["doctor-informations", activeUuid],
           });
           setModalDoctorOpen(false);
           setDoctorEditando(null);
