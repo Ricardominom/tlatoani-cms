@@ -92,7 +92,7 @@ export async function getGrupos(params?: FiltrosGrupos) {
 
 export async function crearGrupo(data: GrupoFormData) {
     try {
-        const payload = { ...data };
+        const payload = { ...data, teacher_uuid: data.teacher_uuid || null };
         if (payload.entry_time) payload.entry_time = toTimeApi(payload.entry_time);
         if (payload.dismissal_time) payload.dismissal_time = toTimeApi(payload.dismissal_time);
         const res = await api.post<unknown>("/v1/groups", payload);
@@ -106,7 +106,7 @@ export async function crearGrupo(data: GrupoFormData) {
 
 export async function actualizarGrupo(uuid: string, data: Partial<GrupoFormData>) {
     try {
-        const payload = { ...data };
+        const payload = { ...data, teacher_uuid: data.teacher_uuid || null };
         if (payload.entry_time) payload.entry_time = toTimeApi(payload.entry_time);
         if (payload.dismissal_time) payload.dismissal_time = toTimeApi(payload.dismissal_time);
         const res = await api.put<unknown>(`/v1/groups/${uuid}`, payload);

@@ -21,6 +21,7 @@ import type {
   AlumnosPaginados,
   EmergencyContact,
   DoctorInformation,
+  Colegiatura,
 } from "../../types";
 import { getAlumnos, eliminarAlumno } from "../../services/alumnosService";
 import { getGrupos } from "../../services/gruposService";
@@ -40,6 +41,7 @@ import {
   eliminarDoctor,
 } from "../../services/doctorInformationService";
 import { getFamilyMembers } from "../../services/familyMembersService";
+import { getColegiaturasPorAlumno } from "../../services/colegiaturasService";
 
 const ASIST_CLASS: Record<string, string> = {
   vac: styles.dVac,
@@ -65,6 +67,17 @@ function formatFecha(dateStr: string): string {
     month: "short",
     year: "numeric",
   });
+}
+
+function formatPeriodo(period: string): string {
+  const [year, month] = period.split("-");
+  return new Date(Number(year), Number(month) - 1, 1).toLocaleDateString(
+    "es-MX",
+    {
+      month: "short",
+      year: "numeric",
+    },
+  );
 }
 
 export default function Alumnos() {
@@ -136,6 +149,18 @@ export default function Alumnos() {
     queryFn: () => getFamilyMembers(activeUuid!),
     enabled: !!activeUuid,
   });
+
+  const { data: colegiaturasPorAlumnoRes } = useQuery({
+    queryKey: ["colegiaturas-alumno", activeUuid],
+    queryFn: () =>
+      getColegiaturasPorAlumno(activeUuid!, {
+        per_page: 6,
+        order_by: "period",
+        order_direction: "desc",
+      }),
+    enabled: !!activeUuid,
+  });
+  const colegiaturas: Colegiatura[] = colegiaturasPorAlumnoRes?.data ?? [];
 
   // Mutation: eliminar alumno con optimistic update
   const eliminarMutation = useMutation({
@@ -934,6 +959,64 @@ export default function Alumnos() {
                           Eliminar
                         </span>
                       </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className={styles.dc}>
+              <div className={styles.dch}>
+                <span className={styles.dct}>Colegiaturas</span>
+              </div>
+              <div className={styles.dcb}>
+                {colegiaturas.length === 0 ? (
+                  <div
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "var(--texto-3)",
+                      textAlign: "center",
+                      padding: "16px 0",
+                    }}
+                  >
+                    Sin registros de colegiatura
+                  </div>
+                ) : (
+                  colegiaturas.map((c) => (
+                    <div key={c.id} className={styles.datoRow}>
+                      <span className={styles.datoLbl}>
+                        {formatPeriodo(c.period)}
+                      </span>
+                      <span className={styles.datoVal}>
+                        ${Number(c.amount).toLocaleString()}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 700,
+                          padding: "2px 8px",
+                          borderRadius: 6,
+                          background:
+                            c.status === "paid"
+                              ? "var(--verde-light)"
+                              : c.status === "overdue"
+                                ? "var(--rojo-light)"
+                                : "var(--amarillo-light)",
+                          color:
+                            c.status === "paid"
+                              ? "var(--verde-s)"
+                              : c.status === "overdue"
+                                ? "var(--rojo)"
+                                : "var(--amarillo-s)",
+                        }}
+                      >
+                        {c.status === "paid"
+                          ? "Pagado"
+                          : c.status === "overdue"
+                            ? "Vencido"
+                            : "Pendiente"}
+                      </span>
                     </div>
                   ))
                 )}

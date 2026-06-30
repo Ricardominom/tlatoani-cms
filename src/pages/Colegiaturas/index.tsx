@@ -12,11 +12,13 @@ import { getGrupo } from "../../components/ui/AnimalKit";
 import {
   getColegiaturas,
   actualizarColegiatura,
+  eliminarColegiatura,
   generarColegiaturasDelMes,
 } from "../../services/colegiaturasService";
 import { useAuth } from "../../context/AuthContext";
 import type { Colegiatura } from "../../types";
 import styles from "./Colegiaturas.module.css";
+import ConfirmDialog from "../../components/ui/ConfirmDialog";
 
 type FiltroColeg = "todas" | "vencidas" | "pendientes" | "pagadas";
 
@@ -50,6 +52,9 @@ export default function Colegiaturas() {
   const [metodoPago, setMetodoPago] = useState("Transferencia bancaria");
   const [referencia, setReferencia] = useState("");
   const [fechaPago, setFechaPago] = useState("");
+  const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
+  const [colegiaturaAEliminar, setColegiaturaAEliminar] =
+    useState<Colegiatura | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -121,6 +126,16 @@ export default function Colegiaturas() {
       queryClient.invalidateQueries({ queryKey: ["colegiaturas"] });
       const r = result as { created: number; skipped: number };
       alert(`Generadas: ${r.created}, ya existían: ${r.skipped}`);
+    },
+  });
+
+  const eliminarMutation = useMutation({
+    mutationFn: (uuid: string) => eliminarColegiatura(uuid),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["colegiaturas"] });
+      queryClient.invalidateQueries({ queryKey: ["colegiaturas-alumno"] });
+      setConfirmEliminarOpen(false);
+      setColegiaturaAEliminar(null);
     },
   });
 
@@ -323,21 +338,37 @@ export default function Colegiaturas() {
                       <td>{r.payment_date ?? "—"}</td>
                       {esAdmin && (
                         <td>
-                          {r.status !== "paid" && (
+                          <div style={{ display: "flex", gap: 6 }}>
+                            {r.status !== "paid" && (
+                              <button
+                                className={styles.actBtn}
+                                style={{
+                                  background: "var(--verde-light)",
+                                  color: "var(--verde-s)",
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSeleccionada(r);
+                                }}
+                              >
+                                ✓ Pagado
+                              </button>
+                            )}
                             <button
                               className={styles.actBtn}
                               style={{
-                                background: "var(--verde-light)",
-                                color: "var(--verde-s)",
+                                background: "var(--rojo-light)",
+                                color: "var(--rojo)",
                               }}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSeleccionada(r);
+                                setColegiaturaAEliminar(r);
+                                setConfirmEliminarOpen(true);
                               }}
                             >
-                              ✓ Pagado
+                              Eliminar
                             </button>
-                          )}
+                          </div>
                         </td>
                       )}
                     </tr>
@@ -419,6 +450,20 @@ export default function Colegiaturas() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmEliminarOpen}
+        titulo="Eliminar colegiatura"
+        mensaje={`¿Eliminar el registro de ${colegiaturaAEliminar?.period ?? ""} por $${Number(colegiaturaAEliminar?.amount ?? 0).toLocaleString()}? Esta acción no se puede deshacer.`}
+        labelConfirm="Eliminar"
+        onConfirm={() =>
+          colegiaturaAEliminar &&
+          eliminarMutation.mutate(colegiaturaAEliminar.id)
+        }
+        onCancel={() => {
+          setConfirmEliminarOpen(false);
+          setColegiaturaAEliminar(null);
+        }}
+      />
     </div>
   );
 }

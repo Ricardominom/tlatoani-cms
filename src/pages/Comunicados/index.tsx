@@ -28,6 +28,7 @@ import {
   getComunicados,
   getComunicado,
   crearComunicado,
+  actualizarComunicado,
   eliminarComunicado,
   publicarComunicado,
   marcarComunicadoLeido,
@@ -189,6 +190,7 @@ export default function Comunicados() {
   const [busqueda, setBusqueda] = useState("");
   const [filtro, setFiltro] = useState<FiltroEstado>("todos");
   const [confirmEliminarOpen, setConfirmEliminarOpen] = useState(false);
+  const [modoEditar, setModoEditar] = useState(false);
 
   const { data: comunicadosRes, isLoading } = useQuery({
     queryKey: ["comunicados", filtro, busqueda],
@@ -208,13 +210,13 @@ export default function Comunicados() {
   const { data: comunicadoDetalle } = useQuery({
     queryKey: ["comunicado", activeUuid],
     queryFn: () => getComunicado(activeUuid!),
-    enabled: !!activeUuid && !modoNuevo,
+    enabled: !!activeUuid && !modoNuevo && !modoEditar,
   });
 
   const { data: gruposRes } = useQuery({
     queryKey: ["grupos"],
     queryFn: () => getGrupos({ per_page: 100 }),
-    enabled: modoNuevo,
+    enabled: modoNuevo || modoEditar,
   });
   const grupos = gruposRes?.data ?? [];
 
@@ -272,6 +274,17 @@ export default function Comunicados() {
     },
   });
 
+  const editarMutation = useMutation({
+    mutationFn: ({ uuid, data }: { uuid: string; data: ComunicadoFormData }) =>
+      actualizarComunicado(uuid, data),
+    onSuccess: (actualizado) => {
+      queryClient.invalidateQueries({ queryKey: ["comunicados"] });
+      queryClient.invalidateQueries({ queryKey: ["comunicado", activeUuid] });
+      setModoEditar(false);
+      setSelectedUuid(actualizado?.id ?? activeUuid);
+    },
+  });
+
   const draftCount = comunicados.filter((c) => c.status === "draft").length;
 
   function handleGuardarBorrador() {
@@ -282,6 +295,15 @@ export default function Comunicados() {
   function handlePublicarNuevo() {
     setValue("status", "published");
     handleSubmit((data) => crearMutation.mutate(data))();
+  }
+
+  function handleGuardarCambios() {
+    handleSubmit((data) => editarMutation.mutate({ uuid: aviso!.id, data }))();
+  }
+
+  function handleEditarYPublicar() {
+    setValue("status", "published");
+    handleSubmit((data) => editarMutation.mutate({ uuid: aviso!.id, data }))();
   }
 
   return (
@@ -447,18 +469,25 @@ export default function Comunicados() {
 
       {/* ── DETALLE ── */}
       <div className={styles.panelDet}>
-        {modoNuevo ? (
+        {modoNuevo || modoEditar ? (
           <>
             <div className={styles.detTopbar}>
               <div>
-                <div className={styles.detTitulo}>Nuevo comunicado</div>
-                <div className={styles.detSub}>Borrador · sin publicar</div>
+                <div className={styles.detTitulo}>
+                  {modoEditar ? "Editar borrador" : "Nuevo comunicado"}
+                </div>
+                <div className={styles.detSub}>
+                  {modoEditar
+                    ? (aviso?.title ?? "Borrador")
+                    : "Borrador · sin publicar"}
+                </div>
               </div>
               <div className={styles.detActions}>
                 <button
                   className={styles.btnS}
                   onClick={() => {
                     setModoNuevo(false);
+                    setModoEditar(false);
                     reset(FORM_DEFAULT);
                   }}
                 >
@@ -660,27 +689,55 @@ export default function Comunicados() {
                     </div>
                   </div>
                   <div className={styles.ecFooter}>
-                    <button
-                      type="button"
-                      className={styles.btnBorrador}
-                      disabled={crearMutation.isPending}
-                      onClick={handleGuardarBorrador}
-                    >
-                      Guardar borrador
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.btnPublicar}
-                      disabled={crearMutation.isPending}
-                      onClick={handlePublicarNuevo}
-                    >
-                      <MdSend size={14} color="#5A4800" />
-                      {crearMutation.isPending
-                        ? "Publicando…"
-                        : "Publicar y notificar"}
-                    </button>
+                    {modoEditar ? (
+                      <>
+                        <button
+                          type="button"
+                          className={styles.btnBorrador}
+                          disabled={editarMutation.isPending}
+                          onClick={handleGuardarCambios}
+                        >
+                          {editarMutation.isPending
+                            ? "Guardando…"
+                            : "Guardar cambios"}
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.btnPublicar}
+                          disabled={editarMutation.isPending}
+                          onClick={handleEditarYPublicar}
+                        >
+                          <MdSend size={14} color="#5A4800" />
+                          {editarMutation.isPending
+                            ? "Publicando…"
+                            : "Guardar y publicar"}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className={styles.btnBorrador}
+                          disabled={crearMutation.isPending}
+                          onClick={handleGuardarBorrador}
+                        >
+                          Guardar borrador
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.btnPublicar}
+                          disabled={crearMutation.isPending}
+                          onClick={handlePublicarNuevo}
+                        >
+                          <MdSend size={14} color="#5A4800" />
+                          {crearMutation.isPending
+                            ? "Publicando…"
+                            : "Publicar y notificar"}
+                        </button>
+                      </>
+                    )}
                   </div>
-                  {crearMutation.isError && (
+                  {(crearMutation.isError || editarMutation.isError) && (
                     <div
                       style={{
                         fontSize: 11,
@@ -688,9 +745,13 @@ export default function Comunicados() {
                         padding: "8px 16px",
                       }}
                     >
-                      {crearMutation.error instanceof Error
-                        ? crearMutation.error.message
-                        : "Error al crear el comunicado"}
+                      {(crearMutation.error ?? editarMutation.error) instanceof
+                      Error
+                        ? (
+                            crearMutation.error ??
+                            (editarMutation.error as Error)
+                          ).message
+                        : "Error al guardar el comunicado"}
                     </div>
                   )}
                 </div>
@@ -709,6 +770,24 @@ export default function Comunicados() {
                 </div>
               </div>
               <div className={styles.detActions}>
+                <button
+                  className={styles.btnS}
+                  onClick={() => {
+                    setModoEditar(true);
+                    reset({
+                      title: aviso.title,
+                      content: aviso.content,
+                      type: aviso.type,
+                      is_global: aviso.is_global,
+                      group_uuids: aviso.groups?.map((g) => g.id) ?? [],
+                      student_uuids: aviso.students?.map((s) => s.id) ?? [],
+                      status: aviso.status,
+                      attachment: null,
+                    });
+                  }}
+                >
+                  <MdEditNote size={12} /> Editar
+                </button>
                 {aviso.status === "draft" && (
                   <button
                     className={styles.btnP}
